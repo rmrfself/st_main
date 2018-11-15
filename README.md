@@ -11,7 +11,9 @@ https://www.odoo.com/documentation/11.0/
 ## 分支使用说明
 
 master  ---> porduct 生产环境
+
 staging ---> 集成测试环境
+
 develop ---> code review / pull-request base 分支
 
 feature/1...n --> 开发分支
