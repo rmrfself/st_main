@@ -1,3 +1,13 @@
+## Build target
+
+### Design box
+
+![](https://github.com/rmrfself/st_main/blob/master/st_main.png?raw=true)
+
+### Cart list
+
+![](https://github.com/rmrfself/st_main/blob/master/cart-detail.jpg?raw=true)
+
 ## odoo 版本
 
 v11
