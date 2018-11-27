@@ -1,3 +1,8 @@
+## Business sequence
+
+![](https://github.com/rmrfself/st_main/blob/master/sequence.png?raw=true)
+
+
 ## Build target
 
 ### Design box
