@@ -1,54 +1,19 @@
 <odoo>
   <data>
+    <template id="footer_copyright_emb" inherit_id="website.layout" name="Footer Copyright">
+      <xpath expr="//footer" position="replace">
+          <div class="container mt16 mb8">Customized totally by author</div>
+      </xpath>
+    </template>
     <template id="assets_frontend" inherit_id="website.assets_frontend" name="Shop">
       <xpath expr="." position="inside">
-        <link rel="stylesheet" href="/emb_portal/static/src/css/lightslider.css" />
-        <link rel="stylesheet" href="/emb_portal/static/src/css/jquery-editable-select.min.css" />
-        <link rel="stylesheet" href="/emb_portal/static/src/css/bootstrap-select.min.css" />
-        <script type="text/javascript" src="/emb_portal/static/src/js/lightslider.js"></script>
-        <script type="text/javascript" src="/emb_portal/static/src/js/fabric.min.js"></script>
-        <script type="text/javascript" src="/emb_portal/static/src/js/spectrum.min.js"></script>
-        <script type="text/javascript" src="/emb_portal/static/src/js/bootstrap-slider.min.js"></script>
-        <script type="text/javascript" src="/emb_portal/static/src/js/jquery-editable-select.min.js"></script>
-        <script type="text/javascript" src="/emb_portal/static/src/js/bootstrap-select.min.js"></script>
-        <script type="text/javascript" src="/emb_portal/static/src/js/bootstrap-select.min.js"></script>
         <script type="text/javascript" src="/emb_portal/static/src/js/html2canvas.min.js"></script>
-        <script type="text/javascript" src="/emb_portal/static/src/js/bootbox.min.js"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.0.0/css/bootstrap-slider.min.css" />
       </xpath>
     </template>
     <template id="portal_layout" name="Portal Layout">
       <t t-call="website.layout">
-        <t t-set="head">
-          <link rel="stylesheet" href="/emb_portal/static/src/css/main.css" />
-          <script type="text/javascript" src="/emb_portal/static/src/js/website_logo_edit.js"></script>
-        </t>
         <div id="wrap">
-          <t t-set="additional_title">订单系统</t>
-          <div class="container service-category">
-            <div class="row">
-              <div class="col-lg-2 col-sm-2 text-muted">
-                <div id="category-bar"></div>
-              </div>
-              <div class="col-lg-10 col-sm-10 nopadding">
-                <div class="panel content-panel">
-                  <div class="row mt0">
-                    <div id="logo-editor-container">
-                      <div id="op-bar" class="col-lg-3 nopadding"></div>
-                      <div id="op-content" class="col-lg-6 ml15 nopadding">
-                        <div id="logo-editor">
-                          <canvas id="logo-canvas" width="100%" height="100%"></canvas>
-                          <div id="grouped-garments"></div>
-                        </div>
-                      </div>
-                      <div id="logo-edit-bar" class="col-lg-3 nopadding"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          hello,world
         </div>
       </t>
     </template>
