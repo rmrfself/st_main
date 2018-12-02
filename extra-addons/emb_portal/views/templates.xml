@@ -1,128 +1,330 @@
 <odoo>
   <data>
-    <template id="footer_copyright_emb" inherit_id="website.layout" name="Footer Copyright">
-      <xpath expr="//footer" position="replace">
-          <div class="container mt16 mb8">Customized totally by author</div>
+    <template id='footer_copyright_emb' inherit_id='website.layout' name='Emb Footer Copyright'>
+      <xpath expr='//footer' position='replace'>
+        <div class='container mt16 mb8'></div>
       </xpath>
     </template>
-    <template id="assets_frontend" inherit_id="website.assets_frontend" name="Shop">
-      <xpath expr="." position="inside">
-        <script type="text/javascript" src="/emb_portal/static/src/js/html2canvas.min.js"></script>
+    <template id='assets_frontend_emb_portal' inherit_id='web.assets_frontend' name='Emb Portal Frontend Assets'>
+      <xpath expr='//link[last()]' position='after'>
+        <link rel='stylesheet' type='text/less' href='/web/static/lib/bootstrap/less/mixins/grid.less'/>
+        <link rel='stylesheet' type='text/less' href='/emb_portal/static/src/css/main.less'/>
+      </xpath>
+      <xpath expr='//script[last()]' position='after'>
+        <script type='text/javascript' src='/emb_portal/static/src/js/box_designer.js'></script>
       </xpath>
     </template>
-    <template id="portal_layout" name="Portal Layout">
-      <t t-call="website.layout">
-        <div id="wrap">
-          hello,world
-        </div>
-      </t>
-    </template>
-    <template id="cart_list" name="Cart List">
-      <t t-call="website.layout">
-        <t t-set="head">
-          <link rel="stylesheet" href="/emb_portal/static/src/css/bootstrap-datepicker.min.css" />
-          <link rel="stylesheet" href="/emb_portal/static/src/css/cart_list.css" />
-          <script type="text/javascript" src="/emb_portal/static/src/js/bootstrap-datepicker.min.js"></script>
-          <script type="text/javascript" src="/emb_portal/static/src/js/website_cart_list.js"></script>
-        </t>
-        <div id="wrap">
-          <t t-set="additional_title">Cart</t>
-          <div class="container cart-list">
-            <div class="row">
-              <div class="col-12">
-                <table class="table table-bordered text-center">
-                  <thead>
-                    <tr>
-                      <td></td>
-                      <td>Item</td>
-                      <td>Type</td>
-                      <td>Style</td>
-                      <td>Placement</td>
-                      <td>Color</td>
-                      <td>Service Surcharge</td>
-                      <td>Size S</td>
-                      <td>Size M</td>
-                      <td>Size L</td>
-                      <td>Size XL</td>
-                      <td>Unit Price</td>
-                      <td>Discount</td>
-                      <td colspan='2'>Action</td>
-                    </tr>
-                  </thead>
-                  <tbody id="cart-list-table"></tbody>
-                </table>
+    <template id='portal_layout' name='Emb Portal Layout'>
+      <t t-call='website.layout'>
+        <div id='app_container'>
+          <div class='container emb_portal'>
+            <div class='row'>
+              <div id='assets_manager' class='col-md-6'>
+                <div class='assets_box'>
+                  <div class='actions'>
+                    <button type='button' class='btn green' data-target='#gmt-upload-modal' data-toggle='modal' aria-pressed='false' autocomplete='off'>
+                      <span class='glyphicon glyphicon-open' aria-hidden='true'></span>upload</button>
+                    <button type='button' class='btn red' data-toggle='button' aria-pressed='false' autocomplete='off'>
+                      <span class='glyphicon glyphicon-trash' aria-hidden='true'></span>delete</button>
+                  </div>
+                  <ul id='assets_nav' class='nav nav-tabs'>
+                    <li role='presentation' class='active'>
+                      <a href='#garment-box' aria-controls='garment-box' role='tab' data-toggle='tab'>Garments</a>
+                    </li>
+                    <li role='presentation'>
+                      <a href='#logo-box' aria-controls='logo-box' role='tab' data-toggle='tab'>Logos</a>
+                    </li>
+                  </ul>
+                  <div class='tab-content'>
+                    <div role='tabpanel' class='tab-pane active' id='garment-box'>
+                      <div class='content'>
+                        <div class='assets-group'>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                        </div>
+                        <div class='assets-group'>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                        </div>
+                        <div class='assets-group'>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                        </div>
+                        <div class='assets-group'>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/g1.jpg' width='80'/>
+                          </a>
+                        </div>
+                      </div>
+                      <div class='bottom-actions'>
+                        <a href='#'>st garments</a>
+                        <a href='#'>my garments</a>
+                      </div>
+                    </div>
+                    <div role='tabpanel' class='tab-pane' id='logo-box'>
+                      <div class='content'>
+                        <div class='assets-group'>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/nike.png' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/nike.png' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/nike.png' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/nike.png' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/nike.png' width='80'/>
+                          </a>
+                          <a href='#'>
+                            <img src='/emb_portal/static/src/images/nike.png' width='80'/>
+                          </a>
+                        </div>
+                      </div>
+                      <div class='bottom-actions'>
+                        Filter: 
+                        <a href='#'>st logos</a>
+                        <a href='#'>my logos</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
+              <div class='col-md-6'></div>
             </div>
-            <div id="form-info-body" style="display:none;">
-              <div class="form-inline">
-                <div class="form-group" style="margin-left:-15px;margin-right:20px;">
-                  <label for="po">Select Company</label>
-                  <select class="selectpicker show-tick" title="Buyer">
-                    <option>A Company</option>
-                    <option>B Company</option>
-                    <option>C Company</option>
-                  </select>
+          </div>
+          <!-- Modal -->
+          <!-- Modal -->
+          <div class="modal fade" id="gmt-upload-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">x</span>
+                  </button>
+                  <h4 class="modal-title" id="myModalLabel">Garment Upload</h4>
                 </div>
-                <div class="form-group" style="margin-right:20px">
-                  <label for="po">P.O.#</label>
-                  <input id="po" type="text" class="form-control" placeholder="P.O.#" />
-                </div>
-                <div class="form-group">
-                  <label for="jobname">Job Name</label>
-                  <input id="jobname" type="text" class="form-control" placeholder="Job Name" />
-                </div>
-              </div>
-              <div class="row">
-                <h4 style="margin: 15px 0;">Product Shipment Information</h4>
-                <div class="form-inline">
-                  <div class="form-group col-sm-8" style="margin: 10px 0;padding-left:0;">
-                    <label class="col-sm-2" style="padding-left:0;">Shipper</label>
-                    <select class="selectpicker show-tick" title="Shipper">
-                      <option>A Company</option>
-                      <option>B Company</option>
-                      <option>C Company</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="form-inline">
-                  <div class="form-group col-sm-8" style="margin: 10px 0;padding-left:0;">
-                    <label class="col-sm-2" style="padding-left:0;">Shipping Date</label>
-                    <div class='input-group date' data-provide="datepicker">
-                      <input type='text' class="form-control" />
-                      <span class="input-group-addon">
-                        <span class="fa fa-calendar"></span>
-                      </span>
+                <div class="modal-body" id="gmt-upload">
+                  <div class='content'>
+                    <div class="row">
+                      <form class="form-horizontal">
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class='col-sm-3' for="exampleInputName2">Category</label>
+                            <div class="col-sm-9">
+                              <select id='gmt-category' class="form-control form-control-lg">
+                                <option>T-Shirt</option>
+                                <option>Polo Shirt</option>
+                                <option>Jacket</option>
+                                <option>Pants</option>
+                                <option>Panel</option>
+                                <option>Patch</option>
+                                <option>Label</option>
+                                <option>Baseball Cap</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div class="form-group row">
+                            <label class='col-sm-3' for="exampleInputName2">Style</label>
+                            <div class="col-sm-9">
+                              <select id='gmt-style' class="form-control form-control-lg">
+                                <option>YL</option>
+                                <option>FL</option>
+                                <option>EL</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div class="form-group row">
+                            <label class='col-sm-3' for="gmt-brand">Brand</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" id="gmt-brand" placeholder="brand" />
+                            </div>
+                          </div>
+                          <div class="form-group row color-edit">
+                            <a href="#" class='glyphicon glyphicon-plus'>
+                              <span>add</span>
+                            </a>
+                            <label class='col-sm-3' for="gmt-brand">Color</label>
+                            <div class="col-sm-12 color-blocks">
+                              <span class='block' style='background:#D0021B'></span>
+                              <span class='block' style='background:#D0021B'></span>
+                              <span class='block' style='background:#D0021B'></span>
+                              <span class='block' style='background:#D0021B'></span>
+                              <span class='block' style='background:#D0021B'></span>
+                              <span class='block' style='background:#D0021B'></span>
+                              <span class='block' style='background:#D0021B'></span>
+                              <span class='block' style='background:#D0021B'></span>
+                              <span class='block' style='background:#D0021B'></span>
+                              <span class='block' style='background:#D0021B'></span>
+                            </div>
+                          </div>
+                          <div class="form-group row gmt-image-upload">
+                            <label class='col-sm-5' for="gmt-brand">Image Upload</label>
+                            <div class="col-sm-12 image-blocks">
+                              <table class='table table-bordered'>
+                                <tr>
+                                  <td>
+                                    <a href="#" class='glyphicon glyphicon-open upload-link'></a>
+                                    <span>top</span>
+                                  </td>
+                                  <td>
+                                    <a href="#" class='glyphicon glyphicon-open upload-link'></a>
+                                    <span>left</span>
+                                  </td>
+                                  <td>
+                                    <a href="#" class='glyphicon glyphicon-open upload-link'></a>
+                                    <span>front</span>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>
+                                    <a href="#" class='glyphicon glyphicon-open upload-link'></a>
+                                    <span>bottom</span>
+                                  </td>
+                                  <td>
+                                    <a href="#" class='glyphicon glyphicon-open upload-link'></a>
+                                    <span>right</span>
+                                  </td>
+                                  <td>
+                                    <a href="#" class='glyphicon glyphicon-open upload-link'></a>
+                                    <span>back</span>
+                                  </td>
+                                </tr>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class='col-sm-2' for="exampleInputName2">Style</label>
+                            <div class="col-sm-9">
+                              <select id='gmt-style' class="form-control form-control-lg">
+                                <option>US</option>
+                                <option>Urp</option>
+                              </select>
+                            </div>
+                            <div class="col-sm-12 size-list">
+                              <label class="checkbox-inline">
+                                <input type="checkbox" id="inlineCheckbox1" value="option1" /> S
+                              </label>
+                              <label class="checkbox-inline">
+                                <input type="checkbox" id="inlineCheckbox1" value="option1" /> M
+                              </label>
+                              <label class="checkbox-inline">
+                                <input type="checkbox" id="inlineCheckbox1" value="option1" /> L
+                              </label>
+                              <label class="checkbox-inline">
+                                <input type="checkbox" id="inlineCheckbox1" value="option1" /> XS
+                              </label>
+                              </div>
+                              <div class="col-sm-12 size-list" style='margin-top:0;'>
+                              <label class="checkbox-inline">
+                                <input type="checkbox" id="inlineCheckbox1" value="option1" /> XL
+                              </label>
+                              <label class="checkbox-inline">
+                                <input type="checkbox" id="inlineCheckbox1" value="option1" /> 2XL
+                              </label>
+                              <label class="checkbox-inline">
+                                <input type="checkbox" id="inlineCheckbox1" value="option1" /> 3XL
+                              </label>
+                              <label class="checkbox-inline">
+                                <input type="checkbox" id="inlineCheckbox1" value="option1" /> 4XL
+                              </label>
+                            </div>
+                          </div>
+                          <div class="form-group row">
+                            <label class='col-sm-3' for="gmt-brand">Description</label>
+                            <div class="col-sm-12">
+                              <textarea class="form-control" rows="7" id="comment"></textarea>
+                            </div>
+                          </div>
+                          <div class="form-group row submits">
+                          <div class="col-md-12 text-center"> 
+                          <button type="button" class="btn btn-primary">Cancel</button>
+                            <button type="button" class="btn btn-success">Save</button>
+                            
+                            </div>
+                          </div>
+                        </div>
+                      </form>
                     </div>
-                  </div>
-                </div>
-                <div class="form-inline">
-                  <div class="form-group col-sm-8" style="margin: 10px 0;padding-left:0;">
-                    <label class="col-sm-2" style="padding-left:0;">Requere At</label>
-                    <div class='input-group date' data-provide="datepicker">
-                      <input type='text' class="form-control" />
-                      <span class="input-group-addon">
-                        <span class="fa fa-calendar"></span>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="form-group">
-                  <label for="comment">Message:</label>
-                  <textarea class="form-control" rows="5" id="comment"></textarea>
-                </div>
-                <div class="form-group row">
-                  <div class="col-sm-12 text-center">
-                    <button type="submit" class="btn btn-primary">Ask For Quotation</button>
-                    <button type="submit" class="btn btn-warning">Proceed To Order</button>
-                    <button type="submit" class="btn btn-default">Return Order</button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </t>
+    </template>
+    <template id='cart_list' name='Cart List'>
+      <t t-call='website.layout'>
+        <div id='app_container'></div>
       </t>
     </template>
   </data>
