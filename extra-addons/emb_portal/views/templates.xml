@@ -7,10 +7,13 @@
     </template>
     <template id='assets_frontend_emb_portal' inherit_id='web.assets_frontend' name='Emb Portal Frontend Assets'>
       <xpath expr='//link[last()]' position='after'>
+        <link rel='stylesheet' type='text/less' href='/emb_portal/static/src/css/spectrum.css'/>
         <link rel='stylesheet' type='text/less' href='/web/static/lib/bootstrap/less/mixins/grid.less'/>
         <link rel='stylesheet' type='text/less' href='/emb_portal/static/src/css/main.less'/>
       </xpath>
       <xpath expr='//script[last()]' position='after'>
+        <script type='text/javascript' src='/emb_portal/static/src/js/spectrum.js'></script>
+        <script type='text/javascript' src='/emb_portal/static/src/js/garment_upload.js'></script>
         <script type='text/javascript' src='/emb_portal/static/src/js/box_designer.js'></script>
       </xpath>
     </template>
@@ -179,14 +182,6 @@
                             <label class='col-sm-3' for="exampleInputName2">Category</label>
                             <div class="col-sm-9">
                               <select id='gmt-category' class="form-control form-control-lg">
-                                <option>T-Shirt</option>
-                                <option>Polo Shirt</option>
-                                <option>Jacket</option>
-                                <option>Pants</option>
-                                <option>Panel</option>
-                                <option>Patch</option>
-                                <option>Label</option>
-                                <option>Baseball Cap</option>
                               </select>
                             </div>
                           </div>
@@ -194,9 +189,6 @@
                             <label class='col-sm-3' for="exampleInputName2">Style</label>
                             <div class="col-sm-9">
                               <select id='gmt-style' class="form-control form-control-lg">
-                                <option>YL</option>
-                                <option>FL</option>
-                                <option>EL</option>
                               </select>
                             </div>
                           </div>
@@ -207,22 +199,11 @@
                             </div>
                           </div>
                           <div class="form-group row color-edit">
-                            <a href="#" class='glyphicon glyphicon-plus'>
+                            <a href="#" id='gmt-color-picker' class='glyphicon glyphicon-plus'>
                               <span>add</span>
                             </a>
                             <label class='col-sm-3' for="gmt-brand">Color</label>
-                            <div class="col-sm-12 color-blocks">
-                              <span class='block' style='background:#D0021B'></span>
-                              <span class='block' style='background:#D0021B'></span>
-                              <span class='block' style='background:#D0021B'></span>
-                              <span class='block' style='background:#D0021B'></span>
-                              <span class='block' style='background:#D0021B'></span>
-                              <span class='block' style='background:#D0021B'></span>
-                              <span class='block' style='background:#D0021B'></span>
-                              <span class='block' style='background:#D0021B'></span>
-                              <span class='block' style='background:#D0021B'></span>
-                              <span class='block' style='background:#D0021B'></span>
-                            </div>
+                            <div class="col-sm-12 color-blocks" id='gmt-colors'></div>
                           </div>
                           <div class="form-group row gmt-image-upload">
                             <label class='col-sm-5' for="gmt-brand">Image Upload</label>
