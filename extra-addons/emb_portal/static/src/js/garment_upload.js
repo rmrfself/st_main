@@ -16,6 +16,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
             console.log("Garment upload window initilized " + msg);
             this._bindColorPickerEvent();
             this._getCategoryList();
+            this._getSizeAttrs();
+            this._bindImageUploadEvents();
         },
         _bindColorPickerEvent: function () {
             var picker = this._getColorPickerEle();
@@ -56,6 +58,32 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 }
             });
         },
+        _bindImageUploadEvents: function () {
+            var self = this;
+            var p = ['right', 'left', 'back', 'front', 'top', 'bottom'];
+            p.map(function (item) {
+                $('#gmt-link-' + item).click(function (e) {
+                    $('#gmt-img-' + item).click();
+                });
+                $('#gmt-img-' + item).on('change', function (e) {
+                    self._gmtImgPreview(this, $('#gmt-link-' + item));
+                });
+            });
+        },
+        _gmtImgPreview: function (input, placeToInsertImagePreview) {
+            if (input.files) {
+                var filesAmount = input.files.length;
+                for (var i = 0; i < filesAmount; i++) {
+                    var reader = new FileReader();
+                    reader.onload = function (event) {
+                        $($.parseHTML('<img>')).attr('src', event.target.result).attr('width', '60').attr('height', '60').appendTo(placeToInsertImagePreview);
+                    }
+                    reader.readAsDataURL(input.files[i]);
+                    placeToInsertImagePreview.css('top',0);
+                    placeToInsertImagePreview.removeClass('glyphicon-open').removeClass('glyphicon');
+                }
+            }
+        },
         _getCategoryList: function () {
             var self = this;
             rpc.query({
@@ -64,6 +92,22 @@ odoo.define("emb_portal.garment_upload", function (require) {
             }).then(function (returned_value) {
                 console.log(returned_value);
                 self._setCategoryAndStyleData(returned_value);
+            });
+        },
+        _getSizeAttrs: function () {
+            var self = this;
+            var args = [
+                [
+                    ['name', 'in', ['Size Of Us', 'Size Of Europe']]
+                ],
+                ['name', 'id', 'value_ids'],
+            ];
+            rpc.query({
+                model: 'product.attribute',
+                method: 'search_read',
+                args: args
+            }).then(function (returned_value) {
+                self._setSizeAttributes(returned_value);
             });
         },
         _setCategoryAndStyle: function (_data) {},
@@ -80,12 +124,12 @@ odoo.define("emb_portal.garment_upload", function (require) {
             eleCategory.on('change', function (e) {
                 eleStyle.html('');
                 var id = $(this).val();
-                var styleData = _data.filter(function(item){
+                var styleData = _data.filter(function (item) {
                     return item.id == id;
                 });
-                if(styleData.length > 0) {
+                if (styleData.length > 0) {
                     var s = JSON.parse(styleData[0].child_id_with_name);
-                    for(var j in s) {
+                    for (var j in s) {
                         var sp = s[j];
                         var sOption = new Option(sp[1], sp[0], false, false);
                         eleStyle.append(sOption);
@@ -94,6 +138,55 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 }
             });
             eleCategory.trigger('change');
+        },
+        _setSizeAttributes: function (_data) {
+            var eleSizeTpl = this._getSizeTplEle();
+            var attrs = this._getSizeAttrsEle();
+            for (var key in _data) {
+                var option = _data[key];
+                var newOption = new Option(option.name, option.id, false, false);
+                eleSizeTpl.append(newOption);
+            }
+            eleSizeTpl.select2();
+            var self = this;
+            eleSizeTpl.on('change', function (e) {
+                attrs.html('');
+                var id = $(this).val();
+                var attrData = _data.filter(function (item) {
+                    return item.id == id;
+                });
+                if (attrData.length > 0) {
+                    var s = attrData[0].value_ids;
+                    // get Ids from rpc
+                    var args = [
+                        [
+                            ['id', 'in', s]
+                        ],
+                        ['name', 'id'],
+                    ];
+                    rpc.query({
+                        model: 'product.attribute.value',
+                        method: 'search_read',
+                        args: args
+                    }).then(function (returned_value) {
+                        self._fillSizeAttrs(returned_value);
+                    });
+                }
+            });
+            eleSizeTpl.trigger('change');
+        },
+        _fillSizeAttrs: function (_data) {
+            var attrs = this._getSizeAttrsEle();
+            for (var i in _data) {
+                var p = $('<div>').attr('class', 'col-sm-2');
+                var l = $('<label>').attr('class', 'checkbox-inline');
+                var cb = $('<input>').attr('type', 'checkbox');
+                var v = _data[i];
+                cb.val(v.id);
+                l.text(v.name);
+                p.append(cb).append(l);
+                attrs.append(p);
+            }
         },
         _getCategoryEle: function () {
             return $("#gmt-category");
@@ -109,6 +202,12 @@ odoo.define("emb_portal.garment_upload", function (require) {
         },
         _getGmtColorsEle: function () {
             return $('#gmt-colors');
+        },
+        _getSizeTplEle: function () {
+            return $('#gmt-size-tpl');
+        },
+        _getSizeAttrsEle: function () {
+            return $('#size-attrs');
         }
     };
 

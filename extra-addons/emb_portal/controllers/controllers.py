@@ -31,4 +31,7 @@ class Portal(http.Controller):
     def index(self, **kw):
         return http.request.render('emb_portal.portal_layout')
 
-    
+    @http.route('/portal/history', auth='user', website=True)
+    def cart_history(self, **kw):
+        return http.request.render('emb_portal.cart_history')
+

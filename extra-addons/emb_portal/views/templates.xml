@@ -211,29 +211,35 @@
                               <table class='table table-bordered'>
                                 <tr>
                                   <td>
-                                    <a href="#" class='glyphicon glyphicon-open upload-link'></a>
+                                    <input type="file" id="gmt-img-top" style="display: none" />
+                                    <a href="#" id='gmt-link-top' class='glyphicon glyphicon-open upload-link'></a>
                                     <span>top</span>
                                   </td>
                                   <td>
-                                    <a href="#" class='glyphicon glyphicon-open upload-link'></a>
+                                    <input type="file" id="gmt-img-left" style="display: none" />
+                                    <a href="#" id='gmt-link-left' class='glyphicon glyphicon-open upload-link'></a>
                                     <span>left</span>
                                   </td>
                                   <td>
-                                    <a href="#" class='glyphicon glyphicon-open upload-link'></a>
+                                    <input type="file" id="gmt-img-front" style="display: none" />
+                                    <a href="#" id='gmt-link-front' class='glyphicon glyphicon-open upload-link'></a>
                                     <span>front</span>
                                   </td>
                                 </tr>
                                 <tr>
                                   <td>
-                                    <a href="#" class='glyphicon glyphicon-open upload-link'></a>
+                                    <input type="file" id="gmt-img-bottom" style="display: none" />
+                                    <a href="#" id='gmt-link-bottom' class='glyphicon glyphicon-open upload-link'></a>
                                     <span>bottom</span>
                                   </td>
                                   <td>
-                                    <a href="#" class='glyphicon glyphicon-open upload-link'></a>
+                                    <input type="file" id="gmt-img-right" style="display: none" />
+                                    <a href="#" id='gmt-link-right' class='glyphicon glyphicon-open upload-link'></a>
                                     <span>right</span>
                                   </td>
                                   <td>
-                                    <a href="#" class='glyphicon glyphicon-open upload-link'></a>
+                                    <input type="file" id="gmt-img-back" style="display: none" />
+                                    <a href="#" id='gmt-link-back' class='glyphicon glyphicon-open upload-link'></a>
                                     <span>back</span>
                                   </td>
                                 </tr>
@@ -243,41 +249,12 @@
                         </div>
                         <div class="col-md-6">
                           <div class="form-group row">
-                            <label class='col-sm-2' for="exampleInputName2">Style</label>
-                            <div class="col-sm-9">
-                              <select id='gmt-style' class="form-control form-control-lg">
-                                <option>US</option>
-                                <option>Urp</option>
+                            <label class='col-sm-5' for="exampleInputName2">Size Template</label>
+                            <div class="col-sm-7">
+                              <select id='gmt-size-tpl' class="form-control form-control-lg">
                               </select>
                             </div>
-                            <div class="col-sm-12 size-list">
-                              <label class="checkbox-inline">
-                                <input type="checkbox" id="inlineCheckbox1" value="option1" /> S
-                              </label>
-                              <label class="checkbox-inline">
-                                <input type="checkbox" id="inlineCheckbox1" value="option1" /> M
-                              </label>
-                              <label class="checkbox-inline">
-                                <input type="checkbox" id="inlineCheckbox1" value="option1" /> L
-                              </label>
-                              <label class="checkbox-inline">
-                                <input type="checkbox" id="inlineCheckbox1" value="option1" /> XS
-                              </label>
-                              </div>
-                              <div class="col-sm-12 size-list" style='margin-top:0;'>
-                              <label class="checkbox-inline">
-                                <input type="checkbox" id="inlineCheckbox1" value="option1" /> XL
-                              </label>
-                              <label class="checkbox-inline">
-                                <input type="checkbox" id="inlineCheckbox1" value="option1" /> 2XL
-                              </label>
-                              <label class="checkbox-inline">
-                                <input type="checkbox" id="inlineCheckbox1" value="option1" /> 3XL
-                              </label>
-                              <label class="checkbox-inline">
-                                <input type="checkbox" id="inlineCheckbox1" value="option1" /> 4XL
-                              </label>
-                            </div>
+                            <div class="col-sm-12 size-list" id='size-attrs'></div>
                           </div>
                           <div class="form-group row">
                             <label class='col-sm-3' for="gmt-brand">Description</label>
@@ -286,10 +263,9 @@
                             </div>
                           </div>
                           <div class="form-group row submits">
-                          <div class="col-md-12 text-center"> 
-                          <button type="button" class="btn btn-primary">Cancel</button>
-                            <button type="button" class="btn btn-success">Save</button>
-                            
+                            <div class="col-md-12 text-center">
+                              <button type="button" id='gmt-cancel-btn' class="btn btn-primary">Cancel</button>
+                              <button type="button" class="btn btn-success">Save</button>
                             </div>
                           </div>
                         </div>
@@ -303,9 +279,27 @@
         </div>
       </t>
     </template>
+    <template id='cart_history' name='Emb Portal Cart History'>
+      <t t-call='website.layout'>
+        <div class='container emb_portal'>
+          <h2>History List</h2>
+          <div>
+            <h3>Order Name</h3>
+            <input type='checkbox' />
+          </div>
+        </div>
+      </t>
+    </template>  
     <template id='cart_list' name='Cart List'>
       <t t-call='website.layout'>
-        <div id='app_container'></div>
+        <div id='app_container'>
+          <div>ordername</div>
+          <div>
+            <t>
+              {order.status}
+            </t>
+          </div>
+        </div>
       </t>
     </template>
   </data>
