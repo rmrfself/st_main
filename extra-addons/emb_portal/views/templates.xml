@@ -7,11 +7,14 @@
     </template>
     <template id='assets_frontend_emb_portal' inherit_id='web.assets_frontend' name='Emb Portal Frontend Assets'>
       <xpath expr='//link[last()]' position='after'>
+        <link rel='stylesheet' type='text/css' href='/emb_portal/static/src/css/qtip.min.css'/>
         <link rel='stylesheet' type='text/less' href='/emb_portal/static/src/css/spectrum.css'/>
         <link rel='stylesheet' type='text/less' href='/web/static/lib/bootstrap/less/mixins/grid.less'/>
         <link rel='stylesheet' type='text/less' href='/emb_portal/static/src/css/main.less'/>
       </xpath>
       <xpath expr='//script[last()]' position='after'>
+        <script type="text/javascript" src="/emb_portal/static/src/js/bootstrap-notify.min.js"></script>
+        <script type='text/javascript' src='/emb_portal/static/src/js/qtip.min.js'></script>
         <script type='text/javascript' src='/emb_portal/static/src/js/spectrum.js'></script>
         <script type='text/javascript' src='/emb_portal/static/src/js/garment_upload.js'></script>
         <script type='text/javascript' src='/emb_portal/static/src/js/box_designer.js'></script>
@@ -158,6 +161,9 @@
                     </div>
                   </div>
                 </div>
+                <a href="#bar" class="protip" data-pt-title="You must be at least 18!">
+    Go to the bar!
+                </a>
               </div>
               <div class='col-md-6'></div>
             </div>
@@ -171,7 +177,7 @@
                   <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">x</span>
                   </button>
-                  <h4 class="modal-title" id="myModalLabel">Garment Upload</h4>
+                  <h4 class="modal-title" id="myModalLabel">Garment Template Setting</h4>
                 </div>
                 <div class="modal-body" id="gmt-upload">
                   <div class='content'>
@@ -188,14 +194,21 @@
                           <div class="form-group row">
                             <label class='col-sm-3' for="exampleInputName2">Style</label>
                             <div class="col-sm-9">
-                              <select id='gmt-style' class="form-control form-control-lg">
+                              <select id='gmt-style' multiple="multiple" class="form-control form-control-lg">
                               </select>
                             </div>
                           </div>
                           <div class="form-group row">
                             <label class='col-sm-3' for="gmt-brand">Brand</label>
                             <div class="col-sm-9">
-                              <input type="text" class="form-control" id="gmt-brand" placeholder="brand" />
+                              <input type="text" class="form-control protip" id="gmt-brand" placeholder="set a brand here" data-pt-title="Input your garment brand!" />
+                              <div class='colorhint'>New value can be input here.</div>
+                            </div>
+                          </div>
+                          <div class="form-group row">
+                            <label class='col-sm-3' for="gmt-name">Name</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control protip" id="gmt-name" placeholder="set a name here" data-pt-title="Input your garment name!" />
                             </div>
                           </div>
                           <div class="form-group row color-edit">
@@ -203,47 +216,51 @@
                               <span>add</span>
                             </a>
                             <label class='col-sm-3' for="gmt-brand">Color</label>
-                            <div class="col-sm-12 color-blocks" id='gmt-colors'></div>
+                            <div class="col-sm-12 color-blocks" id='gmt-colors'>
+                              <span style="width: 40px; height: 40px; background: rgb(217, 234, 211); display: inline-block; margin: 0px 6px;"><input name="colors[]" type="hidden" value="#d9ead3" /></span>
+                            </div>
                           </div>
+                          <div class='colorhint'>Remove color by double clicking.</div>
                           <div class="form-group row gmt-image-upload">
-                            <label class='col-sm-5' for="gmt-brand">Image Upload</label>
+                            <label class='col-sm-5' for="gmt-brand">Preview Images</label>
                             <div class="col-sm-12 image-blocks">
-                              <table class='table table-bordered'>
+                              <table class='table table-bordered m0'>
                                 <tr>
                                   <td>
                                     <input type="file" id="gmt-img-top" style="display: none" />
-                                    <a href="#" id='gmt-link-top' class='glyphicon glyphicon-open upload-link'></a>
-                                    <span>top</span>
+                                    <a href="#" id='gmt-link-top' data-tag='top' class='glyphicon glyphicon-open upload-link'></a>
+                                    <span>top <a href='#' id='gmt-r-top' class='glyphicon glyphicon-trash rbtn'></a></span>
                                   </td>
                                   <td>
                                     <input type="file" id="gmt-img-left" style="display: none" />
-                                    <a href="#" id='gmt-link-left' class='glyphicon glyphicon-open upload-link'></a>
-                                    <span>left</span>
+                                    <a href="#" id='gmt-link-left' data-tag='left' class='glyphicon glyphicon-open upload-link'></a>
+                                    <span>left<a href='#' id='gmt-r-left' class='glyphicon glyphicon-trash rbtn'></a></span>
                                   </td>
                                   <td>
                                     <input type="file" id="gmt-img-front" style="display: none" />
-                                    <a href="#" id='gmt-link-front' class='glyphicon glyphicon-open upload-link'></a>
-                                    <span>front</span>
+                                    <a href="#" id='gmt-link-front' data-tag='front' class='glyphicon glyphicon-open upload-link'></a>
+                                    <span>front<a href='#' id='gmt-r-front' class='glyphicon glyphicon-trash rbtn'></a></span>
                                   </td>
                                 </tr>
                                 <tr>
                                   <td>
                                     <input type="file" id="gmt-img-bottom" style="display: none" />
-                                    <a href="#" id='gmt-link-bottom' class='glyphicon glyphicon-open upload-link'></a>
-                                    <span>bottom</span>
+                                    <a href="#" id='gmt-link-bottom' data-tag='bottom' class='glyphicon glyphicon-open upload-link'></a>
+                                    <span>bottom<a href='#' id='gmt-r-bottom' class='glyphicon glyphicon-trash rbtn'></a></span>
                                   </td>
                                   <td>
                                     <input type="file" id="gmt-img-right" style="display: none" />
-                                    <a href="#" id='gmt-link-right' class='glyphicon glyphicon-open upload-link'></a>
-                                    <span>right</span>
+                                    <a href="#" id='gmt-link-right' data-tag='right' class='glyphicon glyphicon-open upload-link'></a>
+                                    <span>right<a href='#' id='gmt-r-right' class='glyphicon glyphicon-trash rbtn'></a></span>
                                   </td>
                                   <td>
                                     <input type="file" id="gmt-img-back" style="display: none" />
-                                    <a href="#" id='gmt-link-back' class='glyphicon glyphicon-open upload-link'></a>
-                                    <span>back</span>
+                                    <a href="#" id='gmt-link-back' data-tag='back' class='glyphicon glyphicon-open upload-link'></a>
+                                    <span>back<a href='#' id='gmt-r-back' class='glyphicon glyphicon-trash rbtn'></a></span>
                                   </td>
                                 </tr>
                               </table>
+                              <div class='colorhint m0'>Remove image by double clicking.</div>
                             </div>
                           </div>
                         </div>
@@ -259,14 +276,19 @@
                           <div class="form-group row">
                             <label class='col-sm-3' for="gmt-brand">Description</label>
                             <div class="col-sm-12">
-                              <textarea class="form-control" rows="7" id="comment"></textarea>
+                              <textarea id='gmt-desc' class="form-control" rows="7" placeholder="Input more information here."></textarea>
                             </div>
                           </div>
                           <div class="form-group row submits">
                             <div class="col-md-12 text-center">
                               <button type="button" id='gmt-cancel-btn' class="btn btn-primary">Cancel</button>
-                              <button type="button" class="btn btn-success">Save</button>
+                              <button type="button" id='gmt-submit-btn' class="btn btn-success">Save</button>
                             </div>
+                          </div>
+                          <div id='gmt-upload-msg' class="form-group row validation">
+                            <div id='gmt-upload-loader'>
+                              <img src='/emb_portal/static/src/images/grid.svg' height='30' width='30' />
+ Upload your garment, please wait a moment .. </div>
                           </div>
                         </div>
                       </form>
@@ -289,18 +311,9 @@
           </div>
         </div>
       </t>
-    </template>  
+    </template>
     <template id='cart_list' name='Cart List'>
-      <t t-call='website.layout'>
-        <div id='app_container'>
-          <div>ordername</div>
-          <div>
-            <t>
-              {order.status}
-            </t>
-          </div>
-        </div>
-      </t>
+
     </template>
   </data>
 </odoo>

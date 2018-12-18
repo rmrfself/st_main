@@ -106,7 +106,6 @@ odoo.define('payment_stripe.stripe', function(require) {
         var currency_id = $("input[name='currency_id']").val();
         var amount = parseFloat($("input[name='amount']").val() || '0.0');
 
-
         if ($('.o_website_payment').length !== 0) {
             var invoice_num = $("input[name='invoice_num']").val();
             var url = _.str.sprintf("/website_payment/transaction/v2/%f/%s/%s",

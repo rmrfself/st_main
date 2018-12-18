@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<!-- ==================== -->
+	<!-- PRODUCT STYLE -->
+	<!-- Added by mike.zhang -->
+	<!-- ==================== -->
+	<record id="sh_product_style_tree_view" model="ir.ui.view">
+		<field name="name">sh.product.style.tree.view</field>
+		<field name="model">sh.product.style</field>
+		<field name="arch" type="xml">
+			<tree string="Styles" editable="top">
+				<field name="name"/>
+				<field name="categ_id"/>
+			</tree>
+		</field>
+	</record>
+
+	<record id="sh_product_style_form_view" model="ir.ui.view">
+		<field name="name">sh.product.style.form.view</field>
+		<field name="model">sh.product.style</field>
+		<field name="arch" type="xml">
+			<form string="Product Style">
+				<group>
+					<group>
+						<field name="name"/>
+						<field name="categ_id"/>
+					</group>
+				</group>
+			</form>
+		</field>
+	</record>
+
+	<record id="sh_product_style_action" model="ir.actions.act_window">
+		<field name="name">Styles</field>
+		<field name="type">ir.actions.act_window</field>
+		<field name="res_model">sh.product.style</field>
+		<field name="view_mode">tree</field>
+		<field name="view_type">form</field>
+	</record>
+
+	<menuitem id="sh_product_style_menu" action="sh_product_style_action" name="Garment Styles" parent="sale.prod_config_main" groups="sales_team.group_sale_manager" />
+
+	<!-- ================================ -->
+	<!-- PRODUCT SIZE -->
+	<!-- ================================ -->
+	<record id="sh_product_size_tree_view" model="ir.ui.view">
+		<field name="name">sh.product.size.tree.view</field>
+		<field name="model">sh.product.size</field>
+		<field name="arch" type="xml">
+			<tree string="Size" editable="top">
+				<field name="name"/>
+			</tree>
+		</field>
+	</record>
+
+	<record id="sh_product_size_form_view" model="ir.ui.view">
+		<field name="name">sh.product.size.form.view</field>
+		<field name="model">sh.product.size</field>
+		<field name="arch" type="xml">
+			<form string="Product Size">
+				<group>
+					<group>
+						<field name="name"/>
+					</group>
+				</group>
+			</form>
+		</field>
+	</record>
+
+	<record id="sh_product_size_action" model="ir.actions.act_window">
+		<field name="name">Sizes</field>
+		<field name="type">ir.actions.act_window</field>
+		<field name="res_model">sh.product.size</field>
+		<field name="view_mode">tree</field>
+		<field name="view_type">form</field>
+	</record>
+
+	<menuitem id="sh_product_size_menu" action="sh_product_size_action" name="Garment Sizes" parent="sale.prod_config_main" groups="sales_team.group_sale_manager" />
+
+	<!-- ======================= -->
+	<!--  PRODUCT COLOR -->
+	<!-- ======================= -->
+	<record id="sh_product_color_tree_view" model="ir.ui.view">
+		<field name="name">sh.product.color.tree.view</field>
+		<field name="model">sh.product.color</field>
+		<field name="arch" type="xml">
+			<tree string="Color" editable="top">
+				<field name="name"/>
+			</tree>
+		</field>
+	</record>
+
+	<record id="sh_product_color_form_view" model="ir.ui.view">
+		<field name="name">sh.product.color.form.view</field>
+		<field name="model">sh.product.color</field>
+		<field name="arch" type="xml">
+			<form string="Product Color">
+				<group>
+					<group>
+						<field name="name"/>
+					</group>
+				</group>
+			</form>
+		</field>
+	</record>
+
+	<record id="sh_product_color_action" model="ir.actions.act_window">
+		<field name="name">Colors</field>
+		<field name="type">ir.actions.act_window</field>
+		<field name="res_model">sh.product.color</field>
+		<field name="view_mode">tree</field>
+		<field name="view_type">form</field>
+	</record>
+
+	<menuitem id="sh_product_color_menu" action="sh_product_color_action" name="Garment Colors" parent="sale.prod_config_main" groups="sales_team.group_sale_manager" />
+
+	<!-- =================== -->
+	<!-- PRODUCT BRAND -->
+	<!-- =================== -->
+	<record id="sh_product_brand_tree_view" model="ir.ui.view">
+		<field name="name">sh.product.brand.tree.view</field>
+		<field name="model">sh.product.brand</field>
+		<field name="arch" type="xml">
+			<tree string="Brand" editable="top">
+				<field name="name"/>
+			</tree>
+		</field>
+	</record>
+
+	<record id="sh_product_brand_form_view" model="ir.ui.view">
+		<field name="name">sh.product.brand.form.view</field>
+		<field name="model">sh.product.brand</field>
+		<field name="arch" type="xml">
+			<form string="Product Brand">
+				<group>
+					<group>
+						<field name="name"/>
+					</group>
+				</group>
+			</form>
+		</field>
+	</record>
+
+	<record id="sh_product_brand_action" model="ir.actions.act_window">
+		<field name="name">Brands</field>
+		<field name="type">ir.actions.act_window</field>
+		<field name="res_model">sh.product.brand</field>
+		<field name="view_mode">tree</field>
+		<field name="view_type">form</field>
+	</record>
+
+	<menuitem id="sh_product_brand_menu" action="sh_product_brand_action" name="Brands" parent="sale.prod_config_main" groups="sales_team.group_sale_manager" />
+
+	<!-- ================= -->
+	<!-- PRODUCT.TEMPLATE FORM VIEW -->
+	<!-- =================  -->
+	<record id="sh_psscb_product_tmpl_form_view" model="ir.ui.view">
+		<field name="name">sh.psscb.product.tmpl.form.view</field>
+		<field name="model">product.template</field>
+		<field name="inherit_id" ref="product.product_template_form_view"/>
+		<field name="arch" type="xml">
+			<field name='product_variant_id' position="after">
+				<field name="sh_brand_id"/>
+				<field name="sh_size_id"/>
+			</field>
+			<field name="categ_id" position="after">
+				<field name="sh_color_id"/>
+				<field name="sh_style_id"/>
+			</field>
+		</field>
+	</record>
+
+	<!-- ================= -->
+	<!-- PRODUCT.TEMPLATE SEARCH VIEW -->
+	<!-- =================  -->
+	<record id="sh_psscb_product_tmpl_search_view" model="ir.ui.view">
+		<field name="name">sh.psscb.product.tmpl.search.view</field>
+		<field name="model">product.template</field>
+		<field name="inherit_id" ref="product.product_template_search_view"/>
+		<field name="arch" type="xml">
+			<xpath expr="//filter" position="after">
+				<group expand="1" string="Group By">
+					<filter string="Color" name="sh_color_filter" context="{'group_by':'sh_color_id'}"/>
+					<filter string="Size" name="sh_size_filter" context="{'group_by':'sh_size_id'}"/>
+					<filter string="Brand" name="sh_brand_filter" context="{'group_by':'sh_brand_id'}"/>
+					<filter string="Style" name="sh_style_filter" context="{'group_by':'sh_style_id'}"/>
+				</group>
+			</xpath>
+		</field>
+	</record>
+
+
+</odoo>     
+

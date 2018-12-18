@@ -8,21 +8,152 @@ odoo.define("emb_portal.garment_upload", function (require) {
     "use strict";
 
     var rpc = require('web.rpc');
+    var ajax = require('web.ajax');
 
     function uploadManager() {}
+
+    var POSITION = ['right', 'left', 'back', 'front', 'top', 'bottom'];
 
     uploadManager.prototype = {
         init: function (msg) {
             console.log("Garment upload window initilized " + msg);
             this._bindColorPickerEvent();
             this._getCategoryList();
+            this._getBrandList();
             this._getSizeAttrs();
             this._bindImageUploadEvents();
+            this._bindSubmitEvents();
+        },
+        _bindSubmitEvents: function () {
+            var self = this;
+            $('#gmt-submit-btn').click(function (e) {
+                self._postGmtData();
+            });
+            $('#gmt-cancel-btn').click(function (e) {
+                $('#gmt-upload-modal').modal('toggle');
+            });
+        },
+        _blockingUi: function () {
+            $("#gmt-upload").block({
+                message: $('#gmt-upload-loader'),
+                css: {
+                    border: 'none',
+                    left: '90%',
+                    width: '96%',
+                    background: 'transparent'
+                }
+            });
+        },
+        _unBlockUi: function () {
+            $("#gmt-upload").unblockUI();
+        },
+        _postGmtData: function () {
+            var self = this;
+            // If input is invalid, then show failed message.
+            if (self._doValidation()) {
+                return false;
+                // $.notify({
+                //     title: "Failed:",
+                //     message: "This plugin has been provided to you by Robert McIntosh aka mouse0270"
+                // });
+            }
+            // get images data
+            var imageMap = {};
+            $('.upload-link').each(function (item) {
+                var holder = $(this);
+                var pos = holder.attr('data-tag');
+                var img = holder.find('img');
+                if (img != null) {
+                    var data = $(img).attr('src');
+                    imageMap[pos] = data;
+                }
+            });
+            if (_.isEmpty(imageMap)) {
+                this._imgUploadFailed();
+                return false;
+            }
+            console.log("ImageMap data is:");
+            console.log(imageMap);
+            // get size attributes
+            var sizeAttrs = [];
+            $('#size-attrs').find('input').each(function (item) {
+                if ($(this).is(':checked')) {
+                    sizeAttrs.push($(this).val());
+                }
+            });
+            ajax.jsonRpc("/portal/garments/create", 'call', {
+                name: $('#gmt-brand').val().trim(),
+                category_id: $('#gmt-category').val(),
+                style_ids: $('#gmt-style').val(),
+                brand: $('#gmt-brand').val().trim(),
+                images: imageMap,
+                sizes: sizeAttrs,
+                desc: $('#gmt-desc').val().trim(),
+            }).always(function () {
+                if ($.blockUI) {
+                    $.unblockUI();
+                }
+            }).done(function (data) {
+
+            }).fail(function () {
+
+            });
+        },
+        _doValidation: function () {
+            var invalidInput = false;
+            // Validate branch name
+            var eleBn = $('#gmt-brand');
+            var brandName = eleBn.val().trim();
+            var nameRule = /^[A-Za-z0-9@_-]+$/;
+            if (brandName == '' || !nameRule.test(brandName)) {
+                this._brandSetFailed();
+                invalidInput = true;
+            }
+            // upload image vaidate
+            var emptyImage = false;
+            $('.upload-link').each(function (item) {
+                if (this.innerHTML != '') {
+                    emptyImage = true;
+                }
+            });
+            if (!emptyImage) {
+                this._imgUploadFailed();
+                invalidInput = true;
+            }
+            // validate garment color
+            var gmtColors = $('#gmt-colors');
+            if (gmtColors.children().length == 0) {
+                this._colorsSetFailed();
+                invalidInput = true;
+            }
+            // validate site attr
+            var emptyChecked = false;
+            $('#size-attrs').find('input').each(function (item) {
+                if ($(this).is(':checked')) {
+                    emptyChecked = true;
+                }
+            });
+            if (!emptyChecked) {
+                this._sizeSetFailed();
+                invalidInput = true;
+            }
+            // validate description
+            var desc = $('#gmt-desc').val();
+            if ((/^\s*$/).test(desc)) {
+                this._descEmptyMessage();
+                invalidInput = true;
+            }
+            return invalidInput;
         },
         _bindColorPickerEvent: function () {
             var picker = this._getColorPickerEle();
             var container = this._getGmtColorsEle();
-            container.empty();
+            // init container
+            container.children().each(function (item) {
+                $(this).on("click", function () {
+                    $(this).remove();
+                });
+            });
             /**
              * Initized picker events
              */
@@ -58,6 +189,79 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 }
             });
         },
+        _descEmptyMessage: function () {
+            $('#gmt-desc').qtip({
+                content: {
+                    text: 'Please input some description.'
+                },
+                position: {
+                    my: 'bottom center',
+                    at: 'top center',
+                },
+                show: {
+                    event: false
+                }
+            }).qtip('show');
+        },
+        _brandSetFailed: function () {
+            $('#gmt-brand').qtip({
+                content: {
+                    text: 'Please input valid name'
+                },
+                position: {
+                    my: 'top center',
+                    at: 'bottom center',
+                },
+                show: {
+                    event: false
+                }
+            }).qtip('show');
+        },
+        _imgUploadFailed: function () {
+            $('.upload-link').first().qtip({
+                content: {
+                    text: 'At least one image.'
+                },
+                position: {
+                    my: 'top center',
+                    at: 'bottom center',
+                },
+                show: {
+                    event: false
+                }
+            }).qtip('show');
+        },
+        _colorsSetFailed: function () {
+            $('#gmt-color-picker').first().qtip({
+                content: {
+                    text: 'please choose your color.'
+                },
+                position: {
+                    my: 'top center',
+                    at: 'bottom center',
+                },
+                show: {
+                    event: false
+                },
+                hide: {
+                    delay: 1000
+                }
+            }).qtip('show');
+        },
+        _sizeSetFailed: function () {
+            $('#size-attrs').find('input').first().qtip({
+                content: {
+                    text: 'At least one size value specified.'
+                },
+                position: {
+                    my: 'top center',
+                    at: 'bottom center',
+                },
+                show: {
+                    event: false
+                }
+            }).qtip('show');
+        },
         _bindImageUploadEvents: function () {
             var self = this;
             var p = ['right', 'left', 'back', 'front', 'top', 'bottom'];
@@ -65,7 +269,20 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 $('#gmt-link-' + item).click(function (e) {
                     $('#gmt-img-' + item).click();
                 });
+                $('#gmt-r-' + item).click(function (e) {
+                    $('#gmt-link-' + item).children().each(function (item) {
+                        $(this).remove();
+                    });
+                    $('#gmt-link-' + item).attr('class', 'glyphicon glyphicon-open upload-link').attr('style', 'top:20px');
+                    $('#gmt-r-' + item).css('display', 'none');
+                    $('#gmt-img-' + item).val('');
+                });
                 $('#gmt-img-' + item).on('change', function (e) {
+                    if ($(this).val() == '') {
+                        self._imgUploadFailed();
+                        return false;
+                    }
+                    $('#gmt-r-' + item).css('display', 'inline');
                     self._gmtImgPreview(this, $('#gmt-link-' + item));
                 });
             });
@@ -79,10 +296,46 @@ odoo.define("emb_portal.garment_upload", function (require) {
                         $($.parseHTML('<img>')).attr('src', event.target.result).attr('width', '60').attr('height', '60').appendTo(placeToInsertImagePreview);
                     }
                     reader.readAsDataURL(input.files[i]);
-                    placeToInsertImagePreview.css('top',0);
+                    placeToInsertImagePreview.css('top', 0);
                     placeToInsertImagePreview.removeClass('glyphicon-open').removeClass('glyphicon');
                 }
             }
+        },
+        _getBrandList: function () {
+            var self = this;
+            rpc.query({
+                model: 'product.attribute',
+                method: 'public_brands',
+            }).then(function (returned_value) {
+                console.log(returned_value);
+                self._setBrandData(returned_value);
+            });
+        },
+        _setBrandData: function (data) {
+            var brandEle = this._getBrandEle();
+            if (_.isEmpty(data)) {
+                return false;
+            }
+            var selectData = data.map(function (item) {
+                return {
+                    id: item.id,
+                    text: item.name
+                };
+            });
+            brandEle.select2({
+                createSearchChoice: function (term, data) {
+                    if ($(data).filter(function () {
+                            return this.text.localeCompare(term) === 0;
+                        }).length === 0) {
+                        return {
+                            id: 0,
+                            text: term
+                        };
+                    }
+                },
+                multiple: false,
+                data: selectData
+            });
         },
         _getCategoryList: function () {
             var self = this;
