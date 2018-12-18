@@ -49,6 +49,7 @@
 		<field name="arch" type="xml">
 			<tree string="Size" editable="top">
 				<field name="name"/>
+				<field name="type"/>
 			</tree>
 		</field>
 	</record>
@@ -61,6 +62,7 @@
 				<group>
 					<group>
 						<field name="name"/>
+						<field name="type"/>
 					</group>
 				</group>
 			</form>
@@ -112,20 +114,7 @@
 		<field name="view_type">form</field>
 	</record>
 
-	<menuitem id="sh_product_color_menu" action="sh_product_color_action" name="Garment Colors" parent="sale.prod_config_main" groups="sales_team.group_sale_manager" />
-
-	<!-- =================== -->
-	<!-- PRODUCT BRAND -->
-	<!-- =================== -->
-	<record id="sh_product_brand_tree_view" model="ir.ui.view">
-		<field name="name">sh.product.brand.tree.view</field>
-		<field name="model">sh.product.brand</field>
-		<field name="arch" type="xml">
-			<tree string="Brand" editable="top">
-				<field name="name"/>
-			</tree>
-		</field>
-	</record>
+	<menuitem id="sh_product_color_menu" action="sh_product_color_action" name="Colors" parent="sale.prod_config_main" groups="sales_team.group_sale_manager" />
 
 	<record id="sh_product_brand_form_view" model="ir.ui.view">
 		<field name="name">sh.product.brand.form.view</field>
@@ -154,19 +143,17 @@
 	<!-- ================= -->
 	<!-- PRODUCT.TEMPLATE FORM VIEW -->
 	<!-- =================  -->
-	<record id="sh_psscb_product_tmpl_form_view" model="ir.ui.view">
-		<field name="name">sh.psscb.product.tmpl.form.view</field>
+	<record id="emb_product_tmpl_form_view" model="ir.ui.view">
+		<field name="name">emb.product.tmpl.form.view</field>
 		<field name="model">product.template</field>
 		<field name="inherit_id" ref="product.product_template_form_view"/>
 		<field name="arch" type="xml">
-			<field name='product_variant_id' position="after">
-				<field name="sh_brand_id"/>
-				<field name="sh_size_id"/>
-			</field>
-			<field name="categ_id" position="after">
-				<field name="sh_color_id"/>
-				<field name="sh_style_id"/>
-			</field>
+			<xpath expr="//page[@name='general_information']" position="after">
+				<field name="is_garment_type" invisible='1'/>
+				<page name="garment_info" string="Garment Detail" attrs="{'invisible': [('is_garment_type', '=', False)]}">
+					
+				</page>
+			</xpath>
 		</field>
 	</record>
 

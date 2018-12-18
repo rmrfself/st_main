@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 # Produced by mike.a.zhang@gmail.com.
+#	<!-- ================= -->
+#	<!-- ST Order Project -->
+#	<!-- =================  -->
 
 import re
 
@@ -8,8 +11,59 @@ from odoo.exceptions import ValidationError
 from odoo.osv import expression
 from odoo.exceptions import ValidationError, RedirectWarning, except_orm
 
-# All classes are started with 'sh.product.*' to avoid conflicts with modules
-class sh_product_style(models.Model):
+
+# Defined categories for customers
+class ProductPublicCategory(models.Model):
+    _name = "product.public.category"
+    _inherit = ["website.seo.metadata"]
+    _description = "Website Product Category"
+    _order = "sequence, name"
+
+    name = fields.Char(required=True, translate=True)
+    parent_id = fields.Many2one(
+        'product.public.category', string='Parent Category', index=True)
+    child_id = fields.One2many(
+        'product.public.category', 'parent_id', string='Children Categories')
+    sequence = fields.Integer(
+        help="Gives the sequence order when displaying a list of product categories.")
+    # NOTE: there is no 'default image', because by default we don't show
+    # thumbnails for categories. However if we have a thumbnail for at least one
+    # category, then we display a default image on the other, so that the
+    # buttons have consistent styling.
+    # In this case, the default image is set by the js code.
+    image = fields.Binary(
+        attachment=True, help="This field holds the image used as image for the category, limited to 1024x1024px.")
+
+    @api.model
+    def create(self, vals):
+        tools.image_resize_images(vals)
+        return super(ProductPublicCategory, self).create(vals)
+
+    @api.multi
+    def write(self, vals):
+        tools.image_resize_images(vals)
+        return super(ProductPublicCategory, self).write(vals)
+
+    @api.constrains('parent_id')
+    def check_parent_id(self):
+        if not self._check_recursion():
+            raise ValueError(
+                _('Error ! You cannot create recursive categories.'))
+
+    @api.multi
+    def name_get(self):
+        res = []
+        for category in self:
+            names = [category.name]
+            parent_category = category.parent_id
+            while parent_category:
+                names.append(parent_category.name)
+                parent_category = parent_category.parent_id
+            res.append((category.id, ' / '.join(reversed(names))))
+        return res
+
+
+class ShProductStyle(models.Model):
     _name = "sh.product.style"
 
     def _get_default_category_id(self):
@@ -31,12 +85,12 @@ class sh_product_style(models.Model):
     name = fields.Char(string="Style", required=True)
 
     categ_id = fields.Many2one(
-        'product.category', 'Internal Category',
+        'product.public.category', 'Public Category',
         change_default=True, default=_get_default_category_id,
         required=True, help="Select category for the current product")
 
 
-class sh_product_size(models.Model):
+class ShProductSize(models.Model):
     _name = "sh.product.size"
 
     name = fields.Char(string="Size", required=True)
@@ -47,19 +101,19 @@ class sh_product_size(models.Model):
     ], 'Size', default='1', required=True)
 
 
-class sh_product_color(models.Model):
+class ShProductColor(models.Model):
     _name = "sh.product.color"
 
     name = fields.Char(string="Color", required=True)
 
 
-class sh_product_brand(models.Model):
+class ShProductBrand(models.Model):
     _name = "sh.product.brand"
 
     name = fields.Char(string="Brand", required=True)
 
 
-class product_product(models.Model):
+class ProductProduct(models.Model):
     _inherit = "product.product"
 
     sh_color_id = fields.Many2one(
@@ -231,15 +285,47 @@ class product_product(models.Model):
             products = self.search(args, limit=limit)
         return products.name_get()
 
+# contains 6 positions: t,b,f,b,l,r
 
-class product_template(models.Model):
+
+class ProductImage(models.Model):
+    _name = 'product.side_image'
+
+    name = fields.Char('Name')
+    image = fields.Binary('Image', attachment=True, required=True)
+
+
+class ProductTemplate(models.Model):
     _inherit = "product.template"
 
-    sh_color_ids = fields.Many2many(
-        "sh.product.color", string="Color", readonly=True)
+    _name = 'product.template'
+
+    is_garment_type = fields.Boolean(default=True)
+
+    is_logo_type = fields.Boolean(default=False)
+
+    # top bottom left right front back
+    image_ids = fields.Many2many(
+        'product.side_image', string='Images', required=True)
+
+    # Category defined from background for public customers
+    categ_id = fields.Many2one(
+        'product.public.category', 'Category',
+        change_default=True,
+        required=True, help="Select category for the current product")
+
+    # pre-defined style
     sh_style_id = fields.Many2one(
-        "sh.product.style", string="Style", readonly=True)
+        "sh.product.style", string="Style")
+
+    # user input brand names
     sh_brand_id = fields.Many2one(
-        "sh.product.brand", string="Brand", readonly=True)
+        "sh.product.brand", string="Brand")
+
+    # user defined colors
+    sh_color_ids = fields.Many2many(
+        "sh.product.color", string="Color")
+
+    # system pre-defined size templates
     sh_size_ids = fields.Many2many(
-        "sh.product.size", string="Size", readonly=True)
+        "sh.product.size", string="Size")

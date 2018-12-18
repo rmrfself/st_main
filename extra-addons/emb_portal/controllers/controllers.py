@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+# Produced by mike.a.zhang@gmail.com.
+#	<!-- ================= -->
+#	<!-- ST Order Project -->
+#	<!-- =================  -->
+
 from odoo.http import request
 from odoo import http, _
 from odoo.tools import config
