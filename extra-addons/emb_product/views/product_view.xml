@@ -1,6 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 	<!-- ==================== -->
+	<!-- PRODUCT CATEGORY FOR GARMENTS -->
+	<!-- Added by mike.zhang -->
+	<!-- ==================== -->
+	<record id="product_emb_category_tree_view" model="ir.ui.view">
+		<field name="name">product.emb.category.tree.view</field>
+		<field name="model">product.emb.category</field>
+		<field name="arch" type="xml">
+			<tree string="Styles" editable="top">
+				<field name="name"/>
+				<field name="parent_id"/>
+				<field name="sequence"/>
+			</tree>
+		</field>
+	</record>
+
+	<record id="product_emb_category_form_view" model="ir.ui.view">
+		<field name="name">product.emb.category.form.view</field>
+		<field name="model">product.emb.category</field>
+		<field name="arch" type="xml">
+			<form string="Product Style">
+				<group>
+					<group>
+						<field name="name"/>
+						<field name="parent_id"/>
+						<field name="sequence"/>
+					</group>
+				</group>
+			</form>
+		</field>
+	</record>
+
+	<record id="product_emb_category_action" model="ir.actions.act_window">
+		<field name="name">Categories</field>
+		<field name="type">ir.actions.act_window</field>
+		<field name="res_model">product.emb.category</field>
+		<field name="view_mode">tree</field>
+		<field name="view_type">form</field>
+	</record>
+
+	<menuitem id="product_emb_category_menu" action="product_emb_category_action" name="Public Category" parent="sale.prod_config_main" groups="sales_team.group_sale_manager" />
+	<!-- ==================== -->
 	<!-- PRODUCT STYLE -->
 	<!-- Added by mike.zhang -->
 	<!-- ==================== -->
@@ -38,7 +79,7 @@
 		<field name="view_type">form</field>
 	</record>
 
-	<menuitem id="sh_product_style_menu" action="sh_product_style_action" name="Garment Styles" parent="sale.prod_config_main" groups="sales_team.group_sale_manager" />
+	<menuitem id="sh_product_style_menu" action="sh_product_style_action" name="Product Styles" parent="sale.prod_config_main" groups="sales_team.group_sale_manager" />
 
 	<!-- ================================ -->
 	<!-- PRODUCT SIZE -->
@@ -77,7 +118,7 @@
 		<field name="view_type">form</field>
 	</record>
 
-	<menuitem id="sh_product_size_menu" action="sh_product_size_action" name="Garment Sizes" parent="sale.prod_config_main" groups="sales_team.group_sale_manager" />
+	<menuitem id="sh_product_size_menu" action="sh_product_size_action" name="Product Sizes" parent="sale.prod_config_main" groups="sales_team.group_sale_manager" />
 
 	<!-- ======================= -->
 	<!--  PRODUCT COLOR -->
@@ -114,7 +155,7 @@
 		<field name="view_type">form</field>
 	</record>
 
-	<menuitem id="sh_product_color_menu" action="sh_product_color_action" name="Colors" parent="sale.prod_config_main" groups="sales_team.group_sale_manager" />
+	<menuitem id="sh_product_color_menu" action="sh_product_color_action" name="Product Colors" parent="sale.prod_config_main" groups="sales_team.group_sale_manager" />
 
 	<record id="sh_product_brand_form_view" model="ir.ui.view">
 		<field name="name">sh.product.brand.form.view</field>
@@ -135,10 +176,18 @@
 		<field name="type">ir.actions.act_window</field>
 		<field name="res_model">sh.product.brand</field>
 		<field name="view_mode">tree</field>
-		<field name="view_type">form</field>
+		<field name="arch" type="xml">
+			<form string="Product Brand">
+				<group>
+					<group>
+						<field name="name"/>
+					</group>
+				</group>
+			</form>
+		</field>
 	</record>
 
-	<menuitem id="sh_product_brand_menu" action="sh_product_brand_action" name="Brands" parent="sale.prod_config_main" groups="sales_team.group_sale_manager" />
+	<menuitem id="sh_product_brand_menu" action="sh_product_brand_action" name="Product Brands" parent="sale.prod_config_main" groups="sales_team.group_sale_manager" />
 
 	<!-- ================= -->
 	<!-- PRODUCT.TEMPLATE FORM VIEW -->
@@ -149,9 +198,24 @@
 		<field name="inherit_id" ref="product.product_template_form_view"/>
 		<field name="arch" type="xml">
 			<xpath expr="//page[@name='general_information']" position="after">
-				<field name="is_garment_type" invisible='1'/>
-				<page name="garment_info" string="Garment Detail" attrs="{'invisible': [('is_garment_type', '=', False)]}">
-					
+				<field name="resource_type" invisible='1'/>
+				<page name="garment_info" string="Garment Detail" attrs="{'invisible': [('resource_type', '!=', 'garment')]}">
+					<group name="Information">
+						<group string="Basic Information">
+							<field name="name" />
+							<field name="resource_type" />
+							<field name="emb_categ_id" />
+						</group>
+						<group string="Garment Style" name="styles">
+							<field name="sh_style_id" />
+							<field name="sh_brand_id" />
+							<field name="sh_color_ids" widget="many2many_tags"/>
+							<field name="sh_size_ids" widget="many2many_tags"/>
+						</group>
+					</group>
+					<group name="Description">
+						<field name="description" />
+					</group>
 				</page>
 			</xpath>
 		</field>

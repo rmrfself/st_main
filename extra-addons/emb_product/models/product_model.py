@@ -13,36 +13,18 @@ from odoo.exceptions import ValidationError, RedirectWarning, except_orm
 
 
 # Defined categories for customers
-class ProductPublicCategory(models.Model):
-    _name = "product.public.category"
-    _inherit = ["website.seo.metadata"]
+class ProductEmbCategory(models.Model):
+    _name = "product.emb.category"
     _description = "Website Product Category"
     _order = "sequence, name"
 
     name = fields.Char(required=True, translate=True)
     parent_id = fields.Many2one(
-        'product.public.category', string='Parent Category', index=True)
+        'product.emb.category', string='Parent Category', index=True)
     child_id = fields.One2many(
-        'product.public.category', 'parent_id', string='Children Categories')
-    sequence = fields.Integer(
+        'product.emb.category', 'parent_id', string='Children Categories')
+    sequence = fields.Integer(string='Sequence',
         help="Gives the sequence order when displaying a list of product categories.")
-    # NOTE: there is no 'default image', because by default we don't show
-    # thumbnails for categories. However if we have a thumbnail for at least one
-    # category, then we display a default image on the other, so that the
-    # buttons have consistent styling.
-    # In this case, the default image is set by the js code.
-    image = fields.Binary(
-        attachment=True, help="This field holds the image used as image for the category, limited to 1024x1024px.")
-
-    @api.model
-    def create(self, vals):
-        tools.image_resize_images(vals)
-        return super(ProductPublicCategory, self).create(vals)
-
-    @api.multi
-    def write(self, vals):
-        tools.image_resize_images(vals)
-        return super(ProductPublicCategory, self).write(vals)
 
     @api.constrains('parent_id')
     def check_parent_id(self):
@@ -66,28 +48,11 @@ class ProductPublicCategory(models.Model):
 class ShProductStyle(models.Model):
     _name = "sh.product.style"
 
-    def _get_default_category_id(self):
-        if self._context.get('categ_id') or self._context.get('default_categ_id'):
-            return self._context.get('categ_id') or self._context.get('default_categ_id')
-        category = self.env.ref(
-            'product.product_category_all', raise_if_not_found=False)
-        if not category:
-            category = self.env['product.category'].search([], limit=1)
-        if category:
-            return category.id
-        else:
-            err_msg = _(
-                'You must define at least one product category in order to be able to create products.')
-            redir_msg = _('Go to Internal Categories')
-            raise RedirectWarning(err_msg, self.env.ref(
-                'product.product_category_action_form').id, redir_msg)
-
     name = fields.Char(string="Style", required=True)
 
     categ_id = fields.Many2one(
-        'product.public.category', 'Public Category',
-        change_default=True, default=_get_default_category_id,
-        required=True, help="Select category for the current product")
+        'product.emb.category', 'Public Category',
+        change_default=True, required=True, help="Select category for the current product")
 
 
 class ShProductSize(models.Model):
@@ -286,8 +251,6 @@ class ProductProduct(models.Model):
         return products.name_get()
 
 # contains 6 positions: t,b,f,b,l,r
-
-
 class ProductImage(models.Model):
     _name = 'product.side_image'
 
@@ -298,21 +261,16 @@ class ProductImage(models.Model):
 class ProductTemplate(models.Model):
     _inherit = "product.template"
 
-    _name = 'product.template'
+    resource_type = fields.Selection([('garment', 'Garment'), ('logo', 'Logo')], string='Asset Type', required=True, default='garment',
+        help="Please choose which type of resource,support garment or logo")
 
-    is_garment_type = fields.Boolean(default=True)
-
-    is_logo_type = fields.Boolean(default=False)
-
+    emb_categ_id = fields.Many2one('product.emb.category', string='Product Category',
+                                        help="Categories can be published on the Shop page (online catalog grid) to help "
+                                        "customers find all the items within a category. To publish them, go to the Shop page, "
+                                        "hit Customize and turn *Product Categories* on. A product can belong to several categories.")
     # top bottom left right front back
     image_ids = fields.Many2many(
         'product.side_image', string='Images', required=True)
-
-    # Category defined from background for public customers
-    categ_id = fields.Many2one(
-        'product.public.category', 'Category',
-        change_default=True,
-        required=True, help="Select category for the current product")
 
     # pre-defined style
     sh_style_id = fields.Many2one(
