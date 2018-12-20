@@ -12,17 +12,18 @@ odoo.define("emb_portal.garment_upload", function (require) {
 
     function uploadManager() {}
 
+    var GARMENT_COLOR_KEY = 'GM_COLOR';
     var POSITION = ['right', 'left', 'back', 'front', 'top', 'bottom'];
 
     uploadManager.prototype = {
         init: function (msg) {
             console.log("Garment upload window initilized " + msg);
-            this._bindColorPickerEvent();
             this._getCategoryList();
             this._getBrandList();
+            this._bindColorPickerEvent();
             this._getSizeAttrs();
             this._bindImageUploadEvents();
-            this._bindSubmitEvents();
+            // this._bindSubmitEvents();
         },
         _bindSubmitEvents: function () {
             var self = this;
@@ -32,20 +33,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
             $('#gmt-cancel-btn').click(function (e) {
                 $('#gmt-upload-modal').modal('toggle');
             });
-        },
-        _blockingUi: function () {
-            $("#gmt-upload").block({
-                message: $('#gmt-upload-loader'),
-                css: {
-                    border: 'none',
-                    left: '90%',
-                    width: '96%',
-                    background: 'transparent'
-                }
-            });
-        },
-        _unBlockUi: function () {
-            $("#gmt-upload").unblockUI();
         },
         _postGmtData: function () {
             var self = this;
@@ -84,7 +71,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
             ajax.jsonRpc("/portal/garments/create", 'call', {
                 name: $('#gmt-brand').val().trim(),
                 category_id: $('#gmt-category').val(),
-                style_ids: $('#gmt-style').val(),
                 brand: $('#gmt-brand').val().trim(),
                 images: imageMap,
                 sizes: sizeAttrs,
@@ -145,8 +131,33 @@ odoo.define("emb_portal.garment_upload", function (require) {
             }
             return invalidInput;
         },
+        // 01. setup categories
+        _getCategoryList: function () {
+            var self = this;
+            var args = [
+                [],
+                ['id', 'name']
+            ];
+            rpc.query({
+                model: 'product.category',
+                method: 'search_read',
+                args: args
+            }).then(function (returned_value) {
+                self._setCategoryData(returned_value);
+            });
+        },
+        _setCategoryData: function (_data) {
+            var eleCategory = this._getCategoryEle();
+            for (var key in _data) {
+                var option = _data[key];
+                var newOption = new Option(option.name, option.id, false, false);
+                eleCategory.append(newOption);
+            }
+            eleCategory.select2();
+            eleCategory.trigger('change');
+        },
+        // 02. Bind color events
         _bindColorPickerEvent: function () {
-            var picker = this._getColorPickerEle();
             var container = this._getGmtColorsEle();
             // init container
             container.children().each(function (item) {
@@ -154,9 +165,26 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     $(this).remove();
                 });
             });
+            var self = this;
+            rpc.query({
+                route: '/portal/color_list',
+                params: []
+            }).then(function (returned_value) {
+                if (_.isEmpty(returned_value)) {
+                    return false;
+                }
+                console.log(returned_value);
+                self._setupSpectrum(returned_value,container);
+            });
+        },
+        _setupSpectrum: function (_data,container) {
+            var picker = this._getColorPickerEle();
             /**
              * Initized picker events
              */
+            var colors = _data.map(function(item){
+                return item.name;
+            });
             picker.spectrum({
                 showPaletteOnly: true,
                 togglePaletteOnly: true,
@@ -167,17 +195,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 color: 'blanchedalmond',
                 showInput: true,
                 showAlpha: true,
-                palette: [
-                    ["#000", "#444", "#666", "#999", "#ccc", "#eee", "#f3f3f3", "#fff"],
-                    ["#f00", "#f90", "#ff0", "#0f0", "#0ff", "#00f", "#90f", "#f0f"],
-                    ["#f4cccc", "#fce5cd", "#fff2cc", "#d9ead3", "#d0e0e3", "#cfe2f3", "#d9d2e9", "#ead1dc"],
-                    ["#ea9999", "#f9cb9c", "#ffe599", "#b6d7a8", "#a2c4c9", "#9fc5e8", "#b4a7d6", "#d5a6bd"],
-                    ["#e06666", "#f6b26b", "#ffd966", "#93c47d", "#76a5af", "#6fa8dc", "#8e7cc3", "#c27ba0"],
-                    ["#c00", "#e69138", "#f1c232", "#6aa84f", "#45818e", "#3d85c6", "#674ea7", "#a64d79"],
-                    ["#900", "#b45f06", "#bf9000", "#38761d", "#134f5c", "#0b5394", "#351c75", "#741b47"],
-                    ["#600", "#783f04", "#7f6000", "#274e13", "#0c343d", "#073763", "#20124d", "#4c1130"]
-                ],
+                palette: colors,
                 change: function (color) {
+                    console.log(color)
                     var colorBlock = $('<span>').css("width", "40px").css("height", "40px").css("background", color.toHexString());
                     colorBlock.css("display", "inline-block").css("margin", "0 6px");
                     var inputNode = $("<input>").attr("name", "colors[]").attr("type", "hidden").val(color.toHexString());
@@ -188,6 +208,121 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     });
                 }
             });
+        },
+        // 03. Get brand list
+        _getBrandList: function () {
+            $('.typeahead').typeahead({
+                items: 5,
+                minLength: 3,
+                delay: 10,
+                source: function (query, process) {
+                    rpc.query({
+                        model: 'product.garment.brand',
+                        method: 'search_read',
+                        args: [
+                            [],
+                            ['name']
+                        ]
+                    }).then(function (returned_value) {
+                        process(returned_value);
+                    });
+                }
+            });
+        },
+        // 04. Set size template
+        _getSizeAttrs: function () {
+            var self = this;
+            rpc.query({
+                route: '/portal/size_template',
+                params: []
+            }).then(function (returned_value) {
+                if (_.isEmpty(returned_value)) {
+                    return false;
+                }
+                console.log(returned_value);
+                self._fetchSizeAttributes(returned_value);
+            });
+        },
+        _fetchSizeAttributes: function (_data) {
+            var eleSizeTpl = this._getSizeTplEle();
+            var attrs = this._getSizeAttrsEle();
+            var sizeTpl = Object.keys(_data);
+            for (var key in sizeTpl) {
+                var option = sizeTpl[key];
+                var newOption = new Option(option, option, false, false);
+                eleSizeTpl.append(newOption);
+            }
+            eleSizeTpl.select2({ minimumResultsForSearch: -1 });
+            eleSizeTpl.on('change', function (e) {
+                attrs.html('');
+                var id = $(this).val();
+                var attrData = _data[id];
+                for (var i in attrData) {
+                    var v = attrData[i];
+                    var p = $('<div>').attr('class', 'col-sm-2');
+                    var l = $('<label>').attr('class', 'checkbox-inline');
+                    var cb = $('<input>').attr('type', 'checkbox');
+                    var v = attrData[i];
+                    cb.val(v.id);
+                    l.text(v.text);
+                    p.append(cb).append(l);
+                    attrs.append(p);
+                }
+            });
+            eleSizeTpl.trigger('change');
+        },
+        _bindImageUploadEvents: function () {
+            var self = this;
+            var p = ['right', 'left', 'back', 'front', 'top', 'bottom'];
+            p.map(function (item) {
+                $('#gmt-link-' + item).click(function (e) {
+                    $('#gmt-img-' + item).click();
+                });
+                $('#gmt-r-' + item).click(function (e) {
+                    $('#gmt-link-' + item).children().each(function (item) {
+                        $(this).remove();
+                    });
+                    $('#gmt-link-' + item).attr('class', 'glyphicon glyphicon-open upload-link').attr('style', 'top:20px');
+                    $('#gmt-r-' + item).css('display', 'none');
+                    $('#gmt-img-' + item).val('');
+                });
+                $('#gmt-img-' + item).on('change', function (e) {
+                    if ($(this).val() == '') {
+                        self._imgUploadFailed();
+                        return false;
+                    }
+                    $('#gmt-r-' + item).css('display', 'inline');
+                    self._gmtImgPreview(this, $('#gmt-link-' + item));
+                });
+            });
+        },
+        _gmtImgPreview: function (input, placeToInsertImagePreview) {
+            if (input.files) {
+                var filesAmount = input.files.length;
+                for (var i = 0; i < filesAmount; i++) {
+                    var reader = new FileReader();
+                    reader.onload = function (event) {
+                        $($.parseHTML('<img>')).attr('src', event.target.result).attr('width', '60').attr('height', '60').appendTo(placeToInsertImagePreview);
+                    }
+                    reader.readAsDataURL(input.files[i]);
+                    placeToInsertImagePreview.css('top', 0);
+                    placeToInsertImagePreview.removeClass('glyphicon-open').removeClass('glyphicon');
+                }
+            }
+        },
+        _blockingUi: function () {
+            $("#gmt-upload").block({
+                message: $('#gmt-upload-loader'),
+                css: {
+                    border: 'none',
+                    left: '90%',
+                    width: '96%',
+                    background: 'transparent'
+                }
+            });
+        },
+        _unBlockUi: function () {
+            $("#gmt-upload").unblockUI();
         },
         _descEmptyMessage: function () {
             $('#gmt-desc').qtip({
@@ -262,190 +397,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 }
             }).qtip('show');
         },
-        _bindImageUploadEvents: function () {
-            var self = this;
-            var p = ['right', 'left', 'back', 'front', 'top', 'bottom'];
-            p.map(function (item) {
-                $('#gmt-link-' + item).click(function (e) {
-                    $('#gmt-img-' + item).click();
-                });
-                $('#gmt-r-' + item).click(function (e) {
-                    $('#gmt-link-' + item).children().each(function (item) {
-                        $(this).remove();
-                    });
-                    $('#gmt-link-' + item).attr('class', 'glyphicon glyphicon-open upload-link').attr('style', 'top:20px');
-                    $('#gmt-r-' + item).css('display', 'none');
-                    $('#gmt-img-' + item).val('');
-                });
-                $('#gmt-img-' + item).on('change', function (e) {
-                    if ($(this).val() == '') {
-                        self._imgUploadFailed();
-                        return false;
-                    }
-                    $('#gmt-r-' + item).css('display', 'inline');
-                    self._gmtImgPreview(this, $('#gmt-link-' + item));
-                });
-            });
-        },
-        _gmtImgPreview: function (input, placeToInsertImagePreview) {
-            if (input.files) {
-                var filesAmount = input.files.length;
-                for (var i = 0; i < filesAmount; i++) {
-                    var reader = new FileReader();
-                    reader.onload = function (event) {
-                        $($.parseHTML('<img>')).attr('src', event.target.result).attr('width', '60').attr('height', '60').appendTo(placeToInsertImagePreview);
-                    }
-                    reader.readAsDataURL(input.files[i]);
-                    placeToInsertImagePreview.css('top', 0);
-                    placeToInsertImagePreview.removeClass('glyphicon-open').removeClass('glyphicon');
-                }
-            }
-        },
-        _getBrandList: function () {
-            var self = this;
-            rpc.query({
-                model: 'product.attribute',
-                method: 'public_brands',
-            }).then(function (returned_value) {
-                console.log(returned_value);
-                self._setBrandData(returned_value);
-            });
-        },
-        _setBrandData: function (data) {
-            var brandEle = this._getBrandEle();
-            if (_.isEmpty(data)) {
-                return false;
-            }
-            var selectData = data.map(function (item) {
-                return {
-                    id: item.id,
-                    text: item.name
-                };
-            });
-            brandEle.select2({
-                createSearchChoice: function (term, data) {
-                    if ($(data).filter(function () {
-                            return this.text.localeCompare(term) === 0;
-                        }).length === 0) {
-                        return {
-                            id: 0,
-                            text: term
-                        };
-                    }
-                },
-                multiple: false,
-                data: selectData
-            });
-        },
-        _getCategoryList: function () {
-            var self = this;
-            rpc.query({
-                model: 'product.category',
-                method: 'public_categories',
-            }).then(function (returned_value) {
-                console.log(returned_value);
-                self._setCategoryAndStyleData(returned_value);
-            });
-        },
-        _getSizeAttrs: function () {
-            var self = this;
-            var args = [
-                [
-                    ['name', 'in', ['Size Of Us', 'Size Of Europe']]
-                ],
-                ['name', 'id', 'value_ids'],
-            ];
-            rpc.query({
-                model: 'product.attribute',
-                method: 'search_read',
-                args: args
-            }).then(function (returned_value) {
-                self._setSizeAttributes(returned_value);
-            });
-        },
-        _setCategoryAndStyle: function (_data) {},
-        _setCategoryAndStyleData: function (_data) {
-            var eleCategory = this._getCategoryEle();
-            var eleStyle = this._getStyleEle();
-            for (var key in _data) {
-                var option = _data[key];
-                var newOption = new Option(option.name, option.id, false, false);
-                eleCategory.append(newOption);
-            }
-            eleCategory.select2();
-            eleStyle.select2();
-            eleCategory.on('change', function (e) {
-                eleStyle.html('');
-                var id = $(this).val();
-                var styleData = _data.filter(function (item) {
-                    return item.id == id;
-                });
-                if (styleData.length > 0) {
-                    var s = JSON.parse(styleData[0].child_id_with_name);
-                    for (var j in s) {
-                        var sp = s[j];
-                        var sOption = new Option(sp[1], sp[0], false, false);
-                        eleStyle.append(sOption);
-                    }
-                    eleStyle.trigger('change');
-                }
-            });
-            eleCategory.trigger('change');
-        },
-        _setSizeAttributes: function (_data) {
-            var eleSizeTpl = this._getSizeTplEle();
-            var attrs = this._getSizeAttrsEle();
-            for (var key in _data) {
-                var option = _data[key];
-                var newOption = new Option(option.name, option.id, false, false);
-                eleSizeTpl.append(newOption);
-            }
-            eleSizeTpl.select2();
-            var self = this;
-            eleSizeTpl.on('change', function (e) {
-                attrs.html('');
-                var id = $(this).val();
-                var attrData = _data.filter(function (item) {
-                    return item.id == id;
-                });
-                if (attrData.length > 0) {
-                    var s = attrData[0].value_ids;
-                    // get Ids from rpc
-                    var args = [
-                        [
-                            ['id', 'in', s]
-                        ],
-                        ['name', 'id'],
-                    ];
-                    rpc.query({
-                        model: 'product.attribute.value',
-                        method: 'search_read',
-                        args: args
-                    }).then(function (returned_value) {
-                        self._fillSizeAttrs(returned_value);
-                    });
-                }
-            });
-            eleSizeTpl.trigger('change');
-        },
-        _fillSizeAttrs: function (_data) {
-            var attrs = this._getSizeAttrsEle();
-            for (var i in _data) {
-                var p = $('<div>').attr('class', 'col-sm-2');
-                var l = $('<label>').attr('class', 'checkbox-inline');
-                var cb = $('<input>').attr('type', 'checkbox');
-                var v = _data[i];
-                cb.val(v.id);
-                l.text(v.name);
-                p.append(cb).append(l);
-                attrs.append(p);
-            }
-        },
         _getCategoryEle: function () {
             return $("#gmt-category");
-        },
-        _getStyleEle: function () {
-            return $("#gmt-style");
         },
         _getBrandEle: function () {
             return $("#gmt-brand");

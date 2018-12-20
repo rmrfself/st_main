@@ -21,19 +21,35 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
-def compare_lists(list1, list2):
-    if len(list1) != len(list2):  # Weed out unequal length lists.
-        return False
-    for item in list1:
-        if item not in list2:
-            return False
-    return True
-
-
 class Portal(http.Controller):
     @http.route('/portal/index/', auth='user', website=True)
     def index(self, **kw):
         return http.request.render('emb_portal.portal_layout')
+
+    @http.route('/portal/color_list', type='json', auth="user", csrf=False, website=True)
+    def get_color_list(self, **kw):
+        ProductAttr = request.env['product.attribute']
+        ProductAttrV = request.env['product.attribute.value']
+        attr_id = ProductAttr.search([('name', '=', 'GM_COLOR')]).id
+        color_list = ProductAttrV.search_read(
+            [('attribute_id', '=', attr_id)], ['id', 'name'])
+        return color_list
+
+    @http.route('/portal/size_template', type='json', auth="user", csrf=False, website=True)
+    def get_size_template(self, **kw):
+        ProductAttr = request.env['product.attribute']
+        ProductAttrV = request.env['product.attribute.value']
+        size_group = ProductAttr.search([('name', '=', 'SIZE_GROUP')])
+        size_types = size_group.value_ids.name.split('|')
+        attrs_ids = ProductAttr.search([('name', 'in', size_types)]).ids
+        attr_values = ProductAttrV.search([('attribute_id', 'in', attrs_ids)])
+        result = {}
+        for attr_value in attr_values:
+            key = attr_value.attribute_id.name
+            if key not in result:
+                result[key] = []
+            result[key].append({'id': attr_value.id, 'text': attr_value.name})
+        return result
 
     @http.route('/portal/garments/create', auth='user', methods=['POST'], type='json', website=True)
     def create_garment(self, *args, **post):

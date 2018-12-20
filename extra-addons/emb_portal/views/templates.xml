@@ -13,6 +13,7 @@
         <link rel='stylesheet' type='text/less' href='/emb_portal/static/src/css/main.less'/>
       </xpath>
       <xpath expr='//script[last()]' position='after'>
+        <script type="text/javascript" src="/emb_portal/static/src/js/typeahead.min.js"></script>
         <script type="text/javascript" src="/emb_portal/static/src/js/bootstrap-notify.min.js"></script>
         <script type='text/javascript' src='/emb_portal/static/src/js/qtip.min.js'></script>
         <script type='text/javascript' src='/emb_portal/static/src/js/spectrum.js'></script>
@@ -192,16 +193,9 @@
                             </div>
                           </div>
                           <div class="form-group row">
-                            <label class='col-sm-3' for="exampleInputName2">Style</label>
-                            <div class="col-sm-9">
-                              <select id='gmt-style' multiple="multiple" class="form-control form-control-lg">
-                              </select>
-                            </div>
-                          </div>
-                          <div class="form-group row">
                             <label class='col-sm-3' for="gmt-brand">Brand</label>
                             <div class="col-sm-9">
-                              <input type="text" class="form-control protip" id="gmt-brand" placeholder="set a brand here" data-pt-title="Input your garment brand!" />
+                              <input type="text" class="form-control protip typeahead" id="gmt-brand" placeholder="set a brand here" data-pt-title="Input your garment brand!" />
                               <div class='colorhint'>New value can be input here.</div>
                             </div>
                           </div>

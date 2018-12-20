@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="product_attribute_0" model="product.attribute">
+            <field name="name">SIZE_GROUP</field>
+        </record>
+        <record id="product_attribute_1" model="product.attribute">
+            <field name="name">US_SIZE</field>
+        </record>
+        <record id="product_attribute_2" model="product.attribute">
+            <field name="name">EU_SIZE</field>
+        </record>
+        <record id="product_attribute_3" model="product.attribute">
+            <field name="name">GM_COLOR</field>
+        </record>
+    </data>
+</odoo>

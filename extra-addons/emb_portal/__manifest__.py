@@ -20,12 +20,15 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['website','product','emb_product'],
+    'depends': ['website', 'sale', 'product'],
 
     # always loaded
     'data': [
+        'data/product_attribute_data.xml',
+        'data/product_attribute_value_data.xml',
         'security/ir.model.access.csv',
-        'views/templates.xml'
+        'views/templates.xml',
+        'views/views.xml'
     ],
     # only loaded in demonstration mode
     'demo': [
