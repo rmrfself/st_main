@@ -65,6 +65,8 @@
         overflow-x: hidden;
     }
     .assets-group {
+        position: relative;
+        min-height: 120px;
         padding: 5px 10px;
         border-bottom: 2px solid #D8D8D8;
         a {
@@ -76,6 +78,30 @@
         }
         &:last-child {
             border-bottom: none;
+        }
+        .asset-garment-act {
+            z-index: 10;
+            position: absolute;
+            right: 0;
+            bottom:5px;
+            display: none;
+        }
+        .fixed {
+            padding: 4px 0;
+            width: 100%;
+            background-color:rgba(51, 51, 51, 0.1);
+            text-align: right;
+        }
+
+        .asset-garment-act button {
+            background:#4A90E2;
+            color: white;
+            padding: 1px 5px;
+            margin-right: 10px;
+            span {
+                margin-top: 2px;
+                margin-right: 6px;
+            }
         }
     }
 }

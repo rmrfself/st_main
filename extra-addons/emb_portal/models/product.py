@@ -7,17 +7,21 @@
 from odoo import models, api, tools, fields
 import json
 
+
 class ProductGarmentBrand(models.Model):
     _name = "product.garment.brand"
 
     name = fields.Char(string="Brand", required=True)
 
 # contains 6 positions: t,b,f,b,l,r
+
+
 class ProductImage(models.Model):
     _name = 'product.garment.image'
 
-    name = fields.Char('Name')
-    image = fields.Binary('Image', attachment=True, required=True)
+    name = fields.Char('Name', required=True)
+    content_type = fields.Char('Content Type', required=True)
+    image = fields.Binary('Image', attachment=True)
 
 
 class GarmentTemplate(models.Model):

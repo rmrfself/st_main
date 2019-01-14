@@ -10,20 +10,288 @@ odoo.define("emb_portal.garment_upload", function (require) {
     var rpc = require('web.rpc');
     var ajax = require('web.ajax');
 
-    function uploadManager() {}
+    function GmManager() {};
 
+    function UploadManager() {};
+
+    var localStorage = require('web.local_storage');
+    var session = require('web.session');
     var GARMENT_COLOR_KEY = 'GM_COLOR';
     var POSITION = ['right', 'left', 'back', 'front', 'top', 'bottom'];
 
-    uploadManager.prototype = {
-        init: function (msg) {
-            console.log("Garment upload window initilized " + msg);
+    $.blockUI.defaults.overlayCSS = {
+        opacity: .1,
+        'background-color': '#000'
+    };
+
+    GmManager.prototype = {
+        uploadModelWin: function () {
+            return new UploadManager();
+        },
+        actbuttons: function () {
+            return "<div class='asset-garment-act'><button type='button' class='btn select' data-toggle='button' aria-pressed='false' autocomplete='off'><span class='glyphicon glyphicon-plus' aria-hidden='true'></span>select</button><button type='button' class='btn remove' data-toggle='button' aria-pressed='false' autocomplete='off'><span class='glyphicon glyphicon-minus' aria-hidden='true'></span>remove</button></div>";
+        },
+        startup: function (uploadWin) {
+            this.loadGarmentList();
+        },
+        loadGarmentList: function () {
+            var self = this;
+            var args = [
+                [],
+                ['id', 'design_template', 'image_ids']
+            ];
+            self._blockingUi();
+            rpc.query({
+                model: 'product.garment',
+                method: 'search_read',
+                args: args
+            }).then(function (returned_value) {
+                console.log(returned_value);
+                self._refreshGarmentsData(returned_value);
+            });
+        },
+        _refreshGarmentsData: function (_data) {
+            var self = this;
+            if (_.isEmpty(_data)) {
+                $.notify({
+                    title: "No Data",
+                    message: "No garment data retrieved!"
+                });
+                this._unBlockUi();
+                return false;
+            }
+            localStorage.setItem('garment_list', JSON.stringify(_data));
+            var parentBox = this._getGarmentListEle();
+            parentBox.html('');
+            for (var i in _data) {
+                var item = _data[i];
+                var image_ids = item.image_ids;
+                var id = item.id;
+                var itemHolder = $("<div>").attr('id', 'gm-album-' + id).addClass('assets-group');
+                itemHolder.attr('data-ids', image_ids);
+                itemHolder.attr('data-id', id);
+                parentBox.append(itemHolder);
+            }
+            $('.assets-group').each(function (item) {
+                var ids = $(this).attr('data-ids');
+                var id = $(this).attr('data-id');
+                if (id != undefined && ids != undefined) {
+                    ids = ids.split(',');
+                    self._getGmImages(id, ids);
+                }
+            });
+        },
+        _getGmImages: function (id, image_ids) {
+            var self = this;
+            var args = [
+                [
+                    ['id', 'in', image_ids]
+                ],
+                ['id', 'name', 'image', 'content_type']
+            ];
+            rpc.query({
+                model: 'product.garment.image',
+                method: 'search_read',
+                args: args
+            }).then(function (returned_value) {
+                self._appendGmImages(id, returned_value);
+            });
+        },
+        _appendGmImages: function (id, _data) {
+            var self = this;
+            if (_.isEmpty(_data)) {
+                return false;
+            }
+            var itemHolder = $('#gm-album-' + id);
+            for (var i in _data) {
+                var item = _data[i];
+                var imgData = 'data:' + item.content_type + ';base64,' + item.image;
+                var alink = $('<a>').attr('href', '#');
+                var img = $('<img>').attr('width', 80).attr('src', imgData).attr('data-id', item.id).attr('data-name', item.name);
+                alink.append(img);
+                itemHolder.append(alink);
+            }
+            var actbuttons = self.actbuttons();
+            itemHolder.append(actbuttons);
+            var editingHolderId = $('#garment-list').attr('data-edit-id');
+            var editModeofCon = $('#garment-list').attr('data-edit-mode');
+            if (editingHolderId == id && Boolean(editModeofCon)) {
+                self._setEditableMode(itemHolder);
+                self._setHolderEditMode(id, itemHolder);
+            }
+            itemHolder.mouseenter(function (item) {
+                self._setEditableMode($(this));
+            }).mouseleave(function (item) {
+                self._setReadableMode($(this));
+            });
+        },
+        _setEditableMode: function (holder) {
+            var self = this;
+            var itemId = holder.attr('id');
+            var id = holder.attr('data-id');
+            holder.find('.asset-garment-act').slideDown();
+            holder.css('border-bottom', '2px solid #4A90E2').css('cursor', 'pointer');
+            holder.find('.remove').click(function (e) {
+                var self = this;
+                rpc.query({
+                    route: '/portal/remove_garment',
+                    params: {
+                        id: id
+                    }
+                }).then(function (returned_value) {
+                    if (returned_value) {
+                        holder.slideUp(1000);
+                        $.notify({
+                            title: "Garment removed",
+                            message: "Garment data has been uploaded successfully."
+                        });
+                    }
+                });
+            });
+            holder.find('.select').click(function (e) {
+                var state = $(this).text();
+                var actbuttons = self.actbuttons();
+                if (state == 'cancel') {
+                    holder.find('.asset-garment-act').remove();
+                    holder.append(actbuttons).show();
+                    $('#garment-list').removeAttr('data-edit-mode');
+                    $('#garment-list').removeAttr('data-edit-id');
+                    return false;
+                }
+                // clear other states
+                $('#garment-list').find('.assets-group').each(function (item) {
+                    if ($(this).attr('id') != itemId) {
+                        $(this).find('.asset-garment-act').removeClass('fixed');
+                        $(this).find('.asset-garment-act').slideUp();
+                        $(this).css('border-bottom', '2px solid #D8D8D8');
+                        $(this).attr('data-edit-mode', false);
+                        $(this).find('.asset-garment-act').remove();
+                        $(this).append(actbuttons).show();
+                    }
+                });
+                // set current states
+                self._setHolderEditMode(id, holder);
+                //self.selectCurrentGarment(itemId);
+            });
+        },
+        _setReadableMode: function (holder) {
+            holder.find('.remove').unbind('click');
+            holder.find('.select').unbind("click");
+            if (holder.attr('data-edit-mode') == undefined || holder.attr('data-edit-mode') == 'false') {
+                holder.find('.asset-garment-act').slideUp();
+                holder.css('border-bottom', '2px solid #D8D8D8').css('cursor', 'none');
+            }
+        },
+        _setHolderEditMode: function (id, holder) {
+            var self = this;
+            holder.find('.select').html("<span class='glyphicon glyphicon-minus' aria-hidden='true'></span>cancel");
+            holder.find('.remove').hide();
+            holder.find('.asset-garment-act').addClass('fixed');
+            holder.find('.asset-garment-act').append("<button type='button' class='btn update' data-toggle='button' aria-pressed='false' autocomplete='off'><span class='glyphicon glyphicon-cog' aria-hidden='true'></span>update</button>");
+            $('#garment-list').attr('data-edit-mode', true);
+            $('#garment-list').attr('data-edit-id', id);
+            holder.css('border-bottom', '2px solid #4A90E2');
+            holder.attr('data-edit-mode', true);
+            holder.find('.update').click(function (e) {
+                self._updateGmtInfo(id);
+            });
+            self._displayGmtInfo(id);
+        },
+        _displayGmtInfo: function (id) {
+            var cachedItems = localStorage.getItem('garment_list');
+            if (cachedItems == undefined || id == null) {
+                return false;
+            }
+            var cachedObjects = JSON.parse(cachedItems);
+            var gmtDetailObj = null;
+            for (var i in cachedObjects) {
+                var obj = cachedObjects[i];
+                if (obj.id == parseInt(id)) {
+                    gmtDetailObj = obj;
+                    break;
+                }
+            }
+            var gmtDetailInfo = JSON.parse(gmtDetailObj.design_template);
+            if (gmtDetailObj == null || gmtDetailInfo == undefined) {
+                return false;
+            }
+            console.log(gmtDetailObj);
+            $('#gmt-info-name').html(gmtDetailInfo.name);
+            // display colors
+            var colors = gmtDetailInfo.colors;
+            var colors_con = $('#gmt-info-colors');
+            colors_con.html('');
+            colors.forEach(function (item) {
+                var colorBlock = $('<span>').css("width", "40px").css("height", "40px").css("background", item);
+                colorBlock.css("display", "inline-block").css("margin", "0 6px");
+                colors_con.append(colorBlock);
+            });
+            // 
+            $('#gmt-info-size-type').html('Garment Type:' + gmtDetailInfo.size_tpl);
+            $('#gmt-info-supply-select').select2().trigger('change');
+            rpc.query({
+                route: '/portal/size_template',
+                params: [
+                    ids: gmtDetailInfo.sizes
+                ]
+            }).then(function (returned_value) {
+                if (_.isEmpty(returned_value)) {
+                    return false;
+                }
+                console.log(returned_value);
+            });
+        },
+        _updateGmtInfo: function (id) {
+            var itemIds = JSON.parse(localStorage.getItem('garment_list'));
+            var selectData = null;
+            for (var i in itemIds) {
+                var data = itemIds[i];
+                if (data.id == parseInt(id)) {
+                    selectData = data;
+                    break;
+                }
+            }
+            if (selectData) {
+                var curImageCon = $('#gm-album-' + id);
+                var images = curImageCon.find('img').map(function (item) {
+                    var pos = $(this).attr('data-name');
+                    var value = this.src;
+                    return {
+                        [pos]: value
+                    };
+                });
+                this.uploadModelWin()._preInputGmtInfo(selectData, images);
+            }
+        },
+        _getGarmentListEle: function () {
+            return $("#garment-list");
+        },
+        _blockingUi: function () {
+            var gmlist = this._getGarmentListEle();
+            $("#garment-list").block({
+                message: "<img src='/emb_portal/static/src/images/grid.svg' height='30' width='30' style='margin-right:10px' />loading..",
+                css: {
+                    border: 'none',
+                    left: '90%',
+                    width: '96%',
+                    background: 'transparent'
+                }
+            });
+        },
+        _unBlockUi: function () {
+            var gmlist = this._getGarmentListEle();
+            gmlist.unblock();
+        },
+    };
+    UploadManager.prototype = {
+        init: function () {
+            console.log("Garment upload window initilized");
             this._getCategoryList();
             this._getBrandList();
             this._bindColorPickerEvent();
             this._getSizeAttrs();
             this._bindImageUploadEvents();
-            // this._bindSubmitEvents();
+            this._bindSubmitEvents();
         },
         _bindSubmitEvents: function () {
             var self = this;
@@ -32,6 +300,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             });
             $('#gmt-cancel-btn').click(function (e) {
                 $('#gmt-upload-modal').modal('toggle');
+                self._clearUpInputs();
             });
         },
         _postGmtData: function () {
@@ -44,6 +313,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 //     message: "This plugin has been provided to you by Robert McIntosh aka mouse0270"
                 // });
             }
+            self._blockingUi();
             // get images data
             var imageMap = {};
             $('.upload-link').each(function (item) {
@@ -52,38 +322,107 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 var img = holder.find('img');
                 if (img != null) {
                     var data = $(img).attr('src');
-                    imageMap[pos] = data;
+                    if (data != null) {
+                        var trimData = data.substr(data.indexOf(',') + 1);
+                        var contentType = self._base64MimeType(data);
+                        imageMap[pos] = {
+                            'data': trimData,
+                            'type': contentType
+                        };
+                    }
                 }
             });
             if (_.isEmpty(imageMap)) {
                 this._imgUploadFailed();
                 return false;
             }
-            console.log("ImageMap data is:");
-            console.log(imageMap);
+            // get colors
+            var colors = $("input[name='colors[]']").map(function () {
+                return $(this).val();
+            }).get();
+            console.log(colors);
             // get size attributes
+            var size_tpl = $('#gmt-size-tpl').val();
             var sizeAttrs = [];
             $('#size-attrs').find('input').each(function (item) {
                 if ($(this).is(':checked')) {
                     sizeAttrs.push($(this).val());
                 }
             });
-            ajax.jsonRpc("/portal/garments/create", 'call', {
-                name: $('#gmt-brand').val().trim(),
-                category_id: $('#gmt-category').val(),
-                brand: $('#gmt-brand').val().trim(),
-                images: imageMap,
-                sizes: sizeAttrs,
-                desc: $('#gmt-desc').val().trim(),
-            }).always(function () {
+            var post_name = $('#gmt-brand').val().trim();
+            var post_style = $('#gmt-style').val().trim();
+            var post_categ = $('#gmt-category').val();
+            var post_brand = $('#gmt-brand').val().trim();
+            var post_images = imageMap;
+            var post_sizes = sizeAttrs;
+            var post_desc = $('#gmt-desc').val().trim();
+            var gmt_id = $('#gmt-id').val();
+            var cachedPostData = {};
+            cachedPostData.name = post_name;
+            cachedPostData.style = post_style;
+            cachedPostData.category_id = post_categ;
+            cachedPostData.brand = post_brand;
+            cachedPostData.images = post_images;
+            cachedPostData.colors = colors;
+            cachedPostData.size_tpl = size_tpl;
+            cachedPostData.sizes = post_sizes;
+            cachedPostData.desc = post_desc;
+            cachedPostData.gmt_id = gmt_id;
+            var postUrl = '/portal/garments/create';
+            var debugStr = session.debug ? '?debug=true' : '';
+            ajax.jsonRpc(postUrl + debugStr, 'call', cachedPostData).always(function () {
                 if ($.blockUI) {
                     $.unblockUI();
                 }
             }).done(function (data) {
-
+                self._clearUpInputs();
+                setTimeout(function () {
+                    $('#gmt-upload-modal').modal('toggle');
+                    $.notify({
+                        title: "Data Saved",
+                        message: "Garment data has been uploaded successfully."
+                    });
+                }, 2000);
+                GmManager.prototype.loadGarmentList();
             }).fail(function () {
-
+                setTimeout(function () {
+                    $.notify({
+                        title: "Data Is Not Saved",
+                        message: "Failed to save your data,please try again"
+                    });
+                }, 3000);
+                self._updateLocalData(false);
             });
+        },
+        _clearUpInputs: function () {
+            this._unBlockUi();
+            $('#gmt-id').val('');
+            $('#gmt-category').select2('val', '');
+            $('#gmt-size-tpl').select2('val', '');
+            $('#gmt-style').val('');
+            $('#gmt-name').val('');
+            $('#gmt-brand').val('');
+            $('.upload-link').each(function (item) {
+                $(this).addClass('glyphicon glyphicon-open').attr('style', 'top:20px');
+                this.innerHTML = '';
+                var tag = $(this).attr('data-tag');
+                $('#gmt-img-' + tag).val('');
+                $('#gmt-r-' + tag).removeClass('glyphicon glyphicon-trash');
+            });
+
+            $('#gmt-colors').html('');
+            $('#size-attrs').find('input').each(function (item) {
+                if ($(this).is(':checked')) {
+                    $(this).attr("checked", false);
+                }
+            });
+            $('#gmt-desc').val('');
+        },
+        _updateLocalData: function (_data) {
+            if (_data == false) {
+                return localStorage.removeItem('garment_data');
+            }
+            localStorage.setItem('garment_data', JSON.stringify(_data));
         },
         _doValidation: function () {
             var invalidInput = false;
@@ -173,16 +512,15 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 if (_.isEmpty(returned_value)) {
                     return false;
                 }
-                console.log(returned_value);
-                self._setupSpectrum(returned_value,container);
+                self._setupSpectrum(returned_value, container);
             });
         },
-        _setupSpectrum: function (_data,container) {
+        _setupSpectrum: function (_data, container) {
             var picker = this._getColorPickerEle();
             /**
              * Initized picker events
              */
-            var colors = _data.map(function(item){
+            var colors = _data.map(function (item) {
                 return item.name;
             });
             picker.spectrum({
@@ -197,7 +535,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 showAlpha: true,
                 palette: colors,
                 change: function (color) {
-                    console.log(color)
                     var colorBlock = $('<span>').css("width", "40px").css("height", "40px").css("background", color.toHexString());
                     colorBlock.css("display", "inline-block").css("margin", "0 6px");
                     var inputNode = $("<input>").attr("name", "colors[]").attr("type", "hidden").val(color.toHexString());
@@ -239,7 +576,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 if (_.isEmpty(returned_value)) {
                     return false;
                 }
-                console.log(returned_value);
                 self._fetchSizeAttributes(returned_value);
             });
         },
@@ -252,7 +588,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 var newOption = new Option(option, option, false, false);
                 eleSizeTpl.append(newOption);
             }
-            eleSizeTpl.select2({ minimumResultsForSearch: -1 });
+            eleSizeTpl.select2({
+                minimumResultsForSearch: -1
+            });
             eleSizeTpl.on('change', function (e) {
                 attrs.html('');
                 var id = $(this).val();
@@ -310,6 +648,55 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 }
             }
         },
+        _preInputGmtInfo: function (_data, _images) {
+            var id = _data['id'];
+            console.log(_data);
+            var gmt_info = JSON.parse(_data['design_template']);
+            $('#gmt-id').val(id);
+            $('#gmt-category').select2('val', gmt_info.category_id);
+            $('#gmt-size-tpl').select2('val', gmt_info.size_tpl);
+            $('#gmt-style').val(gmt_info.style);
+            $('#gmt-name').val(gmt_info.name);
+            $('#gmt-brand').val(gmt_info.brand);
+            // images
+            var poss = {};
+            _images.each(function (i) {
+                poss = $.extend(poss, _images[i]);
+            });
+            $('.upload-link').each(function (item) {
+                $(this).removeClass('glyphicon glyphicon-open').attr('style', 'top:0');
+                var tag = $(this).attr('data-tag');
+                if (poss[tag]) {
+                    var img = $('<img>').attr('src', poss[tag]).attr('width', 60).attr('height', 60);
+                    $(this).html(img);
+                    $('#gmt-r-' + tag).addClass('glyphicon glyphicon-trash').show();
+                }
+            });
+            var colors = gmt_info.colors;
+            var colors_con = $('#gmt-colors');
+            colors_con.html('');
+            colors.forEach(function (item) {
+                var colorBlock = $('<span>').css("width", "40px").css("height", "40px").css("background", item);
+                colorBlock.css("display", "inline-block").css("margin", "0 6px");
+                var inputNode = $("<input>").attr("name", "colors[]").attr("type", "hidden").val(item);
+                colorBlock.append(inputNode);
+                colors_con.show().append(colorBlock);
+                colorBlock.on("click", function () {
+                    $(this).remove();
+                });
+            });
+            // set size tpl 
+            var sizes = gmt_info.sizes;
+            var size_tpl = gmt_info.size_tpl;
+            $('#gmt-size-tpl').select2('val', size_tpl).trigger('change');
+            $('#size-attrs').find('input').each(function (item) {
+                if (sizes.indexOf($(this).val()) > -1) {
+                    $(this).attr("checked", true);
+                }
+            });
+            $('#gmt-desc').val(gmt_info.description);
+            $('#gmt-upload-modal').modal('toggle');
+        },
         _blockingUi: function () {
             $("#gmt-upload").block({
                 message: $('#gmt-upload-loader'),
@@ -322,7 +709,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             });
         },
         _unBlockUi: function () {
-            $("#gmt-upload").unblockUI();
+            $("#gmt-upload").unblock();
         },
         _descEmptyMessage: function () {
             $('#gmt-desc').qtip({
@@ -397,6 +784,17 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 }
             }).qtip('show');
         },
+        _base64MimeType: function (encoded) {
+            var result = false;
+            if (typeof encoded !== 'string') {
+                return result;
+            }
+            var mime = encoded.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,.*/);
+            if (mime && mime.length) {
+                result = mime[1];
+            }
+            return result;
+        },
         _getCategoryEle: function () {
             return $("#gmt-category");
         },
@@ -418,8 +816,10 @@ odoo.define("emb_portal.garment_upload", function (require) {
     };
 
     $(document).ready(function () {
-        var garmentManager = new uploadManager();
-        garmentManager.init("over");
+        var garmentManager = new GmManager();
+        var uploadModelWin = new UploadManager();
+        garmentManager.startup(uploadModelWin);
+        uploadModelWin.init();
 
         var upload_window = $('gmt-upload-modal');
         if (!upload_window.length) {
