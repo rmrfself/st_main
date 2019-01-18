@@ -50,6 +50,11 @@ class Portal(http.Controller):
             images.unlink()
         return unlink_result
 
+    @http.route('/portal/size_attributes', type='json', auth="user", csrf=False, website=True)
+    def get_size_attribues(self, **kw):
+        attrs_ids = list(map(int, kw['ids']))
+        return request.env['product.attribute.value'].search_read([('id', 'in', attrs_ids)])
+
     @http.route('/portal/size_template', type='json', auth="user", csrf=False, website=True)
     def get_size_template(self, **kw):
         ProductAttr = request.env['product.attribute']
