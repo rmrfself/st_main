@@ -39,6 +39,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
     var POSITION = ['right', 'left', 'back', 'front', 'top', 'bottom'];
     var FILE_TYPE_AI = 'ai';
     var FILE_TYPE_DST = 'dst';
+    var ZOOM_IN_RATE = 1.1;
+    var ZOOM_OUT_RATE = 0.8;
 
     var CANVAS_BACKGROUND_WIDTH = 555;
 
@@ -131,6 +133,35 @@ odoo.define("emb_portal.garment_upload", function (require) {
             canvas.backgroundColor = 'white';
             canvas.renderAll();
         },
+        _changeBackgroundColor: function (color) {
+            this.background.backgroundImage = 0;
+            this.background.backgroundColor = color;
+            this.background.renderAll();
+            var toolItem = {
+                'type': 'color',
+                'payload': color
+            };
+            this._addToolBoxItem(toolItem);
+        },
+        _addToolBoxItem: function (item) {
+            var self = this;
+            if (item == undefined || item.payload == undefined) {
+                return false;
+            }
+            var toolsInfo = $('#tools-info');
+            if (item.type == 'color') {
+                toolsInfo.find('.color-bar').remove();
+                var colorBlock = $('<div>').css("width", "40px").css("height", "40px").css("background", item.payload);
+                colorBlock.addClass('color-bar');
+                colorBlock.click(function(event){
+                    self._changeBackgroundColor(item.payload);
+                });
+                toolsInfo.append(colorBlock);
+            }
+            if($('#tools-box').is(':visible') == false){
+                $('#tools-box').slideDown();
+            }
+        },
         _addEventListeners: function () {
             var self = this;
             var targets = $('.logo-assets').find('a');
@@ -157,6 +188,18 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 'selection:cleared': self._clearEditLogoStatus.bind(this)
             });
             $('#submit-edit-ok').attr('disabled', true);
+            $('#tools-box').find('.closex').click(function(event){
+                $('#tools-box').slideUp();
+                return false;
+            });
+            $('#btn-zoom-in').click(function(event){
+                var originZoom = self.background.getZoom();
+                self.background.zoomToPoint({x: 200,y:200}, originZoom * ZOOM_IN_RATE);
+            });
+            $('#btn-zoom-out').click(function(event){
+                var originZoom = self.background.getZoom();
+                self.background.zoomToPoint({x: 200,y:200}, originZoom * ZOOM_OUT_RATE);
+            });
         },
         _onLogoDragged: function (event) {
             var dataId = $(event.target).attr('data-id');
@@ -231,10 +274,16 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     self._onRemoveLogo();
                 });
                 $.notify({
+                    icon: 'glyphicon glyphicon-ok',
                     title: "Item Added",
                     message: 'You can edit them now.'
+                }, {
+                    type: 'success'
                 });
             });
+            if($('#tools-box').is(':visible') == false){
+                $('#tools-box').slideDown();
+            }
         },
         _showLineColorsEx: function (id, type, objects) {
             if (_.isEmpty(objects)) {
@@ -266,8 +315,11 @@ odoo.define("emb_portal.garment_upload", function (require) {
             }
             if (_.isEmpty(inputStr.match(/S\d+/i))) {
                 $.notify({
+                    icon: 'glyphicon glyphicon-remove',
                     title: "Error input",
                     message: 'The input value:' + inputStr + ' is not valid'
+                }, {
+                    type: 'danger'
                 });
                 input.val('');
             } else {
@@ -284,8 +336,11 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var currentLogo = this.background.getActiveObject();
             if (!currentLogo) {
                 $.notify({
+                    icon: 'glyphicon glyphicon-remove',
                     title: "Error input",
                     message: 'Please select the edit target before input this.'
+                }, {
+                    type: 'danger'
                 });
                 return false;
             }
@@ -321,8 +376,11 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 $(this).attr('readonly', 'true');
             });
             $.notify({
+                icon: 'glyphicon glyphicon-ok',
                 title: "Logo Removed",
                 message: "The logo designment already removed."
+            }, {
+                type: 'success'
             });
         },
         _clearEditLogoStatus: function () {
@@ -372,8 +430,11 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var self = this;
             if (_.isEmpty(_data)) {
                 $.notify({
+                    icon: 'glyphicon glyphicon-remove',
                     title: "No Data",
                     message: "No garment data retrieved!"
+                }, {
+                    type: 'danger'
                 });
                 this._unBlockUi();
                 return false;
@@ -480,8 +541,11 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     if (returned_value) {
                         holder.slideUp(1000).remove();
                         $.notify({
+                            icon: 'glyphicon glyphicon-ok',
                             title: "Garment removed",
                             message: "Garment data has been uploaded successfully."
+                        }, {
+                            type: 'success'
                         });
                     }
                 });
@@ -563,6 +627,21 @@ odoo.define("emb_portal.garment_upload", function (require) {
             colors.forEach(function (item) {
                 var colorBlock = $('<span>').css("width", "40px").css("height", "40px").css("background", item);
                 colorBlock.css("display", "inline-block").css("margin", "0 6px");
+                colorBlock.hover(function (e) {
+                    $(this).addClass('color-border-gray');
+                }, function (event) {
+                    var sel = $(this).attr('data-select');
+                    if (sel == undefined) {
+                        $(this).removeClass('color-border-gray');
+                    }
+                });
+                colorBlock.click(function (event) {
+                    var blocks = $('#gmt-info-colors').find('span');
+                    blocks.removeClass('color-border-gray').removeAttr('data-select');
+                    $(this).attr('data-select', item);
+                    $(this).addClass('color-border-gray');
+                    self.composer._changeBackgroundColor(item);
+                });
                 colors_con.append(colorBlock);
             });
             // set size
@@ -745,16 +824,22 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 setTimeout(function () {
                     $('#gmt-upload-modal').modal('toggle');
                     $.notify({
+                        icon: 'glyphicon glyphicon-ok',
                         title: "Data Saved",
                         message: "Garment data has been uploaded successfully."
+                    }, {
+                        type: 'success'
                     });
                 }, 2000);
                 GmManager.prototype.loadGarmentList();
             }).fail(function () {
                 setTimeout(function () {
                     $.notify({
+                        icon: 'glyphicon glyphicon-remove',
                         title: "Data Is Not Saved",
                         message: "Failed to save your data,please try again"
+                    }, {
+                        type: 'danger'
                     });
                 }, 3000);
                 self._updateLocalData(false);

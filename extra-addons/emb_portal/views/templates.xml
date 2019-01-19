@@ -48,8 +48,8 @@
                       <div class='content' id='garment-list'>
                       </div>
                       <div class='bottom-actions'>
-                        <a href='#'>st garments</a>
-                        <a href='#'>my garments</a>
+                        <a href='#'>St garments</a>
+                        <a href='#'>My garments</a>
                       </div>
                     </div>
                     <div role='tabpanel' class='tab-pane' id='logo-box'>
@@ -68,8 +68,8 @@
                       </div>
                       <div class='bottom-actions'>
                         Filter:
-                        <a href='#'>st logos</a>
-                        <a href='#'>my logos</a>
+                        <a href='#'>St logos</a>
+                        <a href='#'>My logos</a>
                       </div>
                     </div>
                   </div>
@@ -91,6 +91,7 @@
                   </div>
                   <h5>Garment Color</h5>
                   <div id='gmt-info-colors'>-</div>
+                  <span>Click these color blocks to change the background color.</span>
                   <h5>Quantity</h5>
                   <div id='gmt-info-quantity'>-</div>
                 </div>
@@ -98,6 +99,17 @@
               <div class='col-md-6'>
                 <div id='compose-box' class='gray_border'>
                   <canvas id="make-canvas" width="100%" height="100%"></canvas>
+                  <div id='tools-box'><div id='tools-info'></div>
+                  <div id='tools-actions'>
+                  <button id='btn-zoom-in' type='button' class='btn green'
+                      aria-pressed='false' autocomplete='off'>
+                      <span class='glyphicon glyphicon-zoom-in' aria-hidden='true'></span>zoom in</button>
+                      <button id='btn-zoom-out' type='button' class='btn green'
+                      aria-pressed='false' autocomplete='off'>
+                      <span class='glyphicon glyphicon-zoom-out' aria-hidden='true'></span>zoom out</button>
+                  </div>
+                  <a href='#' class='closex'>x</a>
+                  </div>
                 </div>
                 <div id='compose-detail-box'>
                   <span>* Please drag the logo file into above box, then you can edit it.</span>
