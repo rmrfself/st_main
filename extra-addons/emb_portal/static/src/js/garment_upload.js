@@ -153,12 +153,12 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 toolsInfo.find('.color-bar').remove();
                 var colorBlock = $('<div>').css("width", "40px").css("height", "40px").css("background", item.payload);
                 colorBlock.addClass('color-bar');
-                colorBlock.click(function(event){
+                colorBlock.click(function (event) {
                     self._changeBackgroundColor(item.payload);
                 });
                 toolsInfo.append(colorBlock);
             }
-            if($('#tools-box').is(':visible') == false){
+            if ($('#tools-box').is(':visible') == false) {
                 $('#tools-box').slideDown();
             }
         },
@@ -188,17 +188,23 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 'selection:cleared': self._clearEditLogoStatus.bind(this)
             });
             $('#submit-edit-ok').attr('disabled', true);
-            $('#tools-box').find('.closex').click(function(event){
+            $('#tools-box').find('.closex').click(function (event) {
                 $('#tools-box').slideUp();
                 return false;
             });
-            $('#btn-zoom-in').click(function(event){
+            $('#btn-zoom-in').click(function (event) {
                 var originZoom = self.background.getZoom();
-                self.background.zoomToPoint({x: 200,y:200}, originZoom * ZOOM_IN_RATE);
+                self.background.zoomToPoint({
+                    x: 200,
+                    y: 200
+                }, originZoom * ZOOM_IN_RATE);
             });
-            $('#btn-zoom-out').click(function(event){
+            $('#btn-zoom-out').click(function (event) {
                 var originZoom = self.background.getZoom();
-                self.background.zoomToPoint({x: 200,y:200}, originZoom * ZOOM_OUT_RATE);
+                self.background.zoomToPoint({
+                    x: 200,
+                    y: 200
+                }, originZoom * ZOOM_OUT_RATE);
             });
         },
         _onLogoDragged: function (event) {
@@ -268,6 +274,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 obj.on("selected", function (event) {
                     var act = self.background.getActiveObject();
                     self._showLineColorsEx(targetId, targetType, act._objects);
+                    if ($('#tools-box').is(':visible') == false) {
+                        $('#tools-box').slideDown();
+                    }
                 });
                 var canvas = self.background;
                 window.fabric.util.addListener(canvas.upperCanvasEl, 'dblclick', function (event) {
@@ -281,7 +290,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     type: 'success'
                 });
             });
-            if($('#tools-box').is(':visible') == false){
+            if ($('#tools-box').is(':visible') == false) {
                 $('#tools-box').slideDown();
             }
         },
