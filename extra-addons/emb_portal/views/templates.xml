@@ -135,7 +135,7 @@
                   <div class='submit-area'>
                     <button type='button' id='submit-edit-ok' class='btn btn-primary' aria-pressed='false' autocomplete='off'>
                       <span class='glyphicon glyphicon-edit' aria-hidden='true'></span>Design Down</button>
-                      <button type='button' id='submit-edit-finish' class='btn btn-success' aria-pressed='false' autocomplete='off'>
+                      <button type='button' id='submit-edit-finish' disabled='true' class='btn btn-success' aria-pressed='false' autocomplete='off'>
                       <span class='glyphicon glyphicon-shopping-cart' aria-hidden='true'></span>Add Cart</button>
                   </div>
                 </div>

@@ -109,6 +109,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     originZoom * ZOOM_OUT_RATE
                 );
             });
+            $('#submit-edit-finish').attr('disabled', true);
         },
         /**
          * 2. Select the first logo and display in line colors.
@@ -491,15 +492,20 @@ odoo.define("emb_portal.garment_upload", function (require) {
          */
         _onDesignDown: function (event) {
             var validated = this._onDdValidation();
-            if(validated == false) {
+            if (validated == false) {
                 return false;
             }
-            
+
             /**
              * Save the design data to local and server;
              */
             console.log(this.background.toJSON());
             this._saveCurrentDesign();
+            /**
+             * Enable quantity inputs
+             */
+            $('#gmt-info-quantity').find('input').removeAttr('readonly');
+            $('#submit-edit-finish').removeAttr('disabled');
         },
         /**
          * 11.1 Validating user inputs before design down handler.
@@ -555,9 +561,15 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var unCompleted = false;
             for (var i in objects) {
                 var item = objects[i];
-                var strokeData = item.strokeData;
-                if (strokeData == undefined) {
-                    unCompleted = true;
+                var subItems = item._objects;
+                for (var k in subItems) {
+                    var tmp = subItems[k];
+                    var strokeData = tmp.strokeData || tmp.fillData;
+                    if (strokeData == undefined) {
+                        unCompleted = true;
+                    }
+                }
+                if (unCompleted) {
                     item.set("dirty", true);
                     self.background.setActiveObject(item);
                     self.background.renderAll();
@@ -589,6 +601,55 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 return false;
             }
             return true;
+        },
+        _onPostDesignData: function (event) {
+            /**
+             * check count data;
+             */
+            var qtyFieldsEmpty = false;
+            $('#gmt-info-quantity').find('input').each(function (item) {
+                var val = $(this).val();
+                if (val == '0' || val == '' || parseInt(val) == 0) {
+                    qtyFieldsEmpty = true;
+                }
+            });
+            if (qtyFieldsEmpty) {
+                $("#gmt-info-quantity")
+                    .qtip({
+                        content: {
+                            text: "You must input all quantity fields."
+                        },
+                        position: {
+                            my: "bottom center",
+                            at: "top center"
+                        },
+                        show: {
+                            event: false
+                        }
+                    })
+                    .qtip("show");
+                return false;
+            }
+            $(".emb_portal").block({
+                message: "<img src='/emb_portal/static/src/images/grid.svg' height='30' width='30' style='margin-right:10px' />loading..",
+                css: {
+                    border: "none",
+                    left: "90%",
+                    width: "96%",
+                    background: "transparent"
+                }
+            });
+            setTimeout(function () {
+                $(".emb_portal").unblock();
+                $.notify({
+                    icon: "glyphicon glyphicon-ok",
+                    title: "Data saved.",
+                    message: "Item is added successfully."
+                }, {
+                    type: "success"
+                });
+            }, 3000);
+
         },
         getParent: function () {
             return $("#compose-box");
@@ -629,28 +690,28 @@ odoo.define("emb_portal.garment_upload", function (require) {
         /**
          * 13. preview current image and save the related data;
          */
-        _previewCurrentDesign: function(){
+        _previewCurrentDesign: function () {
             var parent = $('#ddbox');
 
         },
         /**
          * 13.1 add preiview designment by current one time.
          */
-        _saveCurrentDesign: function(){
+        _saveCurrentDesign: function () {
             var parent = $('#ddbox');
             var garmentId = $('#garment-list').attr('data-edit-id');
             var objects = this.background.getObjects();
             var logoIds = [];
-            objects.forEach(function(item){
+            objects.forEach(function (item) {
                 logoIds.push(item.resourceId);
             });
             var img = $('<img>');
-            var dataUrl = this.background.toDataURL('png'); 
-            img.attr('src',dataUrl);
+            var dataUrl = this.background.toDataURL('png');
+            img.attr('src', dataUrl);
             var imgHolder = $('<a>').addClass('dd-prv-block');
-            imgHolder.attr('garment-id',garmentId);
-            imgHolder.attr('logo-ids',logoIds.join(','));
-            var checked = $('<checkbox>').attr('id','ck-' + 1);
+            imgHolder.attr('garment-id', garmentId);
+            imgHolder.attr('logo-ids', logoIds.join(','));
+            var checked = $('<checkbox>').attr('id', 'ck-' + 1);
             imgHolder.append(img);
             parent.append(imgHolder);
             parent.addClass('ddbox-border clearfix');
@@ -1072,7 +1133,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     "name",
                     "quantity-" + name + "-" + item.id
                 );
-                input.val('0').attr('readonly',true);
+                input.val('0').attr('readonly', true);
                 input
                     .attr("type", "text")
                     .attr("id", "quantity-" + item.id)
