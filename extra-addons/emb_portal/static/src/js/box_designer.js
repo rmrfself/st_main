@@ -68,8 +68,8 @@ odoo.define('emb_portal.box_designer', function (require) {
 
     $(document).ready(function () {
         $('#assets_nav a').click(function (e) {
-            e.preventDefault()
-            $(this).tab('show')
+            e.preventDefault();
+            $(this).tab('show');
           });
     });
 });

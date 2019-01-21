@@ -91,9 +91,10 @@
                   </div>
                   <h5>Garment Color</h5>
                   <div id='gmt-info-colors'>-</div>
-                  <span>Click these color blocks to change the background color.</span>
+                  <span class='hint'>* Click these color blocks to change the background color.</span>
                   <h5>Quantity</h5>
                   <div id='gmt-info-quantity'>-</div>
+                  <span class='hint'>* Above fields are all required before adding to cart.</span>
                 </div>
               </div>
               <div class='col-md-6'>
@@ -112,7 +113,8 @@
                   </div>
                 </div>
                 <div id='compose-detail-box'>
-                  <span>* Please drag the logo file into above box, then you can edit it.</span>
+                  <div class='hint'>* Please drag the logo file into above box, then you can edit it.</div>
+                  <div class='hint'>* Remove the logo by double-clicking it.</div>
                   <table class='table table-bordered'>
                     <tr>
                       <td>LogoID: <span id='logo-detail-id'>W521478996</span></td><td>Description: <span id='logo-detail-desc'>Maker logo</span></td>
@@ -124,10 +126,12 @@
                   </table>
                   <div id='logo-lines-container'>
                     <h5>Line Colors</h5>
-                    <div>Before input these colors, please select your resource first.</div>
+                    <div class='hint'>* Before input these colors, please select your resource first.</div>
+                    <div class='hint'>* Design down button is enabled after all below fields are filled out.</div>
                     <div id='line-container'>
                     </div>
                   </div>
+                  <div id='ddbox'></div>
                   <div class='submit-area'>
                     <button type='button' id='submit-edit-ok' class='btn btn-primary' aria-pressed='false' autocomplete='off'>
                       <span class='glyphicon glyphicon-edit' aria-hidden='true'></span>Design Down</button>
