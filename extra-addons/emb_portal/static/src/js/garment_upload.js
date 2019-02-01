@@ -587,7 +587,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
         _onDesignDown: function (event) {
             var validated = this._onDdValidation();
             if (validated == false) {
-                console.log('ddd');
                 return false;
             }
             /**
@@ -709,7 +708,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var qtyFieldsEmpty = false;
             $('#gmt-info-quantity').find('input').each(function (item) {
                 var val = $(this).val();
-                if (val != '0' || val != '' || parseInt(val) > 0) {
+                if (parseInt(val) > 0) {
                     qtyFieldsEmpty = true;
                 }
             });
@@ -718,6 +717,35 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     .qtip({
                         content: {
                             text: "You must input all quantity fields."
+                        },
+                        position: {
+                            my: "bottom center",
+                            at: "top center"
+                        },
+                        show: {
+                            event: false
+                        }
+                    })
+                    .qtip("show");
+                return false;
+            }
+            // check design checkbox status
+            var ddbox = $('#ddbox');
+            if (ddbox.children().length == 0) {
+                return false;
+            }
+            var dems = $('.prv-ck-inn');
+            var demsChecked = false;
+            dems.each(function (item) {
+                if ($(this).prop('checked')) {
+                    demsChecked = true;
+                }
+            });
+            if (demsChecked == false) {
+                $("#ddbox")
+                    .qtip({
+                        content: {
+                            text: "At least one designment is choosen."
                         },
                         position: {
                             my: "bottom center",
@@ -805,15 +833,15 @@ odoo.define("emb_portal.garment_upload", function (require) {
          */
         _previewCurrentDesign: function () {
             var parent = $('#ddbox');
-            if(parent.children().length == 0) {
+            if (parent.children().length == 0) {
                 return false;
             }
             var dataDigist = CryptoJS.MD5(JSON.stringify(this.background.custom_attr));
             var findTarget = false;
-            parent.children().each(function(item){
+            parent.children().each(function (item) {
                 var tmp = $(this).attr('data-id');
-                if(tmp != undefined && tmp == dataDigist) {
-                    $(this).effect('highlight',{},3000);
+                if (tmp != undefined && tmp == dataDigist) {
+                    $(this).effect('highlight', {}, 3000);
                     findTarget = true;
                 }
             });
@@ -823,7 +851,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
          * 13.1 add preiview designment by current one time.
          */
         _saveCurrentDesign: function () {
-            if(this._previewCurrentDesign()) {
+            if (this._previewCurrentDesign()) {
                 $.notify({
                     icon: "glyphicon glyphicon-remove",
                     title: "Found the same data",
@@ -847,15 +875,15 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var imgHolder = $('<div>').addClass('dd-prv-block');
             // add digist
             var dataDigist = CryptoJS.MD5(JSON.stringify(this.background.custom_attr));
-            imgHolder.attr('data-id',dataDigist);
+            imgHolder.attr('data-id', dataDigist);
             imgHolder.attr('data-garment-id', garmentId);
             imgHolder.attr('logo-ids', logoIds.join(','));
             // add checkbox
-            var checked = $('<input>').attr('type', 'checkbox').addClass('prv-ck-inn');
+            var checked = $('<input>').attr('type', 'checkbox').addClass('prv-ck-inn').attr("checked", 'checked');
             var toolbar = $('<div>').addClass('dd-prv-op');
             toolbar.append(checked);
             var removeLink = $('<a>').addClass('prv-rm-link').text('remove');
-            removeLink.click(function(e){
+            removeLink.click(function (e) {
                 imgHolder.remove();
                 $.notify({
                     icon: "glyphicon glyphicon-remove",
@@ -864,7 +892,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 }, {
                     type: "success"
                 });
-                if(parent.children().length == 0) {
+                if (parent.children().length == 0) {
                     parent.removeClass('ddbox-border');
                 }
             });
@@ -964,7 +992,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
          */
         _saveLogoPosDataToCanvas: function (id, logoId, pos) {
             var holder = this._canvasDataHolder(id);
-            console.log(holder);
             var logos = holder['logos'];
             var logosArr = logos.filter(function (item) {
                 return item.id == logoId;
@@ -1007,7 +1034,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var cur = logosArr[0];
             cur['zoomx'] = zoom.zoomx;
             cur['zoomy'] = zoom.zoomy;
-            console.logo(logos);
         },
     };
     /**
