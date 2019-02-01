@@ -27,6 +27,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             width: 555,
             height: 620
         });
+        this.background.custom_attr = {};
         this.background.selectionColor = "rgba(0,255,0,0.3)";
     }
 
@@ -71,12 +72,12 @@ odoo.define("emb_portal.garment_upload", function (require) {
             $("#compose-box").on("dragover", this._allowDropped);
             // set canvas event listners
             this.background.on({
-                "object:moving": console.log("event mock"),
+                "object:moving": self._onLogoMoving.bind(this),
                 "object:modified": console.log("event mock"),
                 "object:added": console.log("event mock"),
                 "object:removed": console.log("event mock"),
                 "object:rotating": console.log("event mock"),
-                "object:scaling": console.log("event mock"),
+                "object:scaling": self._onLogoScaling.bind(this),
                 "selection:cleared": self._clearEditLogoStatus.bind(this)
             });
             $("#submit-edit-ok").click(function (event) {
@@ -110,6 +111,34 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 );
             });
             $('#submit-edit-finish').attr('disabled', true);
+        },
+        /**
+         * 1.1 On logo moving event
+         */
+        _onLogoMoving: function (event) {
+            var id = localStorage.getItem("background-image-id");
+            var logoId = event.target.resourceId;
+            if (id == undefined) {
+                return false;
+            }
+            var pos = {};
+            pos.left = event.target.left;
+            pos.top = event.target.top;
+            this._saveLogoPosDataToCanvas(id, logoId, pos);
+        },
+        /**
+         * 1.2 On logo scaling
+         */
+        _onLogoScaling: function (event) {
+            var id = localStorage.getItem("background-image-id");
+            var logoId = event.target.resourceId;
+            if (id == undefined) {
+                return false;
+            }
+            var zoom = {};
+            zoom.zoomx = event.target.zoomX;
+            zoom.zoomy = event.target.zoomY;
+            this._saveLogoZoomDataToCanvas(id, logoId, zoom);
         },
         /**
          * 2. Select the first logo and display in line colors.
@@ -207,6 +236,20 @@ odoo.define("emb_portal.garment_upload", function (require) {
             backgroundImg.src = image.find("img").attr("src");
             canvas.backgroundColor = "white";
             canvas.renderAll();
+            // Save current image.
+            localStorage.setItem("background-image-id", image.attr('id'));
+            localStorage.setItem("background-mode", 'image');
+            var backgroundColor = localStorage.getItem("background-color");
+            if (backgroundColor != null) {
+                var toolItem = {
+                    type: "color",
+                    payload: backgroundColor
+                };
+                this._addToolBoxItem(toolItem);
+            }
+            // Save the background data
+            var imgId = image.attr('id');
+            this._saveGmtDataToCanvas(imgId, 'image', imgId);
         },
         /**
          * 7. Change background color of canvas by click color blocks;
@@ -221,6 +264,18 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 payload: color
             };
             this._addToolBoxItem(toolItem);
+            localStorage.setItem("background-color", color);
+            localStorage.setItem("background-mode", 'color');
+            var backgroundImageId = localStorage.getItem("background-image-id");
+            if (backgroundImageId != null) {
+                toolItem = {
+                    type: "image",
+                    payload: backgroundImageId
+                };
+                this._addToolBoxItem(toolItem);
+            }
+            // save it into custom data
+            this._saveGmtDataToCanvas(backgroundImageId, 'color', color);
         },
         /**
          * 6.1 After clicking colors block, add a new block into canvas.
@@ -234,14 +289,32 @@ odoo.define("emb_portal.garment_upload", function (require) {
             if (item.type == "color") {
                 toolsInfo.find(".color-bar").remove();
                 var colorBlock = $("<div>")
-                    .css("width", "40px")
-                    .css("height", "40px")
                     .css("background", item.payload);
                 colorBlock.addClass("color-bar");
                 colorBlock.click(function (event) {
+                    $(this).addClass('current');
                     self._changeBackgroundColor(item.payload);
                 });
                 toolsInfo.append(colorBlock);
+            }
+            if (item.type == "image") {
+                var backgroundImageId = item.payload;
+                var backgroundImage = $('#' + backgroundImageId);
+                var barImageSrc = backgroundImage.find("img").attr('src');
+                var barImage = $('<img>').attr("width", '38').attr('src', barImageSrc);
+                var barImagePos = $('#ava_' + backgroundImageId);
+                if (barImagePos != null) {
+                    barImagePos.remove();
+                }
+                var imgBar = $('<a>').attr('id', 'ava_' + backgroundImageId);
+                imgBar.attr('class', 'image-bar-small');
+                barImage.attr('width', '38');
+                imgBar.html(barImage);
+                imgBar.click(function (e) {
+                    $(this).addClass('current');
+                    self.setBackground(backgroundImage);
+                });
+                toolsInfo.append(imgBar);
             }
             if ($("#tools-box").is(":visible") == false) {
                 $("#tools-box").slideDown();
@@ -326,6 +399,12 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     .center()
                     .setCoords();
                 self.background.add(obj).renderAll();
+                // Save logo data into canvas
+                var gmtId = localStorage.getItem("background-image-id");
+                if (gmtId != undefined) {
+                    self._saveLogoDataToCanvas(gmtId, targetId, targetType);
+                }
+                // End
                 self._showLineColorsEx(targetId, targetType, obj._objects);
                 obj.on("selected", function (event) {
                     var act = self.background.getActiveObject();
@@ -353,6 +432,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             if ($("#tools-box").is(":visible") == false) {
                 $("#tools-box").slideDown();
             }
+            // Save current logo object into canvas
         },
         /**
          * 8.  Important: when selectting the logo in canvas, get all lines and generate new inputs of line colors
@@ -406,12 +486,15 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 var seq = parseInt(input.attr("line-seq"));
                 var type = input.attr("item-type");
                 this._renderCurrentLine(id, seq, type, inputStr);
+                // Save line colors into canvas
+
             }
         },
         /**
          * 9.2 After input line colors, rerender the canvas logos.
          */
         _renderCurrentLine: function (id, seq, type, color) {
+            var self = this;
             color = color.toUpperCase();
             var colorHex = dd[color] || [255, 255, 255];
             var colorData =
@@ -429,6 +512,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
             }
             var objects = currentLogo._objects;
             var itemId = "logo-" + id + "-" + seq;
+            // Save data into canvas
+            var Gmtid = localStorage.getItem("background-image-id");
+            var logoId = currentLogo.resourceId;
             objects.map(function (item) {
                 if (item.id == itemId) {
                     if (type == FILE_TYPE_DST) {
@@ -440,17 +526,19 @@ odoo.define("emb_portal.garment_upload", function (require) {
                         item.set("fillData", color);
                     }
                     item.set("dirty", true);
+                    self._saveLogoColorDataToCanvas(Gmtid, logoId, seq, color);
                 }
                 return item;
             });
             this.background.renderAll();
         },
         /**
-         * Remove the logos by dbclicking logo in canvas.
+         * 10. Remove the logos by dbclicking logo in canvas.
          */
         _onRemoveLogo: function () {
             var currentLogo = this.background.getActiveObject();
             if (!currentLogo) return;
+            var targetId = currentLogo.resourceId;
             this.background.remove(currentLogo);
             var container = $("#line-container");
             var inputs = container.find("input");
@@ -461,6 +549,12 @@ odoo.define("emb_portal.garment_upload", function (require) {
             inputs.each(function (item) {
                 $(this).attr("readonly", "true");
             });
+            // Remove data from custom canvas data 
+            var gmtId = localStorage.getItem("background-image-id");
+            if (gmtId != undefined) {
+                self._removeLogoDataToCanvas(gmtId, targetId);
+            }
+            // End
             var objects = this.background.getObjects();
             if (objects.length == 0) {
                 $("#tools-box").slideUp();
@@ -474,7 +568,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             });
         },
         /**
-         * 10. Make the inputs disabled of line colors.
+         * 10.1. Make the inputs disabled of line colors.
          */
         _clearEditLogoStatus: function () {
             var container = $("#line-container");
@@ -493,13 +587,16 @@ odoo.define("emb_portal.garment_upload", function (require) {
         _onDesignDown: function (event) {
             var validated = this._onDdValidation();
             if (validated == false) {
+                console.log('ddd');
                 return false;
             }
-
+            /**
+             * Validate whether needing to create or update
+             */
+            this._determineUpdateOrNew();
             /**
              * Save the design data to local and server;
              */
-            console.log(this.background.toJSON());
             this._saveCurrentDesign();
             /**
              * Enable quantity inputs
@@ -602,6 +699,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
             }
             return true;
         },
+        /**
+         * 11.2 Postdata to server.
+         */
         _onPostDesignData: function (event) {
             /**
              * check count data;
@@ -609,11 +709,11 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var qtyFieldsEmpty = false;
             $('#gmt-info-quantity').find('input').each(function (item) {
                 var val = $(this).val();
-                if (val == '0' || val == '' || parseInt(val) == 0) {
+                if (val != '0' || val != '' || parseInt(val) > 0) {
                     qtyFieldsEmpty = true;
                 }
             });
-            if (qtyFieldsEmpty) {
+            if (qtyFieldsEmpty == false) {
                 $("#gmt-info-quantity")
                     .qtip({
                         content: {
@@ -649,6 +749,19 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     type: "success"
                 });
             }, 3000);
+
+        },
+        /**
+         * 11.3 Validate create or update
+         */
+        _determineUpdateOrNew: function () {
+            var result = false;
+            // 01. check if container is empty
+            var parentBox = $('#ddbox');
+            if (parentBox.children().length == 0) {
+                return true;
+            }
+            // 02. get background image and its POSITION
 
         },
         getParent: function () {
@@ -692,13 +805,36 @@ odoo.define("emb_portal.garment_upload", function (require) {
          */
         _previewCurrentDesign: function () {
             var parent = $('#ddbox');
-
+            if(parent.children().length == 0) {
+                return false;
+            }
+            var dataDigist = CryptoJS.MD5(JSON.stringify(this.background.custom_attr));
+            var findTarget = false;
+            parent.children().each(function(item){
+                var tmp = $(this).attr('data-id');
+                if(tmp != undefined && tmp == dataDigist) {
+                    $(this).effect('highlight',{},3000);
+                    findTarget = true;
+                }
+            });
+            return findTarget;
         },
         /**
          * 13.1 add preiview designment by current one time.
          */
         _saveCurrentDesign: function () {
+            if(this._previewCurrentDesign()) {
+                $.notify({
+                    icon: "glyphicon glyphicon-remove",
+                    title: "Found the same data",
+                    message: "No changes found!"
+                }, {
+                    type: "danger"
+                });
+                return false;
+            }
             var parent = $('#ddbox');
+            // validate current resources and check if they are the same.
             var garmentId = $('#garment-list').attr('data-edit-id');
             var objects = this.background.getObjects();
             var logoIds = [];
@@ -708,14 +844,171 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var img = $('<img>');
             var dataUrl = this.background.toDataURL('png');
             img.attr('src', dataUrl);
-            var imgHolder = $('<a>').addClass('dd-prv-block');
-            imgHolder.attr('garment-id', garmentId);
+            var imgHolder = $('<div>').addClass('dd-prv-block');
+            // add digist
+            var dataDigist = CryptoJS.MD5(JSON.stringify(this.background.custom_attr));
+            imgHolder.attr('data-id',dataDigist);
+            imgHolder.attr('data-garment-id', garmentId);
             imgHolder.attr('logo-ids', logoIds.join(','));
-            var checked = $('<checkbox>').attr('id', 'ck-' + 1);
+            // add checkbox
+            var checked = $('<input>').attr('type', 'checkbox').addClass('prv-ck-inn');
+            var toolbar = $('<div>').addClass('dd-prv-op');
+            toolbar.append(checked);
+            var removeLink = $('<a>').addClass('prv-rm-link').text('remove');
+            removeLink.click(function(e){
+                imgHolder.remove();
+                $.notify({
+                    icon: "glyphicon glyphicon-remove",
+                    title: "Designment removed",
+                    message: "data removed successfully!"
+                }, {
+                    type: "success"
+                });
+                if(parent.children().length == 0) {
+                    parent.removeClass('ddbox-border');
+                }
+            });
+            toolbar.append(removeLink);
             imgHolder.append(img);
+            imgHolder.append(toolbar);
             parent.append(imgHolder);
             parent.addClass('ddbox-border clearfix');
-        }
+        },
+        /**
+         * 14. Clear all design data.
+         */
+        _clearAllDesignData: function (id) {
+            var canvas = this.background;
+            // Remove all logos
+            canvas.remove(...canvas.getObjects());
+            // Retset selected color
+            var firstImage = $('#gm-album-' + id).children()[0];
+            this.setBackground($(firstImage));
+            this.background.zoomToPoint({
+                x: 200,
+                y: 200
+            }, 1);
+            $('#tools-info').html('');
+            // Clear all input values of line colors
+            $('input[name^="line_color"]').each(function (item) {
+                $(this).val('');
+            });
+        },
+        /**
+         * 15. Save data into canvas, in order to recovery.
+         */
+        _saveGmtDataToCanvas: function (id, type, value) {
+            var holder = this._canvasDataHolder(id);
+            if (holder == null) {
+                return false;
+            }
+            if (type == 'color') {
+                holder['mode'] = 'color';
+                holder['color'] = value;
+            }
+            if (type == 'image') {
+                holder['mode'] = 'image';
+                holder['image'] = value;
+            }
+        },
+        /**
+         * 15.1 Get custom data from garment id
+         */
+        _canvasDataHolder: function (id) {
+            var holder = this.background.custom_attr;
+            if (holder[id] == undefined || holder[id] == null) {
+                holder[id] = {};
+            }
+            return holder[id];
+        },
+        /**
+         * 15.2 Save logo object into canvas
+         */
+        _saveLogoDataToCanvas: function (id, logoId, type) {
+            var holder = this._canvasDataHolder(id);
+            if (holder == null) {
+                return false;
+            }
+            if (holder['logos'] == undefined || holder['logos'] == undefined) {
+                holder['logos'] = [];
+            }
+            var logos = holder['logos'];
+            var newObject = {
+                'id': logoId,
+                'type': type
+            };
+            if (logos.length == 0) {
+                logos.push(newObject);
+                return false;
+            }
+            var logosArr = logos.filter(function (item) {
+                return item.id == logoId;
+            });
+            if (logosArr.length == 0) {
+                logos.push(newObject);
+            }
+        },
+        /**
+         * 15.3 Remove logo data from canvas
+         */
+        _removeLogoDataToCanvas: function (id, logoId) {
+            var holder = this._canvasDataHolder(id);
+            var logos = holder['logos'];
+            var logosArr = logos.filter(function (item) {
+                return item.id != logoId;
+            });
+            holder['logos'] = logosArr;
+        },
+        /**
+         * 15.4 Save position data into canvas of logo
+         */
+        _saveLogoPosDataToCanvas: function (id, logoId, pos) {
+            var holder = this._canvasDataHolder(id);
+            console.log(holder);
+            var logos = holder['logos'];
+            var logosArr = logos.filter(function (item) {
+                return item.id == logoId;
+            });
+            var cur = logosArr[0];
+            cur['leflt'] = pos.left;
+            cur['top'] = pos.top;
+        },
+        /**
+         * 15.5 Save lines data into canvas of logo
+         * 
+         */
+        _saveLogoColorDataToCanvas: function (id, logoId, index, color) {
+            var holder = this._canvasDataHolder(id);
+            var logos = holder['logos'];
+            var logosArr = logos.filter(function (item) {
+                return item.id == logoId;
+            });
+            var cur = logosArr[0];
+            var custom_key = 'line-';
+            if (cur.type == FILE_TYPE_AI) {
+                custom_key = 'layer-';
+            }
+            var colors = cur.colors;
+            if (colors == undefined || colors == null) {
+                cur.colors = {};
+            }
+            colors = cur.colors;
+            colors[custom_key + index] = color;
+        },
+        /**
+         * 15.6 Save logo zoom data into canvas
+         */
+        _saveLogoZoomDataToCanvas: function (id, logoId, zoom) {
+            var holder = this._canvasDataHolder(id);
+            var logos = holder['logos'];
+            var logosArr = logos.filter(function (item) {
+                return item.id == logoId;
+            });
+            var cur = logosArr[0];
+            cur['zoomx'] = zoom.zoomx;
+            cur['zoomy'] = zoom.zoomy;
+            console.logo(logos);
+        },
     };
     /**
      * This is the color facade pattern of managing canvas.
@@ -728,7 +1021,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             return new GraphComposer();
         },
         actbuttons: function () {
-            return "<div class='asset-garment-act'><button type='button' class='btn select' data-toggle='button' aria-pressed='false' autocomplete='off'><span class='glyphicon glyphicon-plus' aria-hidden='true'></span>select</button><button type='button' class='btn remove' data-toggle='button' aria-pressed='false' autocomplete='off'><span class='glyphicon glyphicon-minus' aria-hidden='true'></span>remove</button></div>";
+            return "<div class='asset-garment-act'><button type='button' class='btn select' data-toggle='button' aria-pressed='false' autocomplete='off'><span class='glyphicon glyphicon-plus' aria-hidden='true'></span>Select</button><button type='button' class='btn remove' data-toggle='confirmation' aria-pressed='false' autocomplete='off'><span class='glyphicon glyphicon-minus' aria-hidden='true'></span>Remove</button></div>";
         },
         startup: function (uploadWin) {
             this.composer = this.graphComposer();
@@ -842,7 +1135,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 var item = _data[i];
                 var imgData = "data:" + item.content_type + ";base64," + item.image;
                 var alink = $("<a>")
-                    .attr("href", "#")
+                    .attr("href", "#").attr("class", 'gmt-group-item')
                     .attr("id", "gmt-img-" + id + "-" + i)
                     .attr("data-id", id);
                 var img = $("<img>")
@@ -900,7 +1193,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     return false;
                 }
             }
-            this.composer.setBackground(holder);
+            // set background image of canvas
+            var imgHolder = holder.children().first();
+            this.composer.setBackground(imgHolder);
         },
         /**
          * 5.1 Set edit mode of garment list item.
@@ -911,32 +1206,39 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var id = holder.attr("data-id");
             holder.find(".asset-garment-act").slideDown();
             holder.css("border-bottom", "2px solid #4A90E2").css("cursor", "pointer");
-            holder.find(".remove").click(function (e) {
-                var self = this;
-                rpc
-                    .query({
-                        route: "/portal/remove_garment",
-                        params: {
-                            id: id
-                        }
-                    })
-                    .then(function (returned_value) {
-                        if (returned_value) {
-                            holder.slideUp(1000).remove();
-                            $.notify({
-                                icon: "glyphicon glyphicon-ok",
-                                title: "Garment removed",
-                                message: "Garment data has been uploaded successfully."
-                            }, {
-                                type: "success"
-                            });
-                        }
-                    });
+            holder.find(".remove").unbind("click");
+            holder.find(".select").unbind("click");
+            holder.find(".remove").confirmation({
+                onCancel: function () {
+                    console.log('You didn\'t choose anything');
+                },
+                onConfirm: function (value) {
+                    var self = this;
+                    rpc
+                        .query({
+                            route: "/portal/remove_garment",
+                            params: {
+                                id: id
+                            }
+                        })
+                        .then(function (returned_value) {
+                            if (returned_value) {
+                                holder.slideUp(1000).remove();
+                                $.notify({
+                                    icon: "glyphicon glyphicon-ok",
+                                    title: "Garment removed",
+                                    message: "Garment data has been uploaded successfully."
+                                }, {
+                                    type: "success"
+                                });
+                            }
+                        });
+                },
             });
             holder.find(".select").click(function (e) {
                 var state = $(this).text();
                 var actbuttons = self.actbuttons();
-                if (state == "cancel") {
+                if (state == "Cancel") {
                     holder.find(".asset-garment-act").remove();
                     holder.append(actbuttons).show();
                     $("#garment-list").removeAttr("data-edit-mode");
@@ -1008,14 +1310,16 @@ odoo.define("emb_portal.garment_upload", function (require) {
             holder
                 .find(".select")
                 .html(
-                    "<span class='glyphicon glyphicon-minus' aria-hidden='true'></span>cancel"
+                    "<span class='glyphicon glyphicon-minus' aria-hidden='true'></span>Cancel"
                 );
             holder.find(".remove").hide();
             holder.find(".asset-garment-act").addClass("fixed");
             holder
                 .find(".asset-garment-act")
                 .append(
-                    "<button type='button' class='btn update' data-toggle='button' aria-pressed='false' autocomplete='off'><span class='glyphicon glyphicon-cog' aria-hidden='true'></span>update</button>"
+                    "<button type='button' class='btn update' data-toggle='button' aria-pressed='false' autocomplete='off'><span class='glyphicon glyphicon-cog' aria-hidden='true'></span>Update</button>"
+                ).append(
+                    "<button type='button' class='btn clear' data-toggle='confirmation' aria-pressed='false' autocomplete='off'><span class='glyphicon glyphicon-repeat' aria-hidden='true'></span>Clear</button>"
                 );
             $("#garment-list").attr("data-edit-mode", true);
             $("#garment-list").attr("data-edit-id", id);
@@ -1023,6 +1327,12 @@ odoo.define("emb_portal.garment_upload", function (require) {
             holder.attr("data-edit-mode", true);
             holder.find(".update").click(function (e) {
                 self._updateGmtInfo(id);
+            });
+            holder.find(".clear").confirmation({
+                rootSelector: '[data-toggle=confirmation]',
+                onConfirm: function (value) {
+                    self._clearGmtInfo(id);
+                },
             });
             self._displayGmtInfo(id);
             self._chooseGarment(holder);
@@ -1166,6 +1476,18 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 });
                 this.uploadModelWin()._preInputGmtInfo(selectData, images);
             }
+        },
+        /**
+         * 10. Clear all designed inputs
+         */
+        _clearGmtInfo: function (id) {
+            // Reset logo editor box
+            this.composer._clearAllDesignData(id);
+            // Clear all input quantity count values
+            $('input[name^="quantity-"]').each(function (item) {
+                $(this).val(0);
+            });
+            return false;
         },
         _getGarmentListEle: function () {
             return $("#garment-list");

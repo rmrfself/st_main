@@ -21,6 +21,8 @@
         <script type='text/javascript' src='/emb_portal/static/src/js/box_designer.js'></script>
         <script type="text/javascript" src="/emb_portal/static/src/js/html2canvas.min.js"></script>
         <script type="text/javascript" src="/emb_portal/static/src/js/fabric.min.js"></script>
+        <script type="text/javascript" src="/emb_portal/static/src/js/bootstrap-confirmation.min.js"></script>
+        <script type="text/javascript" src="/emb_portal/static/src/js/md5.js"></script>
       </xpath>
     </template>
     <template id='portal_layout' name='Emb Portal Layout'>

@@ -135,14 +135,14 @@
         border-radius: 8px;
         background: #FFFFFF;
         padding: 5px 0;
-        overflow-x: hidden;
+        overflow-x: auto;
     }
     .assets-group {
         position: relative;
         min-height: 150px;
         padding: 5px 10px;
         border-bottom: 2px solid #D8D8D8;
-        a {
+        .gmt-group-item {
             position: relative;
             display: table-cell;
             padding: 0 2px;
@@ -164,6 +164,9 @@
             right: 0;
             bottom: 5px;
             display: none;
+            button {
+                min-width: 75px;
+            }
         }
         .fixed {
             padding: 4px 0;
@@ -175,11 +178,14 @@
             background: #4A90E2;
             color: white;
             padding: 1px 5px;
-            margin-right: 10px;
+            margin-right: 15px;
             span {
                 margin-top: 2px;
                 margin-right: 6px;
             }
+        }
+        .asset-garment-act .clear,.asset-garment-act .remove {
+            margin-right: 25px;
         }
     }
 }
@@ -416,13 +422,26 @@
     float: left;
 }
 
-.color-bar{
+#tools-info .current {
+    border: 2px solid #7ED321;
+}
+
+.color-bar, .image-bar-small{
     float: left;
     width: 40px;
     height: 40px;
     border-radius: 6px;
     margin: 10px;
     border: 2px solid #D8D8D8;
+    cursor: pointer;
+    &:hover {
+        border: 2px solid #888888;
+    }
+    img {
+        width: 36px;
+        height: 36px;
+        border-radius: 4px;
+    }
 }
 
 #tools-actions {
@@ -467,4 +486,22 @@
 
 .ddbox-border {
     border: 1px solid #d8d8d8;
+}
+
+.popover {
+    min-width: 120px;
+    z-index: 1000;
+
+    .popover-content{
+        width: 120px;
+    }
+}
+
+.dd-prv-op {
+    padding: 2px 6px;
+    background: #D8D8D8;
+    a {
+        display:block;
+        float: right;
+    }
 }
