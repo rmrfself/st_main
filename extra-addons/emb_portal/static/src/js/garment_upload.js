@@ -233,7 +233,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     originY: "top"
                 });
             };
-            backgroundImg.src = image.find("img").attr("src");
+            backgroundImg.src = image.attr("src");
             canvas.backgroundColor = "white";
             canvas.renderAll();
             // Save current image.
@@ -552,7 +552,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             // Remove data from custom canvas data 
             var gmtId = localStorage.getItem("background-image-id");
             if (gmtId != undefined) {
-                self._removeLogoDataToCanvas(gmtId, targetId);
+                this._removeLogoDataToCanvas(gmtId, targetId);
             }
             // End
             var objects = this.background.getObjects();
@@ -1361,7 +1361,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 },
             });
             self._displayGmtInfo(id);
-            self._chooseGarment(holder);
+            self._chooseGarment(holder.children().first());
         },
         /**
          * 7. Display garment information at below box.
@@ -1709,7 +1709,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var eleBn = $("#gmt-brand");
             var brandName = eleBn.val().trim();
             var nameRule = /^[A-Za-z0-9@_-]+$/;
-            if (brandName == "" || !nameRule.test(brandName)) {
+            if (brandName == "") {
                 this._brandSetFailed();
                 invalidInput = true;
             }
@@ -1746,8 +1746,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
             // validate description
             var desc = $("#gmt-desc").val();
             if (/^\s*$/.test(desc)) {
-                this._descEmptyMessage();
-                invalidInput = true;
+                //this._descEmptyMessage();
+                //invalidInput = true;
             }
             return invalidInput;
         },
@@ -1901,6 +1901,19 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     p.append(cb).append(l);
                     attrs.append(p);
                 }
+                // add select all link
+                var selAll = $('<a>').addClass('sel-all').html('select all').attr('href','#');
+                selAll.click(function(e) {
+                    var selfl = $(this);
+                    if(selfl.text() == 'cancel all') {
+                        selfl.parent().find('input:checkbox').removeAttr('checked');
+                        selfl.text('select all');
+                    } else {
+                        selfl.parent().find('input:checkbox').prop("checked",true);
+                        selfl.text('cancel all');
+                    }
+                });
+                attrs.append(selAll);
             });
             eleSizeTpl.trigger("change");
         },
