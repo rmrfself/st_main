@@ -910,8 +910,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
             // Remove all logos
             canvas.remove(...canvas.getObjects());
             // Retset selected color
-            var firstImage = $('#gm-album-' + id).children()[0];
-            this.setBackground($(firstImage));
             this.background.zoomToPoint({
                 x: 200,
                 y: 200
@@ -1174,7 +1172,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 alink.append(span);
                 itemHolder.append(alink);
                 alink.click(function (event) {
-                    self._chooseGarment($(this));
+                    self._setHolderEditMode(id, $(this).parent(),i);
                 });
             }
             var actbuttons = self.actbuttons();
@@ -1331,37 +1329,40 @@ odoo.define("emb_portal.garment_upload", function (require) {
         /**
          * 6. Set item edith mode.
          */
-        _setHolderEditMode: function (id, holder) {
+        _setHolderEditMode: function (id, holder,selectedIndex = 0) {
             var self = this;
-            holder
-                .find(".select")
-                .html(
-                    "<span class='glyphicon glyphicon-minus' aria-hidden='true'></span>Cancel"
-                ).hide();
-            holder.find(".remove").hide();
-            holder.find(".asset-garment-act").addClass("fixed");
-            holder
-                .find(".asset-garment-act")
-                .append(
-                    "<button type='button' class='btn update' data-toggle='button' aria-pressed='false' autocomplete='off'><span class='glyphicon glyphicon-cog' aria-hidden='true'></span>Update</button>"
-                ).append(
-                    "<button type='button' class='btn clear' data-toggle='confirmation' aria-pressed='false' autocomplete='off'><span class='glyphicon glyphicon-repeat' aria-hidden='true'></span>Clear</button>"
-                );
-            $("#garment-list").attr("data-edit-mode", true);
-            $("#garment-list").attr("data-edit-id", id);
-            holder.css("border-bottom", "2px solid #4A90E2");
-            holder.attr("data-edit-mode", true);
-            holder.find(".update").click(function (e) {
-                self._updateGmtInfo(id);
-            });
-            holder.find(".clear").confirmation({
-                rootSelector: '[data-toggle=confirmation]',
-                onConfirm: function (value) {
-                    self._clearGmtInfo(id);
-                },
-            });
+            if(holder.find(".update").length == 0) { 
+                holder
+                    .find(".select")
+                    .html(
+                        "<span class='glyphicon glyphicon-minus' aria-hidden='true'></span>Cancel"
+                    ).hide();
+                holder.find(".remove").hide();
+                holder.find(".asset-garment-act").addClass("fixed");
+                holder
+                    .find(".asset-garment-act")
+                    .append(
+                        "<button type='button' class='btn update' data-toggle='button' aria-pressed='false' autocomplete='off'><span class='glyphicon glyphicon-cog' aria-hidden='true'></span>Update</button>"
+                    ).append(
+                        "<button type='button' class='btn clear' data-toggle='confirmation' aria-pressed='false' autocomplete='off'><span class='glyphicon glyphicon-repeat' aria-hidden='true'></span>Clear</button>"
+                    );
+                $("#garment-list").attr("data-edit-mode", true);
+                $("#garment-list").attr("data-edit-id", id);
+                holder.css("border-bottom", "2px solid #4A90E2");
+                holder.attr("data-edit-mode", true);
+                holder.find(".update").click(function (e) {
+                    self._updateGmtInfo(id);
+                });
+                holder.find(".clear").confirmation({
+                    rootSelector: '[data-toggle=confirmation]',
+                    onConfirm: function (value) {
+                        self._clearGmtInfo(id);
+                    },
+                });
+            }
             self._displayGmtInfo(id);
-            self._chooseGarment(holder.children().first());
+            var selectedItem = holder.children().get(selectedIndex);
+            self._chooseGarment($(selectedItem));
         },
         /**
          * 7. Display garment information at below box.
