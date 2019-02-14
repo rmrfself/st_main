@@ -1337,7 +1337,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 .find(".select")
                 .html(
                     "<span class='glyphicon glyphicon-minus' aria-hidden='true'></span>Cancel"
-                );
+                ).hide();
             holder.find(".remove").hide();
             holder.find(".asset-garment-act").addClass("fixed");
             holder
