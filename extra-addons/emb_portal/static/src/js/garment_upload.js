@@ -1156,12 +1156,14 @@ odoo.define("emb_portal.garment_upload", function (require) {
             }
             var itemHolder = $("#gm-album-" + id);
             for (var i in _data) {
+                var counterIndex = 0;
                 var item = _data[i];
                 var imgData = "data:" + item.content_type + ";base64," + item.image;
                 var alink = $("<a>")
                     .attr("href", "#").attr("class", 'gmt-group-item')
                     .attr("id", "gmt-img-" + id + "-" + i)
-                    .attr("data-id", id);
+                    .attr("data-id", id)
+                    .attr("data-index", i);
                 var img = $("<img>")
                     .attr("width", 80)
                     .attr("src", imgData)
@@ -1172,7 +1174,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 alink.append(span);
                 itemHolder.append(alink);
                 alink.click(function (event) {
-                    self._setHolderEditMode(id, $(this).parent(),i);
+                    self._setHolderEditMode(id, $(this).parent(),$(this).attr('data-index'));
+                    return false;
                 });
             }
             var actbuttons = self.actbuttons();
