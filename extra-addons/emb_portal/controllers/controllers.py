@@ -26,6 +26,10 @@ class Portal(http.Controller):
     def index(self, **kw):
         return http.request.render('emb_portal.portal_layout')
 
+    @http.route('/portal/cart/', auth='user', website=True)
+    def cart_list(self, **kw):
+        return http.request.render('emb_portal.portal_cart_list')    
+
     @http.route('/portal/color_list', type='json', auth="user", csrf=False, website=True)
     def get_color_list(self, **kw):
         ProductAttr = request.env['product.attribute']
