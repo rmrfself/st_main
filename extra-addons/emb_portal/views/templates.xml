@@ -8,7 +8,7 @@
 		</template>
 		<template id="assets_frontend_emb_portal" inherit_id="web.assets_frontend" name="Emb Portal Frontend Assets">
 			<xpath expr="//link[last()]" position="after">
-        <link rel="stylesheet" type="text/css" href="/emb_portal/static/src/css/bootstrap-datepicker.min.css" />
+				<link rel="stylesheet" type="text/css" href="/emb_portal/static/src/css/bootstrap-datepicker.min.css" />
 				<link rel="stylesheet" type="text/css" href="/emb_portal/static/src/css/qtip.min.css" />
 				<link rel="stylesheet" type="text/less" href="/web/static/lib/bootstrap/less/mixins/grid.less" />
 				<link rel="stylesheet" type="text/less" href="/emb_portal/static/src/css/spectrum.css" />
@@ -18,11 +18,11 @@
 				<script type="text/javascript" src="/emb_portal/static/src/js/typeahead.min.js"></script>
 				<script type="text/javascript" src="/emb_portal/static/src/js/bootstrap-notify.min.js"></script>
 				<script type="text/javascript" src="/emb_portal/static/src/js/qtip.min.js"></script>
-        <script type="text/javascript" src="/emb_portal/static/src/js/spectrum.js"></script>
+				<script type="text/javascript" src="/emb_portal/static/src/js/spectrum.js"></script>
 				<script type="text/javascript" src="/emb_portal/static/src/js/html2canvas.min.js"></script>
 				<script type="text/javascript" src="/emb_portal/static/src/js/fabric.min.js"></script>
 				<script type="text/javascript" src="/emb_portal/static/src/js/bootstrap-confirmation.min.js"></script>
-        <script type="text/javascript" src="/emb_portal/static/src/js/bootstrap-datepicker.min.js"></script>
+				<script type="text/javascript" src="/emb_portal/static/src/js/bootstrap-datepicker.min.js"></script>
 				<script type="text/javascript" src="/emb_portal/static/src/js/md5.js"></script>
 			</xpath>
 		</template>
@@ -41,371 +41,247 @@
 		</template>
 		<template id="portal_cart_list" name="Emb Portal Cart List">
 			<t t-call="website.layout">
-        <t t-set="head">
-          <script type="text/javascript" src="/emb_portal/static/src/js/cart_list.js?debug=assets"></script>
-        </t>
+				<t t-set="head">
+					<script type="text/javascript" src="/emb_portal/static/src/js/cart_list.js?debug=assets">
+					</script>
+				</t>
 				<div id="app_container">
 					<div class="container emb-cart-list">
-						<div class="col-md-8">
+						<div class="col-md-12">
 							<h4 class="title">
 								Items List
 							</h4>
 							<div id="cart-list">
-								<div class="cart-item clearfix">
-                  <div class="bc clearfix">
-                    <div class="col-md-3">
-                      <div class="gmt-ava">
-                        <a href="#" class="top">
-                          <img src="/website/image/product.garment.image/128/image/80x80" />
-                        </a>
-                      </div>
-                      <div class="gmt-ava">
-                        <a href="#" class="bottom">
-                          <img src="/website/image/product.garment.image/128/image/80x80" />
-                        </a>
-                      </div>
-                      <div class="gmt-ava">
-                        <a href="#" class="left">
-                          <img src="/website/image/product.garment.image/128/image/80x80" />
-                        </a>
-                      </div>
-                      <div class="gmt-ava">
-                        <a href="#" class="right">
-                          <img src="/website/image/product.garment.image/128/image/80x80" />
-                        </a>
-                      </div>
-                      <div class="gmt-ava">
-                        <a href="#" class="front">
-                          <img src="/website/image/product.garment.image/128/image/80x80" />
-                        </a>
-                      </div>
-                      <div class="gmt-ava">
-                        <a href="#" class="back">
-                          <img src="/website/image/product.garment.image/128/image/80x80" />
-                        </a>
-                      </div>
-                    </div>
-                    <div class="col-md-9 cart-gmt-info">
-                      <div class="name">
-                        Garment Name:
-                        <span>
-                          Nike Jacket
-                        </span>
-                      </div>
-                      <div class="desc">
-                        <ul>
-                          <li>
-                            Stretch woven of 100% polyester bonded to microfleece
-                          </li>
-                          <li>
-                            100% polyester with waterproof(8000mm)
-                          </li>
-                          <li>
-                            100% polyester
-                          </li>
-                          <li>
-                            100% polyester
-                          </li>
-                        </ul>
-                      </div>
-                      <div class="color-blocks">
-                        <span>
-                          Colors:
-                        </span>
-                        <span style="display:inline-block;width:30px;height:30px;background:#333333;border-radius: 6px;border:1px solid #F2F2F2;">
-                        </span>
-                        <span class="size-label">
-                          Size Type: US
-                        </span>
-                      </div>
-                      <div class="quantity">
-                        <p>Quantity:</p>
-                        <div class="col">
-                          <span class="size-name">
-                            XS
-                          </span>
-                          <input name="quantity-XS-15" type="text" id="quantity-15" class="form-control" value='10' />
-                        </div>
-                        <div class="col">
-                          <span class="size-name">
-                            S
-                          </span>
-                          <input name="quantity-S-15" type="text" id="quantity-15" class="form-control" value='20' />
-                        </div>
-                        <div class="col">
-                          <span class="size-name">
-                            L
-                          </span>
-                          <input name="quantity-XS-15" type="text" id="quantity-15" class="form-control" value='10' />
-                        </div>
-                        <div class="col">
-                          <span class="size-name">
-                            M
-                          </span>
-                          <input name="quantity-S-15" type="text" id="quantity-15" class="form-control" value='10' />
-                        </div>
-                        <div class="col">
-                          <span class="size-name">
-                            XL
-                          </span>
-                          <input name="quantity-XS-15" type="text" id="quantity-15" class="form-control" value='10' />
-                        </div>
-                        <div class="col">
-                          <span class="size-name">
-                            2XL
-                          </span>
-                          <input name="quantity-S-15" type="text" id="quantity-15" class="form-control" value='10' />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-									<div class="sc clearfix">
-										<div class="col-md-7 logos">
-											<table class="table table-striped">
-												<thead>
-													<tr>
-														<th scope="col">
-															LogoId
-														</th>
-														<th scope="col">
-															Name
-														</th>
-														<th scope="col">
-															Service
-														</th>
-														<th scope="col">
-															Location
-														</th>
-													</tr>
-												</thead>
-												<tbody>
-													<tr>
-														<th scope="row">
-															W562256289
-														</th>
-														<td>
-															Olypia
-														</td>
-														<td>
-															EMB
-														</td>
-														<td>
-															R/Chest
-														</td>
-													</tr>
-													<tr>
-														<th scope="row">
-															W562256290
-														</th>
-														<td>
-															Cup
-														</td>
-														<td>
-															Heat
-														</td>
-														<td>
-															R/Chest
-														</td>
-													</tr>
-													<tr>
-														<th scope="row">
-															W562256291
-														</th>
-														<td>
-															Olypia
-														</td>
-														<td>
-															Prints
-														</td>
-														<td>
-															L/Chest
-														</td>
-													</tr>
-                          <tr>
-														<th scope="row">
-															W562256292
-														</th>
-														<td>
-															Olypia
-														</td>
-														<td>
-															Prints
-														</td>
-														<td>
-															L/Chest
-														</td>
-													</tr>
-												</tbody>
-											</table>
-										</div>
-										<div class="col-md-5 sch">
-                      <div class='sc-con clearfix'>
-                        <span class='t'>surcharge</span>
-                        <select id='sc-list' class='sc-list'>
-                          <option>surcharge-01</option>
-                          <option>surcharge-02</option>
-                          <option>surcharge-03</option>
-                        </select>
-                      </div>
-                      <div class='sc-con clearfix'>
-                        <span class='tin'>quantity</span>
-                        <input name="quantity-S-15" type="text" id="quantity-15" class="qfc" value='0' />
-                        <button type="button" class="btn btn-info">add</button>
-                      </div>
-                      <div class='sc-con clearfix'>
-                        <table class='table table-stripped'>
-                          <tr>
-                            <td>surcharge-1</td>
-                            <td><input name="quantity-S-15" type="text" id="quantity-15" class="qfc" value='10' /></td>
-                            <td><a href='#'><i class="glyphicon glyphicon-trash"></i></a></td>
-                          </tr>
-                          <tr>
-                            <td>surcharge-2</td>
-                            <td><input name="quantity-S-15" type="text" id="quantity-15" class="qfc" value='5' /></td>
-                            <td><a href='#'><i class="glyphicon glyphicon-trash"></i></a></td>
-                          </tr>
-                        </table>
-                      </div>
-										</div>
-									</div>
-                  <div class='dcc clearfix'>
-                    <div class='ds'>Discount(%): <span>5%</span></div>
-                    <div class='ds'>Price: <span>CAD500</span> Tax: <span>CAD50</span></div>
-                    <div class='ds'>Unit Total: <span>CAD550</span></div>
-                  </div>
-                  <div class='bcc clearfix'>
-                    <div class='btns'>
-                      <button type="button" class="btn btn-default"><i class="glyphicon glyphicon-repeat"></i>Back to update</button>
-                      <button type="button" class="btn btn-default"><i class="glyphicon glyphicon-ok"></i>Save Change</button>
-                      <button type="button" class="btn btn-default"><i class="glyphicon glyphicon-remove"></i>Cancel Order</button>
-                    </div>
-                  </div>
-								</div>
-                <div class="cart-item clearfix">
-                  <div class="bc clearfix">
-                    <div class="col-md-3">
-                      <div class="gmt-ava">
-                        <a href="#" class="top">
-                          <img src="/website/image/product.garment.image/128/image/160x160" />
-                        </a>
-                      </div>
-                    </div>
-                    <div class="col-md-9 cart-gmt-info">
-                      <div class="name">
-                        Logo Name:
-                        <span>
-                          Nike Design 01
-                        </span>
-                      </div>
-                      <div class="size">
-                        <p>
-                          Size 
-                        </p>
-                        <table class='table'>
-                          <tr>
-                            <td>Width</td>
-                            <td>200 mm</td>
-                            <td>Height</td>
-                            <td>200 mm</td>
-                          </tr>
-                        </table>
-                      </div>
-                      <div class='sc-con clearfix'>
-                        <span class='t'>Surcsharge</span>
-                        <select id='sc-list' class='sc-list'>
-                          <option>surcharge-01</option>
-                          <option>surcharge-02</option>
-                          <option>surcharge-03</option>
-                        </select>
-                        <button type="button" class="btn btn-info">add</button>
-                      </div>
-                      <div class='sc-con clearfix'>
-                        <table class='table table-stripped'>
-                          <tr>
-                            <td>surcharge-1</td>
-                            <td><a href='#'><i class="glyphicon glyphicon-trash"></i></a></td>
-                          </tr>
-                          <tr>
-                            <td>surcharge-2</td>
-                            <td><a href='#'><i class="glyphicon glyphicon-trash"></i></a></td>
-                          </tr>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                  <div class='dcc clearfix'>
-                    <div class='ds'>Discount(%): <span>5%</span></div>
-                  </div>
-                  <div class='bcc clearfix'>
-                    <div class='btns'>
-                      <button type="button" class="btn btn-default"><i class="glyphicon glyphicon-repeat"></i>Replace Logo Image</button>
-                      <button type="button" class="btn btn-default"><i class="glyphicon glyphicon-remove"></i>Cancel Order</button>
-                    </div>
-                  </div>
+								<div class="cart-table">
+									<table class="table table-stripped">
+										<tr>
+											<th>
+												<input type="checkbox" />
+											</th>
+											<th>
+												Designments
+											</th>
+											<th>
+												Brand
+											</th>
+											<th>
+												Style
+											</th>
+											<th>
+												Type
+											</th>
+											<th>
+												Color
+											</th>
+											<th>
+												Service
+											</th>
+											<th>
+												Location
+											</th>
+											<th>
+												Size
+											</th>
+											<th>
+												Surcharges
+											</th>
+										</tr>
+										<tr>
+											<td>
+												<input type="checkbox" />
+											</td>
+											<td>
+												<img src="http://localhost:8069/website/image/product.garment.image/128/image/80x80" />
+											</td>
+											<td>
+												Nike
+											</td>
+											<td>
+												Round Nick
+											</td>
+											<td>
+												Type Label
+											</td>
+											<td>
+												Red
+											</td>
+											<td>
+												Embroidery
+											</td>
+											<td>
+												Top Nest
+											</td>
+											<td>
+												<p>
+													S:
+													<input value="10" type="text" />
+												</p>
+												<p>
+													L:
+													<input value="12" type="text" />
+												</p>
+											</td>
+											<td>
+												<p>
+													G.S:
+													<input value="10" type="text" />
+												</p>
+												<p>
+													L.S:
+													<input value="12" type="text" />
+												</p>
+											</td>
+										</tr>
+										<tr>
+											<td>
+												<input type="checkbox" />
+											</td>
+											<td>
+												<img src="http://localhost:8069/website/image/product.garment.image/140/image/80x80" />
+											</td>
+											<td>
+												Addass
+											</td>
+											<td>
+												Round Nick
+											</td>
+											<td>
+												Type Label
+											</td>
+											<td>
+												Green
+											</td>
+											<td>
+												Heat
+											</td>
+											<td>
+												Top Nest
+											</td>
+											<td>
+												<p>
+													S:
+													<input value="20" type="text" />
+												</p>
+												<p>
+													L:
+													<input value="20" type="text" />
+												</p>
+											</td>
+											<td>
+												<p>
+													G.S:
+													<input value="50" type="text" />
+												</p>
+												<p>
+													L.S:
+													<input value="50" type="text" />
+												</p>
+											</td>
+										</tr>
+									</table>
 								</div>
 							</div>
 						</div>
-						<div class="col-md-4">
+						<div class="col-md-12">
 							<h4 class="title">
 								Customer Info
 							</h4>
-              <table class='table table-stripped'>
-                <tr>
-                  <td>Buyer</td>
-                  <td><input class='form-control' type='text' name='order-buyer' /></td>
-                </tr>
-                <tr>
-                  <td>P.O.#</td>
-                  <td><input class='form-control' type='text' name='order-buyer' /></td>
-                </tr>
-                <tr>
-                  <td>Job Title</td>
-                  <td><input class='form-control' type='text' name='order-buyer' /></td>
-                </tr>
-                <tr>
-                  <td>Shipper</td>
-                  <td>
-                    <select id='sc-list' class='sc-list'>
-                          <option>Shipper-01</option>
-                          <option>Shipper-02</option>
-                          <option>Shipper-03</option>
-                    </select>
-                  </td>
-                </tr>
-                <tr>
-                  <td>Shipping Date</td>
-                  <td><input class='form-control shipping-date' type='text' name='order-buyer' /></td>
-                </tr>
-                <tr>
-                  <td>Repare At</td>
-                  <td><input class='form-control shipping-date' type='text' name='order-buyer' /></td>
-                </tr>
-              </table>
-              <div class="form-group green-border-focus">
-                <label>Message</label>
-                <textarea class="form-control" rows="8"></textarea>
-              </div>
-              <h4 class="title">
+							<table class="table">
+								<tr>
+									<td>
+										Buyer
+									</td>
+									<td>
+										<input class="form-control" type="text" name="order-buyer" />
+									</td>
+									<td>
+										P.O.#
+									</td>
+									<td>
+										<input class="form-control" type="text" name="order-buyer" />
+									</td>
+									<td>
+										Job Title
+									</td>
+									<td>
+										<input class="form-control" type="text" name="order-buyer" />
+									</td>
+								</tr>
+								<tr>
+									<td>
+										Shipper
+									</td>
+									<td>
+										<select id="sc-list" class="sc-list">
+											<option>
+												Shipper-01
+											</option>
+											<option>
+												Shipper-02
+											</option>
+											<option>
+												Shipper-03
+											</option>
+										</select>
+									</td>
+									<td>
+										Shipping Date
+									</td>
+									<td>
+										<input class="form-control shipping-date" type="text" name="order-buyer" />
+									</td>
+									<td>
+										Repare At
+									</td>
+									<td>
+										<input class="form-control shipping-date" type="text" name="order-buyer" />
+									</td>
+								</tr>
+							</table>
+							<div class="form-group green-border-focus">
+								<label>
+									Message
+								</label>
+								<textarea class="form-control" rows="8">
+								</textarea>
+							</div>
+							<h4 class="title">
 								Order Total
 							</h4>
-              <table class='table table-stripped'>
-                <tr>
-                  <td>SubTotal</td>
-                  <td>CAD 10000.0</td>
-                </tr>
-                <tr>
-                  <td>Texes</td>
-                  <td>CAD 100.0</td>
-                </tr>
-                <tr>
-                  <td>Total</td>
-                  <td>CAD 10100.0</td>
-                </tr>
-              </table>
-              <div class='btns'>
-                <button type="button" class="btn btn-default">Ask For Quotation</button>
-                <button type="button" class="btn btn-default">Continue Ordering</button>
-              </div>
+							<table class="table table-stripped">
+								<tr>
+									<td>
+										SubTotal
+									</td>
+									<td>
+										CAD 10000.0
+									</td>
+								</tr>
+								<tr>
+									<td>
+										Texes
+									</td>
+									<td>
+										CAD 100.0
+									</td>
+								</tr>
+								<tr>
+									<td>
+										Total
+									</td>
+									<td>
+										CAD 10100.0
+									</td>
+								</tr>
+							</table>
+							<div class="btns">
+								<button type="button" class="btn btn-default">
+									Ask For Quotation
+								</button>
+								<button type="button" class="btn btn-default">
+									Continue Ordering
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -413,9 +289,10 @@
 		</template>
 		<template id="portal_layout" name="Emb Portal Layout">
 			<t t-call="website.layout">
-        <t t-set="head">
-          <script type="text/javascript" src="/emb_portal/static/src/js/garment_upload.js"></script>
-        </t>
+				<t t-set="head">
+					<script type="text/javascript" src="/emb_portal/static/src/js/garment_upload.js">
+					</script>
+				</t>
 				<div id="app_container">
 					<div class="container emb_portal">
 						<div class="row">
@@ -607,6 +484,24 @@
 										</div>
 									</div>
 									<div id="ddbox">
+									</div>
+									<div id='sc-inputs' class='hide'>
+										<div class="form-group">
+											<label for="logo-sc" style='margin-right:15px;'>L.Surcharge</label>
+											<select id='logo-sc'>
+												<option value=''>None</option>
+												<option value='50'>50</option>
+												<option value='50'>100</option>
+											</select>
+										</div>
+										<div class="form-group">
+											<label for="gm-sc" style='margin-right:15px;'>G.Surcharge</label>
+											<select id='gm-sc'>
+												<option value=''>None</option>
+												<option value='50'>50</option>
+												<option value='50'>100</option>
+											</select>
+										</div>
 									</div>
 									<div class="submit-area">
 										<button type="button" id="submit-edit-ok" class="btn btn-primary" aria-pressed="false" autocomplete="off">
