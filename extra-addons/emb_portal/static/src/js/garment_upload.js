@@ -111,6 +111,26 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     originZoom * ZOOM_OUT_RATE
                 );
             });
+            $("#btn-clear-all").confirmation({
+                onCancel: function () {
+                    console.log('You didn\'t choose anything');
+                },
+                onConfirm: function (value) {
+                    /**
+                     * This action will clear all the design on current side
+                     * 1. clear all the logos on this side
+                     */
+                    self._clearCurDesignData();
+                    $.notify({
+                        icon: "glyphicon glyphicon-ok",
+                        title: "Clear all",
+                        message: "Data cleared successfully."
+                    }, {
+                        type: "success"
+                    });
+                },
+            });
+            $('#submit-edit-ok').attr('disabled', true);
             $('#submit-edit-finish').attr('disabled', true);
             $('#logo-sc').select2({
                 width: "40%"
@@ -246,6 +266,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             // Save current image.
             localStorage.setItem("background-image-id", image.parent().attr('id'));
             localStorage.setItem("background-mode", 'image');
+            localStorage.setItem("background-face", image.attr('data-name'));
             var backgroundColor = localStorage.getItem("background-color");
             if (backgroundColor != null) {
                 var toolItem = {
@@ -285,7 +306,22 @@ odoo.define("emb_portal.garment_upload", function (require) {
             this._saveGmtDataToCanvas(backgroundImageId, 'color', color);
         },
         /**
-         * 6.1 After clicking colors block, add a new block into canvas.
+         * 7.0.1 Change background color of canvas by click color blocks;
+         */
+        _changeBackgroundColorOnly: function (color) {
+            var backgroundImageId = localStorage.getItem("background-image-id");
+            if (backgroundImageId != null) {
+                var toolItem = {
+                    type: "image",
+                    payload: backgroundImageId
+                };
+                this._addToolBoxItem(toolItem);
+            }
+            // save it into custom data
+            this._saveGmtDataToCanvas(backgroundImageId, 'color', color);
+        },
+        /**
+         * 7.1 After clicking colors block, add a new block into canvas.
          */
         _addToolBoxItem: function (item) {
             var self = this;
@@ -328,7 +364,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             }
         },
         /**
-         * 7. Drag the logo into canvas handler.
+         * 7.3 Drag the logo into canvas handler.
          */
         _onLogoDragged: function (event) {
             var dataId = $(event.target).attr("data-id");
@@ -337,7 +373,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             localStorage.setItem("drag-data-type", dataType);
         },
         /**
-         * 7.1 Active the canvas when dragging logo
+         * 7.4 Active the canvas when dragging logo
          */
         _allowDropped: function (event) {
             event.preventDefault();
@@ -345,7 +381,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             target.addClass("green_border");
         },
         /**
-         * 7.2  After dropped handler when drop the logo.
+         * 7.5 After dropped handler when drop the logo.
          */
         _onLogoDropped: function (event) {
             // get position
@@ -412,14 +448,16 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     self._saveLogoDataToCanvas(gmtId, targetId, targetType);
                 }
                 // End
+                // Set up init functions
+                self._showLogoInfo(targetId, targetType, obj);
                 self._showLineColorsEx(targetId, targetType, obj._objects);
                 obj.on("selected", function (event) {
                     var act = self.background.getActiveObject();
+                    self._showLogoInfo(targetId, targetType, act);
                     self._showLineColorsEx(targetId, targetType, act._objects);
                     if ($("#tools-box").is(":visible") == false) {
                         $("#tools-box").slideDown();
                     }
-                    console.log('data object selected');
                 });
                 var canvas = self.background;
                 window.fabric.util.addListener(
@@ -440,7 +478,184 @@ odoo.define("emb_portal.garment_upload", function (require) {
             if ($("#tools-box").is(":visible") == false) {
                 $("#tools-box").slideDown();
             }
-            // Save current logo object into canvas
+            $('#submit-edit-ok').removeAttr('disabled');
+        },
+        /**
+         * 7.6 set up logo surcharges and services
+         */
+        _showLogoInfo: function (logoId, logoType, target) {
+            // check current logo target
+            // return false if nothing selected
+            if (_.isEmpty(target)) {
+                $.notify({
+                    icon: "glyphicon glyphicon-remove",
+                    title: "Error input",
+                    message: "Please select the edit target before input this."
+                }, {
+                    type: "danger"
+                });
+                return false;
+            }
+            var self = this;
+            var parent = $('#logo-info');
+            // Clear the inputs content
+            parent.html('');
+            /**
+             * Create logo information table
+             * 1. save user's input after changes
+             * 2. logo user's input after selected
+             * 3. save the data with json format
+             */
+            var holderTable = $('<div>').addClass('form-inline logo-info-ex');
+            /**
+             * ID
+             */
+            var idRow = $('<div>').addClass('form-group id-fg');
+            idRow.append($('<label>').text('ID'));
+            idRow.append($('<input type="text" class="form-control" id="ex-logo-id" value="W4230933" readonly="true" />'));
+            holderTable.append(idRow);
+            /**
+             * Location
+             */
+            var locRow = $('<div>').addClass('form-group');
+            locRow.append($('<label>').text('Location'));
+            locRow.append($('<input type="text" id="ex-logo-loc" class="form-control" placeholder="top left">'));
+            holderTable.append(locRow);
+            /**
+             * Surcharges
+             * 
+             */
+            var scRow = $('<div>').addClass('form-group sc-fg');
+            scRow.append($('<label>').text('Surcharge'));
+            scRow.append($('<input type="text" id="ex-logo-sc" placeholder="0.00" class="form-control">'));
+            holderTable.append(scRow);
+            /**
+             * Services
+             * support 2 types 
+             * dst && ai
+             */
+            var serRow = $('<div>').addClass('form-group logo-ser');
+            serRow.append($('<h5>').text('Service'));
+            if (logoType == FILE_TYPE_AI) {
+                serRow.append($('<input name="ex-logo-type" type="radio" value="Screen Print" checked="checked">'));
+                serRow.append($('<label>').text('Screen Print'));
+                serRow.append($('<input name="ex-logo-type" type="radio" value="Heat Transfer">'));
+                serRow.append($('<label>').text('Heat Transfer'));
+                serRow.append($('<input name="ex-logo-type" type="radio" value="Laser Engrave">'));
+                serRow.append($('<label>').text('Laser Engrave'));
+            }
+            if (logoType == FILE_TYPE_DST) {
+                serRow.append($('<input name="ex-logo-type" type="checkbox" value="Embroidery" checked="checked" disabled="disabled">'));
+                serRow.append($('<label>').text('Embroidery'));
+            }
+            holderTable.append(serRow);
+            /**
+             * Set input value
+             */
+            var o_sertype = target;
+
+            /**
+             * Surcharge Desc
+             */
+            var scDescRow = $('<div>').addClass('form-group sc-desc-fg');
+            scDescRow.append($('<label>').text('Surcharge Description'));
+            scDescRow.append($('<textarea class="form-control" rows="2" id="ex-logo-scdesc">'));
+            holderTable.append(scDescRow);
+            /**
+             * Append the table
+             */
+            parent.append(holderTable);
+            /**
+             * Set input value after changed by this.
+             */
+            var o_loc = target.location;
+            if (o_loc != undefined) {
+                $('#ex-logo-loc').val(o_loc);
+            }
+            /**
+             * Bind location change event
+             */
+            $("#ex-logo-loc").blur(function (e) {
+                var val = $(this).val().trim();
+                var act = self.background.getActiveObject();
+                if (act == null) {
+                    return false;
+                }
+                if (val == undefined || val.length == 0) {
+                    delete act.location;
+                    return false;
+                }
+                act.location = $(this).val();
+            });
+            /**
+             * Set input value after changed by this.
+             */
+            var o_sc = target.surcharge;
+            if (o_sc != undefined) {
+                $('#ex-logo-sc').val(o_sc);
+            }
+            /**
+             * Surcharge event
+             */
+            $("#ex-logo-sc").blur(function (e) {
+                var val = $(this).val().trim();
+                var act = self.background.getActiveObject();
+                if (act == null) {
+                    return false;
+                }
+                if (val == undefined || val.length == 0) {
+                    delete act.surcharge;
+                    return false;
+                }
+                act.surcharge = parseInt(val);
+            });
+            /**
+             * Set logo serivice
+             */
+            var o_ser = target.service;
+            if (o_ser != undefined) {
+                $("input[name='ex-logo-type']").each(function (e) {
+                    if ($(this).val() == o_ser) {
+                        $(this).prop('checked', true);
+                    }
+                });
+            } else {
+                if (logoType == FILE_TYPE_AI) {
+                    target.service = 'Screen Print';
+                }
+                if (logoType == FILE_TYPE_DST) {
+                    target.service = 'Embroidery';
+                }
+            }
+            /**
+             * Bind event handler for service type
+             */
+            $("input[name='ex-logo-type']").change(function (e) {
+                var act = self.background.getActiveObject();
+                act.service = $(this).val();
+            });
+            /**
+             * Set input value
+             */
+            var o_scdesc = target.surchargeDescription;
+            if (o_scdesc != undefined) {
+                $('#ex-logo-scdesc').val(o_scdesc);
+            }
+            /**
+             * Surcharge desc event binding
+             */
+            $("#ex-logo-scdesc").blur(function (e) {
+                var val = $(this).val().trim();
+                var act = self.background.getActiveObject();
+                if (act == null) {
+                    return false;
+                }
+                if (val == undefined || val.length == 0) {
+                    delete act.surchargeDescription;
+                    return false;
+                }
+                act.surchargeDescription = val;
+            });
         },
         /**
          * 8.  Important: when selectting the logo in canvas, get all lines and generate new inputs of line colors
@@ -598,6 +813,10 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 return false;
             }
             /**
+             * Save surcharge data into localstorage object
+             */
+
+            /**
              * Validate whether needing to create or update
              */
             this._determineUpdateOrNew();
@@ -638,6 +857,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             /**
              * Check the line colors input
              */
+            var Gmtid = localStorage.getItem("background-image-id");
             var garmentId = $('#garment-list').attr('data-edit-id');
             var garmentEditMode = $('#garment-list').attr('data-edit-mode');
             if (garmentEditMode != 'true' || garmentId == undefined) {
@@ -666,6 +886,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
             for (var i in objects) {
                 var item = objects[i];
                 var subItems = item._objects;
+                /**
+                 * 00. Check logo lines color
+                 */
                 for (var k in subItems) {
                     var tmp = subItems[k];
                     var strokeData = tmp.strokeData || tmp.fillData;
@@ -679,6 +902,40 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     self.background.renderAll();
                     break;
                 }
+                /**
+                 * 01. Check location field
+                 */
+                if (item.location == undefined) {
+                    $('#ex-logo-loc').attr('style', 'background:#F1B4BB');
+                    item.set("dirty", true);
+                    self.background.setActiveObject(item);
+                    self.background.renderAll();
+                    unCompleted = true;
+                    break;
+                } else {
+                    self._saveLogoAttrToCanvas(Gmtid, item.resourceId, 'location', item.location);
+                }
+                if (item.surcharge == undefined) {
+                    $('#ex-logo-sc').attr('style', 'background:#F1B4BB');
+                    item.set("dirty", true);
+                    self.background.setActiveObject(item);
+                    self.background.renderAll();
+                    unCompleted = true;
+                    break;
+                } else {
+                    self._saveLogoAttrToCanvas(Gmtid, item.resourceId, 'surcharge', item.surcharge);
+                }
+                if (item.surchargeDescription == undefined) {
+                    $('#ex-logo-scdesc').attr('style', 'background:#F1B4BB');
+                    item.set("dirty", true);
+                    self.background.setActiveObject(item);
+                    self.background.renderAll();
+                    unCompleted = true;
+                    break;
+                } else {
+                    self._saveLogoAttrToCanvas(Gmtid, item.resourceId, 'surchargeDescription', item.surchargeDescription);
+                }
+                self._saveLogoAttrToCanvas(Gmtid, item.resourceId, 'service', item.service);
             }
             if (unCompleted) {
                 var inputs = $('#line-container').find('input');
@@ -691,7 +948,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 $("#compose-box")
                     .qtip({
                         content: {
-                            text: "You must input all line color inputs before design down."
+                            text: "You must input all before design down."
                         },
                         position: {
                             my: "top center",
@@ -714,12 +971,17 @@ odoo.define("emb_portal.garment_upload", function (require) {
              * check count data;
              */
             var qtyFieldsEmpty = false;
+            var counts = {}
             $('#gmt-info-quantity').find('input').each(function (item) {
                 var val = $(this).val();
+                var name = $(this).attr('name');
                 if (parseInt(val) > 0) {
                     qtyFieldsEmpty = true;
                 }
+                var xn = name.split('-')[1];
+                counts[xn] = val;
             });
+            console.log(counts);
             if (qtyFieldsEmpty == false) {
                 $("#gmt-info-quantity")
                     .qtip({
@@ -738,32 +1000,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 return false;
             }
             // check design checkbox status
-            var ddbox = $('#ddbox');
-            if (ddbox.children().length == 0) {
-                return false;
-            }
-            var dems = $('.prv-ck-inn');
-            var demsChecked = false;
-            dems.each(function (item) {
-                if ($(this).prop('checked')) {
-                    demsChecked = true;
-                }
-            });
-            if (demsChecked == false) {
-                $("#ddbox")
-                    .qtip({
-                        content: {
-                            text: "At least one designment is choosen."
-                        },
-                        position: {
-                            my: "bottom center",
-                            at: "top center"
-                        },
-                        show: {
-                            event: false
-                        }
-                    })
-                    .qtip("show");
+            var pptable = $('#pptable');
+            if (pptable.find('tr').length < 2) {
                 return false;
             }
             $(".emb_portal").block({
@@ -775,7 +1013,35 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     background: "transparent"
                 }
             });
+            /**
+             * Get current garment id
+             */
+            var garmentId = $('#garment-list').attr('data-edit-id');
+            var faces = [];
             var postData = {};
+            $('input[name^="gmt-face"]').each(function (item) {
+                faces.push(this.value);
+            });
+            postData['gid'] = garmentId;
+            postData['color'] = localStorage.getItem("background-color");
+            postData['data'] = {};
+            for (var i = 0; i < faces.length; i++) {
+                var savedData = 'line-' + garmentId + '-' + faces[i];
+                var v = localStorage.getItem(savedData);
+                if (v != undefined) {
+                    var pd = JSON.parse(v);
+                    var imgd = $('#lm-' + garmentId + '-' + faces[i]);
+                    pd['image'] = imgd.attr('src');
+                    postData['data'][savedData] = pd;
+                }
+            }
+            /**
+             * Save the count data
+             */
+            postData['count'] = counts;
+            if (_.isEmpty(postData)) {
+                return false;
+            }
             var postUrl = '/portal/cart_update';
             ajax.jsonRpc(postUrl, "call", postData)
                 .always(function () {
@@ -785,6 +1051,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     }
                 })
                 .done(function (data) {
+                    self._clearAllDesignData();
                     $.notify({
                         icon: "glyphicon glyphicon-ok",
                         title: "Item is added.",
@@ -864,29 +1131,14 @@ odoo.define("emb_portal.garment_upload", function (require) {
             if (_.isEmpty(editMode)) {
                 return false;
             }
-            var dataDigist = CryptoJS.MD5(JSON.stringify(this.background.custom_attr));
-            var findTarget = false;
-            var subParent = $('#' + dataDigist);
-            if (subParent.length == 0) {
-                return findTarget;
+            var garmentId = $('#garment-list').attr('data-edit-id');
+            var gmtFace = localStorage.getItem("background-face");
+            var savedData = 'line-' + garmentId + '-' + gmtFace;
+            var checkSaved = localStorage.getItem(savedData);
+            if (checkSaved != undefined) {
+                return true;
             }
-            subParent.children().each(function (item) {
-                var tmpMode = $(this).attr('data-mode');
-                // search designment with color background.
-                if (editMode == 'color') {
-                    var curColor = localStorage.getItem("background-color");
-                    var colorVl = $(this).attr('data-value');
-                    if (curColor == colorVl) {
-                        $(this).effect('highlight', {}, 3000);
-                        findTarget = true;
-                    }
-                }
-                if (editMode == 'image') {
-                    $(this).effect('highlight', {}, 3000);
-                    findTarget = true;
-                }
-            });
-            return findTarget;
+            return false;
         },
         /**
          * 13.1 add preiview designment by current one time.
@@ -898,7 +1150,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 $.notify({
                     icon: "glyphicon glyphicon-remove",
                     title: "Found the same data",
-                    message: "No changes found!"
+                    message: "Please add your design into cart before going on!"
                 }, {
                     type: "danger"
                 });
@@ -907,7 +1159,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             // 2. get top parent box
             var parent = $('#ddbox');
             // 3. get current edit mode
-            var editMode = localStorage.getItem("background-mode");
+            var GmtImageId = localStorage.getItem("background-image-id");
             // 4. validate current resources and check if they are the same.
             var garmentId = $('#garment-list').attr('data-edit-id');
             var objects = this.background.getObjects();
@@ -917,87 +1169,67 @@ odoo.define("emb_portal.garment_upload", function (require) {
             });
             // 5. create new image node.
             var img = $('<img>');
-            var dataUrl = this.background.toDataURL('png');
+            var dataUrl = this.background.toDataURL('image/jpeg');
             img.attr('src', dataUrl);
-            // 6. get current designment digist
-            console.log('=========');
-            console.log(this.background.custom_attr);
+            /**
+             * Create preview table
+             * 1. create table holder
+             */
             var dataDigist = CryptoJS.MD5(JSON.stringify(this.background.custom_attr));
-
-            // 7. get the parent row
-            // 7.0.1 Save design data into localstorage
-            localStorage.setItem('dd-' + dataDigist, JSON.stringify(this.background.toJSON(['resourceId', 'custom_attr', 'strokeData', 'fillData', 'resourceType', 'dataType'])));
-            localStorage.setItem('dc-' + dataDigist, JSON.stringify(this.background.custom_attr));
-            var subParentRow = $('#' + dataDigist);
-            var ckh = $('<div>').addClass('dd-dsh');
-            if (subParentRow.length == 0) {
-                subParentRow = $('<div>').addClass('dd-sub-parent');
-                subParentRow.attr('id', dataDigist);
-                // 7.1 add input checkbox
-                var cklabel = $('<label>').html('Select');
-                var ck = $('<input type="checkbox" />');
-                ck.attr('id', 'ck-' + garmentId + '-' + parent.children().length);
-                ck.attr('data-id', dataDigist);
-                // when click current item, un-check the others;
-                ck.change(function (ev) {
-                    if ($(this).is(':checked')) {
-                        var k = parent.children().length;
-                        for (var j = 0; j < k; j++) {
-                            var tmp = $('#ck-' + garmentId + '-' + j);
-                            if (tmp.length > 0 && tmp.attr('id') != ck.attr('id')) {
-                                tmp.prop('checked', false);
-                            } else {
-                                tmp.prop('checked', true);
-                                var designData = localStorage.getItem('dd-' + dataDigist);
-                                var customData = JSON.parse(localStorage.getItem('dc-' + dataDigist));
-                                if (designData != null && !_.isEmpty(designData)) {
-                                    self.background.loadFromJSON(designData);
-                                    //self.background.custom_attr = customData;
-                                }
-                            }
-                        }
-                    }
-                });
-                ckh.append(cklabel).append(ck);
-                subParentRow.append(ckh);
+            var pptable = $('#pptable');
+            if (pptable.length == 0) {
+                pptable = $('<table>').addClass('table table-bordered design-table');
+                pptable.attr('id', 'pptable');
+                var tr = $('<tr>').append($('<td>').html('Design Preview'));
+                tr.append($('<td>').html('Side'));
+                tr.append($('<td>').html('Garment Color'));
+                tr.append($('<td>').html('Logo count'));
+                tr.append($('<td>').html('Action'));
+                pptable.append(tr);
             }
-
-            // 8. create new sub parent row.
-            var imgHolder = $('<div>').addClass('dd-prv-block');
-            imgHolder.attr('data-mode', editMode);
-            if (editMode == 'color') {
-                var colorVl = localStorage.getItem("background-color");
-                imgHolder.attr('data-value', colorVl);
-            }
-            imgHolder.attr('data-id', garmentId);
-            imgHolder.attr('logo-ids', logoIds.join(','));
-            // 8.1 add checkbox and remove link
-            var checked = $('<input>').attr('type', 'checkbox').addClass('prv-ck-inn').attr("checked", 'checked');
-            var toolbar = $('<div>').addClass('dd-prv-op');
-            toolbar.append(checked);
-            var removeLink = $('<a>').addClass('prv-rm-link').text('remove');
-            removeLink.click(function (e) {
-                imgHolder.remove();
-                $.notify({
-                    icon: "glyphicon glyphicon-remove",
-                    title: "Designment removed",
-                    message: "data removed successfully!"
-                }, {
-                    type: "success"
-                });
-                if (parent.children().length == 0) {
-                    parent.removeClass('ddbox-border');
-                    $('#sc-inputs').addClass('hide');
+            var dataTr = $('<tr>');
+            var gmtFace = localStorage.getItem("background-face");
+            /**
+             * 01. Append image
+             */
+            img.attr('height', 100);
+            img.attr('id','lm-' + garmentId + '-' + gmtFace);
+            dataTr.append($('<td>').append(img));
+            /**
+             * 02. Append garment face
+             */
+            var hiddenf = $('<input type="hidden" name="gmt-face[]">').val(gmtFace);
+            dataTr.append($('<td>').html(gmtFace).append(hiddenf));
+            /**
+             * 03. Append color
+             */
+            var colorVl = localStorage.getItem("background-color");
+            dataTr.append($('<td>').html(colorVl));
+            /**
+             * 04. Append logos count
+             */
+            dataTr.append($('<td>').html(logoIds.length));
+            /**
+             * 05. Action
+             */
+            var actionCk = $('<a>').attr('id', 'ra-' + dataDigist).addClass('prv-ck-inn').html('remove');
+            var savedData = 'line-' + garmentId + '-' + gmtFace;
+            dataTr.append($('<td>').append(actionCk));
+            pptable.append(dataTr);
+            parent.append(pptable);
+            actionCk.click(function (e) {
+                dataTr.remove();
+                localStorage.removeItem(savedData);
+                if (pptable.find('tr').length < 2) {
+                    pptable.remove();
                 }
             });
-            ckh.append(removeLink);
-            imgHolder.append(img);
-            imgHolder.append(toolbar);
-            // 9. add the image holder into div 
-            subParentRow.append(imgHolder);
-            subParentRow.addClass('clearfix');
-            parent.append(subParentRow);
-            parent.addClass('ddbox-border clearfix');
+            /**
+             * Save current design data into local storage
+             */
+            var designData = this.background.custom_attr[GmtImageId];
+            localStorage.setItem(savedData, JSON.stringify(designData));
+            this._clearCurDesignData();
         },
         /**
          * 14. Clear all design data.
@@ -1012,16 +1244,18 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 y: 200
             }, 1);
             $('#tools-info').html('');
+            $('#logo-info').html('');
             // Clear all input values of line colors
             $('input[name^="line_color"]').each(function (item) {
                 $(this).val('');
             });
-            $('#ddbox').html('').removeClass('ddbox-border');
+            $('#pptable').html('').remove();
             // remove all local storages
             delete this.background.custom_attr;
             localStorage.removeItem('background-color');
             localStorage.removeItem('background-image-id');
             localStorage.removeItem('background-mode');
+            localStorage.removeItem('background-face');
             localStorage.removeItem('current-logo-id');
             localStorage.removeItem('drag-data-id');
             localStorage.removeItem('drag-data-type');
@@ -1029,14 +1263,45 @@ odoo.define("emb_portal.garment_upload", function (require) {
             localStorage.removeItem('logos');
             var cachedItems = [];
             for (var i = 0; i < localStorage.length; i++) {
-                if (localStorage.key(i).substring(0, 3).match(/^dd-|dc-/)) {
+                if (localStorage.key(i).substring(0, 5).match(/^line-/)) {
                     cachedItems.push(localStorage.key(i));
                 }
             }
-
             for (var j = 0; j < cachedItems.length; j++) {
                 localStorage.removeItem(cachedItems[j]);
             }
+            $('#submit-edit-ok').attr('disabled', true);
+            $('#submit-edit-finish').attr('disabled', true);
+            $('#gmt-info-quantity').find('input').each(function (item) {
+                $(this).val(0).attr('readonly',true);
+            });
+        },
+        /**
+         * 14.1. Clear current design
+         */
+        _clearCurDesignData: function (id) {
+            var canvas = this.background;
+            // Remove all logos
+            canvas.remove(...canvas.getObjects());
+            // Retset selected color
+            this.background.zoomToPoint({
+                x: 200,
+                y: 200
+            }, 1);
+            $('#tools-info').html('');
+            $('#logo-info').html('');
+            // Clear all input values of line colors
+            $('input[name^="line_color"]').each(function (item) {
+                $(this).val('');
+            });
+            // remove all local storages
+            delete this.background.custom_attr;
+            localStorage.removeItem('current-logo-id');
+            localStorage.removeItem('drag-data-id');
+            localStorage.removeItem('drag-data-type');
+            localStorage.removeItem('logos');
+            $('#submit-edit-ok').attr('disabled', true);
+            $('#submit-edit-finish').attr('disabled', true);
         },
         /**
          * 15. Save data into canvas, in order to recovery.
@@ -1053,14 +1318,19 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 }
                 var img = $('#' + id).find('img');
                 var imgId = img.attr('data-id');
+                var imgFace = img.attr('data-name');
                 holder['image_id'] = imgId;
+                holder['image_face'] = imgFace;
             }
         },
         /**
          * 15.1 Get custom data from garment id
          */
         _canvasDataHolder: function (id) {
-            if(this.background.custom_attr == undefined) {
+            if (id == undefined || id == null) {
+                return false;
+            }
+            if (this.background.custom_attr == undefined) {
                 this.background.custom_attr = {};
             }
             var holder = this.background.custom_attr;
@@ -1155,6 +1425,21 @@ odoo.define("emb_portal.garment_upload", function (require) {
             cur['zoomx'] = zoom.zoomx;
             cur['zoomy'] = zoom.zoomy;
         },
+        /**
+         * 15.7 Save logo surcharge data into canvas
+         */
+        _saveLogoAttrToCanvas: function (id, logoId, attr, value) {
+            var holder = this._canvasDataHolder(id);
+            var logos = holder['logos'];
+            var logosArr = logos.filter(function (item) {
+                return item.id == logoId;
+            });
+            var cur = logosArr[0];
+            if (value == undefined || attr == undefined) {
+                return false;
+            }
+            cur[attr] = value;
+        }
     };
     /**
      * This is the color facade pattern of managing canvas.
@@ -1370,6 +1655,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             holder.css("border-bottom", "2px solid #4A90E2").css("cursor", "pointer");
             holder.find(".remove").unbind("click");
             holder.find(".select").unbind("click");
+
             holder.find(".remove").confirmation({
                 onCancel: function () {
                     console.log('You didn\'t choose anything');
@@ -1474,29 +1760,29 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     .find(".select")
                     .html(
                         "<span class='glyphicon glyphicon-minus' aria-hidden='true'></span>Cancel"
-                    ).hide();
+                    );
                 holder.find(".remove").hide();
                 holder.find(".asset-garment-act").addClass("fixed");
-                holder
-                    .find(".asset-garment-act")
-                    .append(
-                        "<button type='button' class='btn update' data-toggle='button' aria-pressed='false' autocomplete='off'><span class='glyphicon glyphicon-cog' aria-hidden='true'></span>Update</button>"
-                    ).append(
-                        "<button type='button' class='btn clear' data-toggle='confirmation' aria-pressed='false' autocomplete='off'><span class='glyphicon glyphicon-repeat' aria-hidden='true'></span>Clear</button>"
-                    );
+                // holder
+                //     .find(".asset-garment-act")
+                //     .append(
+                //         "<button type='button' class='btn update' data-toggle='button' aria-pressed='false' autocomplete='off'><span class='glyphicon glyphicon-cog' aria-hidden='true'></span>Update</button>"
+                //     ).append(
+                //         "<button type='button' class='btn clear' data-toggle='confirmation' aria-pressed='false' autocomplete='off'><span class='glyphicon glyphicon-repeat' aria-hidden='true'></span>Clear</button>"
+                //     );
                 $("#garment-list").attr("data-edit-mode", true);
                 $("#garment-list").attr("data-edit-id", id);
                 holder.css("border-bottom", "2px solid #4A90E2");
                 holder.attr("data-edit-mode", true);
-                holder.find(".update").click(function (e) {
-                    self._updateGmtInfo(id);
-                });
-                holder.find(".clear").confirmation({
-                    rootSelector: '[data-toggle=confirmation]',
-                    onConfirm: function (value) {
-                        self._clearGmtInfo(id);
-                    },
-                });
+                // holder.find(".update").click(function (e) {
+                //     self._updateGmtInfo(id);
+                // });
+                // holder.find(".clear").confirmation({
+                //     rootSelector: '[data-toggle=confirmation]',
+                //     onConfirm: function (value) {
+                //         self._clearGmtInfo(id);
+                //     },
+                // });
             }
             self._displayGmtInfo(id);
             var selectedItem = holder.children().get(selectedIndex);
@@ -1538,21 +1824,29 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     .css("height", "40px")
                     .css("background", item);
                 colorBlock.css("display", "inline-block").css("margin", "0 6px");
-                colorBlock.hover(
-                    function (e) {
-                        $(this).addClass("color-border-gray");
-                    },
-                    function (event) {
-                        var sel = $(this).attr("data-select");
-                        if (sel == undefined) {
-                            $(this).removeClass("color-border-gray");
-                        }
-                    }
-                );
-                if(item == defaultColor) {
+
+                if (item == defaultColor) {
                     colorBlock.addClass("color-border-gray");
+                    localStorage.setItem('background-color', item);
+                    self.composer._changeBackgroundColorOnly(item);
                 }
                 colorBlock.click(function (event) {
+                    /**
+                     * Check current design data before changing color
+                     */
+                    var pptable = $('#pptable');
+                    if (pptable.length > 0) {
+                        if (pptable.find('tr').length > 1) {
+                            $.notify({
+                                icon: "glyphicon glyphicon-remove",
+                                title: "Operation error",
+                                message: "Please remove all your design items first."
+                            }, {
+                                type: "danger"
+                            });
+                            return false;
+                        }
+                    }
                     var blocks = $("#gmt-info-colors").find("span");
                     blocks.removeClass("color-border-gray").removeAttr("data-select");
                     $(this).attr("data-select", item);
@@ -1742,7 +2036,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 })
                 .get();
             var default_color = $(".defaultck").val();
-            if(default_color == undefined || default_color == null) {
+            if (default_color == undefined || default_color == null) {
                 return false;
             }
             // get size attributes
@@ -1882,12 +2176,12 @@ odoo.define("emb_portal.garment_upload", function (require) {
             }
             // validate default garment colors
             var findDefault = false;
-            $('.defaultck').each(function(){
-                if($(this).is(':checked')) {
+            $('.defaultck').each(function () {
+                if ($(this).is(':checked')) {
                     findDefault = true;
                 }
             });
-            if(findDefault == false) {
+            if (findDefault == false) {
                 this._colorsSetFailed();
                 invalidInput = true;
             }
@@ -1991,17 +2285,17 @@ odoo.define("emb_portal.garment_upload", function (require) {
                         .attr("name", "colors[]")
                         .attr("type", "hidden")
                         .val(color.toHexString());
-                    var dckh = $("<input type='checkbox' class='defaultck' value=" + color.toHexString() + ">"); 
-                    dckh.click(function(){
+                    var dckh = $("<input type='checkbox' class='defaultck' value=" + color.toHexString() + ">");
+                    dckh.click(function () {
                         var that = $(this);
-                        $(".defaultck").each(function() {
-                            if($(this).is(':checked')) {
-                                if($(this).val() != color.toHexString()) {
-                                    $(this).prop("checked",false);
+                        $(".defaultck").each(function () {
+                            if ($(this).is(':checked')) {
+                                if ($(this).val() != color.toHexString()) {
+                                    $(this).prop("checked", false);
                                 }
                             }
                         });
-                    }); 
+                    });
                     dckh.val(color.toHexString());
                     subcb.append(colorBlock);
                     subcb.append(inputNode);
@@ -2011,8 +2305,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
                         $(this).parent().remove();
                     });
                     $('.colorhint').show();
-                    if(container.children().length == 1) {
-                        $(".defaultck").prop("checked",true);
+                    if (container.children().length == 1) {
+                        $(".defaultck").prop("checked", true);
                     }
                 }
             });
@@ -2191,22 +2485,21 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     .attr("name", "colors[]")
                     .attr("type", "hidden")
                     .val(item);
-                var dckh = $("<input type='checkbox' class='defaultck' value=" + item + ">"); 
-                console.log(default_color);
-                if(item == default_color) {
-                    dckh.prop("checked",true);
+                var dckh = $("<input type='checkbox' class='defaultck' value=" + item + ">");
+                if (item == default_color) {
+                    dckh.prop("checked", true);
                 }
-                dckh.click(function(){
+                dckh.click(function () {
                     var that = $(this);
-                    $(".defaultck").each(function() {
-                        if($(this).is(':checked')) {
-                            if($(this).val() != item) {
-                                $(this).prop("checked",false);
+                    $(".defaultck").each(function () {
+                        if ($(this).is(':checked')) {
+                            if ($(this).val() != item) {
+                                $(this).prop("checked", false);
                             }
                         }
                     });
                 });
-                dckh.val(item);  
+                dckh.val(item);
                 subcb.append(colorBlock);
                 subcb.append(inputNode);
                 subcb.append(dckh);

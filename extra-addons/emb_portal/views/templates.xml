@@ -2,8 +2,7 @@
 	<data>
 		<template id="footer_copyright_emb" inherit_id="website.layout" name="Emb Footer Copyright">
 			<xpath expr="//footer" position="replace">
-				<div class="container mt16 mb8">
-				</div>
+				<div class="container mt16 mb8">Copy right</div>
 			</xpath>
 		</template>
 		<template id="assets_frontend_emb_portal" inherit_id="web.assets_frontend" name="Emb Portal Frontend Assets">
@@ -31,8 +30,7 @@
 				<t t-set="website_sale_order" t-value="website.sale_get_order()" />
 				<li id="my_cart" t-att-class="'' if website_sale_order and website_sale_order.cart_quantity else 'hidden'">
 					<a href="/portal/cart">
-						<i class="fa fa-shopping-cart">
-						</i>
+						<i class="fa fa-shopping-cart"></i>
 						My Cart
 						<sup t-attf-class="my_cart_quantity label label-primary" t-esc="website_sale_order and website_sale_order.cart_quantity or ''" />
 					</a>
@@ -427,6 +425,11 @@
 												</span>
 												zoom out
 											</button>
+											<button id="btn-clear-all" type="button" data-toggle='confirmation' class="btn green" aria-pressed="false" autocomplete="off">
+												<span class="glyphicon glyphicon-refresh" aria-hidden="true">
+												</span>
+												clear all
+											</button>
 										</div>
 										<a href="#" class="closex">
 											x
@@ -440,36 +443,7 @@
 									<div class="hint">
 										* Remove the logo by double-clicking it.
 									</div>
-									<table class="table table-bordered">
-										<tr>
-											<td>
-												LogoID:
-												<span id="logo-detail-id">
-													W521478996
-												</span>
-											</td>
-											<td>
-												Description:
-												<span id="logo-detail-desc">
-													Maker logo
-												</span>
-											</td>
-										</tr>
-										<tr>
-											<td>
-												Logo Location:
-												<span id="logo-detail-location">
-													back bottom
-												</span>
-											</td>
-											<td>
-												Service:
-												<span>
-													Heat Transfer
-												</span>
-											</td>
-										</tr>
-									</table>
+									<div id='logo-info'></div>
 									<div id="logo-lines-container">
 										<h5>
 											Line Colors
@@ -480,38 +454,16 @@
 										<div class="hint">
 											* Design down button is enabled after all below fields are filled out.
 										</div>
-										<div id="line-container">
-										</div>
+										<div id="line-container"></div>
 									</div>
-									<div id="ddbox">
-									</div>
-									<div id='sc-inputs' class='hide'>
-										<div class="form-group">
-											<label for="logo-sc" style='margin-right:15px;'>L.Surcharge</label>
-											<select id='logo-sc'>
-												<option value=''>None</option>
-												<option value='50'>50</option>
-												<option value='50'>100</option>
-											</select>
-										</div>
-										<div class="form-group">
-											<label for="gm-sc" style='margin-right:15px;'>G.Surcharge</label>
-											<select id='gm-sc'>
-												<option value=''>None</option>
-												<option value='50'>50</option>
-												<option value='50'>100</option>
-											</select>
-										</div>
-									</div>
+									<div id="ddbox"></div>
 									<div class="submit-area">
 										<button type="button" id="submit-edit-ok" class="btn btn-primary" aria-pressed="false" autocomplete="off">
-											<span class="glyphicon glyphicon-edit" aria-hidden="true">
-											</span>
+											<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
 											Design Down
 										</button>
 										<button type="button" id="submit-edit-finish" disabled="true" class="btn btn-success" aria-pressed="false" autocomplete="off">
-											<span class="glyphicon glyphicon-shopping-cart" aria-hidden="true">
-											</span>
+											<span class="glyphicon glyphicon-shopping-cart" aria-hidden="true"></span>
 											Add Cart
 										</button>
 									</div>
@@ -585,14 +537,11 @@
 														<label class="col-sm-3" for="gmt-brand">
 															Color
 														</label>
-														<div class="col-sm-12 color-blocks" id="gmt-colors">
-															<span style="width: 40px; height: 40px; background: rgb(217, 234, 211); display: inline-block; margin: 0px 6px;">
-																<input name="colors[]" type="hidden" value="#d9ead3" />
-															</span>
-														</div>
+														<div class="col-sm-12 color-blocks" id="gmt-colors"></div>
 													</div>
 													<div class="colorhint">
-														Remove color by double clicking.
+														<p>Remove color by clicking color block.</p>
+														<p>At least choose one as default color.</p>
 													</div>
 													<div class="form-group row">
 														<label class="col-sm-5" for="exampleInputName2">
@@ -688,8 +637,7 @@
 															Description
 														</label>
 														<div class="col-sm-12">
-															<textarea id="gmt-desc" class="form-control" rows="7" placeholder="Input more information here.">
-															</textarea>
+															<textarea id="gmt-desc" class="form-control" rows="7" placeholder="Input more information here."></textarea>
 														</div>
 													</div>
 													<div class="form-group row submits">

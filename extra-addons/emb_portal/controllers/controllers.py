@@ -41,14 +41,11 @@ class Portal(http.Controller):
 
     @http.route('/portal/remove_garment', type='json', auth="user", csrf=False, website=True)
     def get_remove_garment(self, **kw):
-        print(kw)
         id = kw.get('id')
         result = request.env['product.garment'].search([('id', '=', int(id))])
         img_ids = result.image_ids.ids
-        print(img_ids)
         images = request.env['product.garment.image'].search(
             [('id', 'in', img_ids)])
-        print(images)
         unlink_result = result.unlink()
         if unlink_result:
             images.unlink()
@@ -92,6 +89,7 @@ class Portal(http.Controller):
         images = post['images']
         colors = post['colors']
         size_tpl = post['size_tpl']
+        default_color = post['default_color']
         # transform images by postion
         filtered_images = []
         # if editable mode trigger
@@ -116,6 +114,7 @@ class Portal(http.Controller):
         rcd['style'] = style
         rcd['size_tpl'] = size_tpl
         rcd['colors'] = colors
+        rcd['default_color'] = default_color
         saved_data = json.dumps(rcd)
         # Create product garment
         try:
@@ -132,5 +131,25 @@ class Portal(http.Controller):
         except Exception as e:
             print(e)
             return {'result': {'data': 'fail to save.'}}
-
         return {'result': {'data': 'success'}}
+
+    @http.route('/portal/cart_update', auth='user', methods=['POST'], type='json', website=True)
+    def cart_update(self, *args, **post):
+        # 1. Create product.template for:
+        #  contains 1 product.garment
+        #  contains image
+        #  contains attribute of color
+        #  contains bom of logos(prouduct)
+        ProductTpl = request.env['product.template']
+        ProductGarment = request.env['product.garment']
+        designData = post['data']
+        garmentId = post['gid']
+
+        #Get garment object
+        garmentObject = ProductGarment.search_read([('id', '=', int(garmentId))])
+        baseProductTpl = ProductTpl.create({
+            'name': garmentObject['name']
+        })
+        print(baseProductTpl)
+        for key,value in designData.items():
+            print('111')

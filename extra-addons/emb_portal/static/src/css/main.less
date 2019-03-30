@@ -229,6 +229,7 @@
             color: #888888;
         }
         .color-blocks {
+            min-height: 20px;
             margin-top: 6px;
             .block {
                 width: 30px;
@@ -243,7 +244,14 @@
     .colorhint {
         color: #888888;
         text-align: left;
+        margin-bottom: 10px;
+        display: none;
     }
+
+    .colorhint p {
+        margin-bottom: 0;
+    }
+
     .m0 {
         margin: 0;
     }
@@ -403,7 +411,7 @@
 }
 
 .color-border-gray{
-    border: 2px solid #D8D8D8;
+    border: 2px solid #333333;
     cursor: pointer;
 }
 
@@ -471,7 +479,6 @@
 #ddbox {
     border-radius: 8px;
     padding: 6px 0;
-    margin-top: 15px;
     .dd-prv-block {
         border: 1px solid #D8D8D8;
         cursor: pointer;
@@ -482,6 +489,11 @@
             max-height: 120px;
         }
     }
+}
+
+.design-table td {
+    text-align: center;
+    vertical-align: middle;
 }
 
 .ddbox-border {
@@ -682,3 +694,75 @@
 .dd-dsh label {
     padding-right: 10px;
 }
+
+.prv-rm-link {
+    float: right;
+}
+
+.subc-block {
+    display: inline-block;
+    margin: 0 6px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.logo-info-ex {
+    margin: 15px 0 20px;
+}
+
+.logo-info-ex label {
+    margin-right: 10px;
+}
+
+.logo-info-ex .form-group {
+    margin-right: 30px;
+}
+
+.id-fg {
+    width: 28%;
+}
+
+.id-fg .form-control {
+    width: 120px;
+}
+
+.sc-fg {
+    width: 28%;
+    margin-top: 20px;
+}
+
+.sc-fg label {
+    display: block;
+}
+
+.sc-fg .form-control {
+    width: 150px;
+}
+
+.logo-ser {
+    margin: 20px 0 10px;
+}
+
+.logo-ser  h5 {
+    font-size: 1.1em;   
+    margin-top: 0;
+}
+
+.logo-ser label {
+    font-weight: normal;
+    margin-left: 6px;
+}
+
+.sc-desc-fg {
+    margin-top: 18px;
+    width: 100%;
+}
+
+.sc-desc-fg label {
+    display: block;
+}
+
+.sc-desc-fg .form-control {
+    width: 100%;
+}
+

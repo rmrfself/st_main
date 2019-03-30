@@ -32,3 +32,8 @@ class GarmentTemplate(models.Model):
         'product.garment.image', string='Images', required=True)
 
     design_template = fields.Char('Design Template')
+
+class ProductProduct(models.Model):
+    _inherit = "product.product"
+
+    garment_id = fields.Many2one('product.garment', string='Garment')
