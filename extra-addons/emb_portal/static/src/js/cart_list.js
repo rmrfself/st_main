@@ -115,6 +115,48 @@ odoo.define('emb_portal.cart_list', function (require) {
                 }
                 self._calTotalPrice($(this).attr('data-key'));
             });
+            $('#btn-quot').click(function (e) {
+                $("#cart-list").block({
+                    message: "<img src='/emb_portal/static/src/images/grid.svg' height='30' width='30' style='margin-right:10px' />loading..",
+                    css: {
+                        border: "none",
+                        left: "90%",
+                        width: "96%",
+                        background: "transparent"
+                    }
+                });
+                setTimeout(function () {
+                    $("#cart-list").unblock();
+                    $.notify({
+                        icon: "glyphicon glyphicon-ok",
+                        title: "OK",
+                        message: "Quotattion order has been created already."
+                    }, {
+                        type: "success"
+                    });
+                }, 3000);
+            });
+            $('#btn-order').click(function (e) {
+                $("#cart-list").block({
+                    message: "<img src='/emb_portal/static/src/images/grid.svg' height='30' width='30' style='margin-right:10px' />loading..",
+                    css: {
+                        border: "none",
+                        left: "90%",
+                        width: "96%",
+                        background: "transparent"
+                    }
+                });
+                setTimeout(function () {
+                    $("#cart-list").unblock();
+                    $.notify({
+                        icon: "glyphicon glyphicon-ok",
+                        title: "OK",
+                        message: "Order has been created already."
+                    }, {
+                        type: "success"
+                    });
+                }, 3000);
+            });
         },
         _calTotalPrice: function (key) {
             /**
@@ -122,23 +164,31 @@ odoo.define('emb_portal.cart_list', function (require) {
              */
             var qinputs = $('input[type="text"].cart-qq-' + key);
             var tq = 0;
-            qinputs.each(function(e){
+            qinputs.each(function (e) {
                 tq = tq + parseInt($(this).val());
             });
             $('#tq_' + key).html(tq);
             var dsTableRows = $('.ds-' + key).find('tr');
             var singlePrice = 0.0;
-            dsTableRows.each(function(){
+            dsTableRows.each(function () {
                 var price = parseFloat($(this).find('.logo-price').val());
-                console.log(price);
                 var disc = parseInt($(this).find('.logo-discount').val());
-                console.log(disc);
                 var surcharge = parseFloat($(this).find('.logo-surcharge').val());
-                console.log(surcharge);
-                var tmp = price*(disc/100) + surcharge;
+                var tmp = price * (disc / 100) + surcharge;
                 singlePrice = singlePrice + tmp;
             });
             $('#tp_' + key).html(singlePrice * tq);
+            /**
+             * cal total price
+             */
+            var tp = 0.0;
+            $('.itemp').each(function (e) {
+                console.log($(this).text());
+                var tmp = parseFloat($(this).text());
+                tp = tp + tmp;
+            });
+            $('#f-subtotal').html('$ ' + tp);
+            $('#f-total').html('$ ' + tp);
         },
         _createListTable: function (list) {
             var parent = $('#cl');
@@ -315,7 +365,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                         var tdi_6 = $('<td>');
                         if (cindex == 0) {
                             tdi_6.attr('rowspan', sideRowCount);
-                            tdi_6.append($('<label>').attr('id', 'tp_' + key).html('0.0'));
+                            tdi_6.append($('<label>').attr('id', 'tp_' + key).addClass('itemp').html('0.0'));
                             sideRowHolder.append(tdi_6);
                         }
                         sideTable.append(sideRowHolder);

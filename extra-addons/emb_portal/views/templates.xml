@@ -126,7 +126,7 @@
 										SubTotal
 									</td>
 									<td>
-										CAD 10000.0
+										<span id="f-subtotal"></span>
 									</td>
 								</tr>
 								<tr>
@@ -134,7 +134,7 @@
 										Texes
 									</td>
 									<td>
-										CAD 100.0
+										$ 0.0
 									</td>
 								</tr>
 								<tr>
@@ -142,15 +142,15 @@
 										Total
 									</td>
 									<td>
-										CAD 10100.0
+										<span id="f-total">0.0</span>
 									</td>
 								</tr>
 							</table>
 							<div class="btns">
-								<button type="button" class="btn btn-default">
+								<button id='btn-quot' type="button" class="btn btn-default">
 									Ask For Quotation
 								</button>
-								<button type="button" class="btn btn-default">
+								<button id='btn-order' type="button" class="btn btn-default">
 									Continue Ordering
 								</button>
 							</div>
