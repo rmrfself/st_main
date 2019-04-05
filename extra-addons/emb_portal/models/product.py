@@ -33,7 +33,9 @@ class GarmentTemplate(models.Model):
 
     design_template = fields.Char('Design Template')
 
-class ProductProduct(models.Model):
-    _inherit = "product.product"
+class CartConfirm(models.Model):
+    _name = "sale.order.preview"
 
-    garment_id = fields.Many2one('product.garment', string='Garment')
+    design_template = fields.Char('Design Template')
+
+    status = fields.Boolean(default=False)

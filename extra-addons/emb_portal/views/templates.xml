@@ -2,7 +2,7 @@
 	<data>
 		<template id="footer_copyright_emb" inherit_id="website.layout" name="Emb Footer Copyright">
 			<xpath expr="//footer" position="replace">
-				<div class="container mt16 mb8">Copy right</div>
+				<div class="container mt16 mb8"></div>
 			</xpath>
 		</template>
 		<template id="assets_frontend_emb_portal" inherit_id="web.assets_frontend" name="Emb Portal Frontend Assets">
@@ -51,132 +51,7 @@
 							</h4>
 							<div id="cart-list">
 								<div class="cart-table">
-									<table class="table table-stripped">
-										<tr>
-											<th>
-												<input type="checkbox" />
-											</th>
-											<th>
-												Designments
-											</th>
-											<th>
-												Brand
-											</th>
-											<th>
-												Style
-											</th>
-											<th>
-												Type
-											</th>
-											<th>
-												Color
-											</th>
-											<th>
-												Service
-											</th>
-											<th>
-												Location
-											</th>
-											<th>
-												Size
-											</th>
-											<th>
-												Surcharges
-											</th>
-										</tr>
-										<tr>
-											<td>
-												<input type="checkbox" />
-											</td>
-											<td>
-												<img src="http://localhost:8069/website/image/product.garment.image/128/image/80x80" />
-											</td>
-											<td>
-												Nike
-											</td>
-											<td>
-												Round Nick
-											</td>
-											<td>
-												Type Label
-											</td>
-											<td>
-												Red
-											</td>
-											<td>
-												Embroidery
-											</td>
-											<td>
-												Top Nest
-											</td>
-											<td>
-												<p>
-													S:
-													<input value="10" type="text" />
-												</p>
-												<p>
-													L:
-													<input value="12" type="text" />
-												</p>
-											</td>
-											<td>
-												<p>
-													G.S:
-													<input value="10" type="text" />
-												</p>
-												<p>
-													L.S:
-													<input value="12" type="text" />
-												</p>
-											</td>
-										</tr>
-										<tr>
-											<td>
-												<input type="checkbox" />
-											</td>
-											<td>
-												<img src="http://localhost:8069/website/image/product.garment.image/140/image/80x80" />
-											</td>
-											<td>
-												Addass
-											</td>
-											<td>
-												Round Nick
-											</td>
-											<td>
-												Type Label
-											</td>
-											<td>
-												Green
-											</td>
-											<td>
-												Heat
-											</td>
-											<td>
-												Top Nest
-											</td>
-											<td>
-												<p>
-													S:
-													<input value="20" type="text" />
-												</p>
-												<p>
-													L:
-													<input value="20" type="text" />
-												</p>
-											</td>
-											<td>
-												<p>
-													G.S:
-													<input value="50" type="text" />
-												</p>
-												<p>
-													L.S:
-													<input value="50" type="text" />
-												</p>
-											</td>
-										</tr>
-									</table>
+									<table class="table table-stripped" id='cl'></table>
 								</div>
 							</div>
 						</div>
@@ -184,7 +59,7 @@
 							<h4 class="title">
 								Customer Info
 							</h4>
-							<table class="table">
+							<table class="table buyerinfo table-borderless">
 								<tr>
 									<td>
 										Buyer
@@ -237,11 +112,10 @@
 								</tr>
 							</table>
 							<div class="form-group green-border-focus">
-								<label>
+								<h4 class="title">
 									Message
-								</label>
-								<textarea class="form-control" rows="8">
-								</textarea>
+								</h4>
+								<textarea class="form-control" rows="8"></textarea>
 							</div>
 							<h4 class="title">
 								Order Total

@@ -425,7 +425,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 //obj.lockScalingY = true;
                 obj.inner_paths = [];
                 obj.resourceType = targetType;
-                obj.resourceId = targetId;
+                obj.resourceId = CryptoJS.MD5('data' + new Date().getTime()).toString().substring(0,5);
+                console.log(obj.resourceId);
                 obj.cid = 1;
                 //obj.subTargetCheck = true;
                 //obj.selectable = true;
@@ -441,11 +442,13 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     })
                     .center()
                     .setCoords();
+                self.background.setActiveObject(obj);    
                 self.background.add(obj).renderAll();
+
                 // Save logo data into canvas
                 var gmtId = localStorage.getItem("background-image-id");
                 if (gmtId != undefined) {
-                    self._saveLogoDataToCanvas(gmtId, targetId, targetType);
+                    self._saveLogoDataToCanvas(gmtId, obj.resourceId, targetType);
                 }
                 // End
                 // Set up init functions
@@ -970,6 +973,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             /**
              * check count data;
              */
+            var self = this;
             var qtyFieldsEmpty = false;
             var counts = {}
             $('#gmt-info-quantity').find('input').each(function (item) {
@@ -981,7 +985,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 var xn = name.split('-')[1];
                 counts[xn] = val;
             });
-            console.log(counts);
             if (qtyFieldsEmpty == false) {
                 $("#gmt-info-quantity")
                     .qtip({
@@ -1028,6 +1031,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             for (var i = 0; i < faces.length; i++) {
                 var savedData = 'line-' + garmentId + '-' + faces[i];
                 var v = localStorage.getItem(savedData);
+                console.log(v);
                 if (v != undefined) {
                     var pd = JSON.parse(v);
                     var imgd = $('#lm-' + garmentId + '-' + faces[i]);
@@ -1169,13 +1173,13 @@ odoo.define("emb_portal.garment_upload", function (require) {
             });
             // 5. create new image node.
             var img = $('<img>');
-            var dataUrl = this.background.toDataURL('image/jpeg');
+            var dataUrl = this.background.toDataURL({format: 'jpeg',quality: 0.68});
             img.attr('src', dataUrl);
             /**
              * Create preview table
              * 1. create table holder
              */
-            var dataDigist = CryptoJS.MD5(JSON.stringify(this.background.custom_attr));
+            var dataDigist = CryptoJS.MD5(JSON.stringify(this.background.custom_attr)).toString();
             var pptable = $('#pptable');
             if (pptable.length == 0) {
                 pptable = $('<table>').addClass('table table-bordered design-table');
