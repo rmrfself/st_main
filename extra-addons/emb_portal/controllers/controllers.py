@@ -37,6 +37,17 @@ class Portal(http.Controller):
     def cart_list(self, **kw):
         return http.request.render('emb_portal.portal_cart_list')
 
+    # This controller is for /port/cart/remove page to load the data asychronised
+    # By zhang qinghua
+    # created at 2018/11/11
+    @http.route('/portal/cart/remove', type='json', auth="user", csrf=False, website=True)
+    def remove_cart_items(self, **kw):
+        ids = list(map(int, kw['ids']))
+        SaleOrderTpl = request.env['sale.order.preview']
+        result = SaleOrderTpl.search([('id', 'in', ids)])
+        ret = result.unlink()
+        return ret 
+
     # This controller is for /port/cart/list page to load the data asychronised
     # By zhang qinghua
     # created at 2018/11/11

@@ -51,6 +51,10 @@ odoo.define('emb_portal.cart_list', function (require) {
                         });
                         return false;
                     }
+                    /**
+                     * Hide empty msg
+                     */
+                    $('#emptymsg').hide();
                     self._createListTable(returned_value);
                 });
         },
@@ -235,7 +239,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                     /**
                      * ip_tdi_1 value
                      */
-                    ip_tdi_1.val('item_' + key);
+                    ip_tdi_1.val(key);
                     ip_tdi_1.prop('checked', true);
                     var sideRowData = dr[key];
                     /**
@@ -379,6 +383,111 @@ odoo.define('emb_portal.cart_list', function (require) {
                 }
             }
             this._bindInputEvents();
+            this._addActionLinks();
+        },
+        _addActionLinks: function () {
+            var parent = $('#cations').addClass('cartactions');
+            parent.html('');
+            var rl = $('<a>').html('Unselect');
+            rl.attr('data-checked', '1');
+            parent.append(rl);
+            rl.click(function (e) {
+                var self = this;
+                var s = $(this).attr('data-checked');
+                /**
+                 * Unchecked status.
+                 */
+                console.log('ckcik');
+                console.log(s);
+                if (s == '0') {
+                    $("input[name='select[]']").each(function () {
+                        console.log($(this).val());
+                        $(this).prop('checked', true);
+                        $(self).attr('data-checked', '1');
+                        $(self).html('Unselect');
+                        $('#rlink').show();
+                    });
+                }
+                if (s == '1') {
+                    $("input[name='select[]']").each(function () {
+                        $(this).prop('checked', false);
+                        $(self).attr('data-checked', '0');
+                        $(self).html('Select');
+                        $('#rlink').hide();
+                    });
+                }
+            });
+            var dl = $('<a>').html('Delete');
+            dl.attr('id','rlink');
+            dl.attr('data-toggle', 'confirmation');
+            parent.append(dl);
+            dl.confirmation({
+                onCancel: function () {
+                    console.log('You didn\'t choose anything');
+                },
+                onConfirm: function (value) {
+                    /**
+                     * This action will clear all the design on current side
+                     * 1. clear all the logos on this side
+                     */
+                    var ids = [];
+                    $("input[name='select[]']").each(function () {
+                        if ($(this).prop('checked') == true) {
+                            ids.push($(this).val());
+                        }
+                    });
+                    if(ids.length == 0) {
+                        $.notify({
+                            icon: "glyphicon glyphicon-ok",
+                            title: "Failed",
+                            message: "Cart items are empty."
+                        }, {
+                            type: "warning"
+                        });
+                        return false;
+                    }
+                    $("#cart-list").block({
+                        message: "<img src='/emb_portal/static/src/images/grid.svg' height='30' width='30' style='margin-right:10px' />loading..",
+                        css: {
+                            border: "none",
+                            left: "90%",
+                            width: "96%",
+                            background: "transparent"
+                        }
+                    });
+                    if (ids.length > 0) {
+                        rpc.query({
+                                route: "/portal/cart/remove",
+                                params: {
+                                    ids: ids
+                                }
+                            })
+                            .then(function (returned_value) {
+                                $("input[name='select[]']").each(function () {
+                                    if ($(this).prop('checked') == true) {
+                                        $(this).parent().parent().remove();
+                                    }
+                                });
+                                if($("input[name='select[]']").length == 0) {
+                                    $('#emptymsg').show();
+                                    $('#cations').hide();
+                                }
+                                $("#cart-list").unblock();
+                                if ($.blockUI) {
+                                    $.unblockUI();
+                                }
+                                $.notify({
+                                    icon: "glyphicon glyphicon-ok",
+                                    title: "Failed",
+                                    message: "Cart items are empty."
+                                }, {
+                                    type: "success"
+                                });
+                                return false;
+                            });
+                    }
+                },
+            });
         }
     }
 
