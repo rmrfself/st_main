@@ -425,7 +425,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 //obj.lockScalingY = true;
                 obj.inner_paths = [];
                 obj.resourceType = targetType;
-                obj.resourceId = CryptoJS.MD5('data' + new Date().getTime()).toString().substring(0,5);
+                obj.resourceId = CryptoJS.MD5('data' + new Date().getTime()).toString().substring(0, 5);
                 console.log(obj.resourceId);
                 obj.cid = 1;
                 //obj.subTargetCheck = true;
@@ -442,7 +442,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     })
                     .center()
                     .setCoords();
-                self.background.setActiveObject(obj);    
+                self.background.setActiveObject(obj);
                 self.background.add(obj).renderAll();
 
                 // Save logo data into canvas
@@ -1173,7 +1173,10 @@ odoo.define("emb_portal.garment_upload", function (require) {
             });
             // 5. create new image node.
             var img = $('<img>');
-            var dataUrl = this.background.toDataURL({format: 'jpeg',quality: 0.68});
+            var dataUrl = this.background.toDataURL({
+                format: 'jpeg',
+                quality: 0.68
+            });
             img.attr('src', dataUrl);
             /**
              * Create preview table
@@ -1197,7 +1200,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
              * 01. Append image
              */
             img.attr('height', 100);
-            img.attr('id','lm-' + garmentId + '-' + gmtFace);
+            img.attr('id', 'lm-' + garmentId + '-' + gmtFace);
             dataTr.append($('<td>').append(img));
             /**
              * 02. Append garment face
@@ -1277,7 +1280,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             $('#submit-edit-ok').attr('disabled', true);
             $('#submit-edit-finish').attr('disabled', true);
             $('#gmt-info-quantity').find('input').each(function (item) {
-                $(this).val(0).attr('readonly',true);
+                $(this).val(0).attr('readonly', true);
             });
         },
         /**
@@ -1598,6 +1601,22 @@ odoo.define("emb_portal.garment_upload", function (require) {
                         });
                         return false;
                     }
+                    /**
+                     * Check design tables empty status
+                     */
+                    var pptable = $('#pptable');
+                    if (pptable.length > 0) {
+                        if (pptable.find('tr').length > 1) {
+                            $.notify({
+                                icon: "glyphicon glyphicon-remove",
+                                title: "Operation error",
+                                message: "Please add your current design into cart first or remove."
+                            }, {
+                                type: "danger"
+                            });
+                            return false;
+                        }
+                    }
                     self._setHolderEditMode(id, $(this).parent(), $(this).attr('data-index'));
                     return false;
                 });
@@ -1696,6 +1715,22 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     $("#garment-list").removeAttr("data-edit-mode");
                     $("#garment-list").removeAttr("data-edit-id");
                     return false;
+                }
+                /**
+                 * Check design tables empty status
+                 */
+                var pptable = $('#pptable');
+                if (pptable.length > 0) {
+                    if (pptable.find('tr').length > 1) {
+                        $.notify({
+                            icon: "glyphicon glyphicon-remove",
+                            title: "Operation error",
+                            message: "Please add your current design into cart first or remove."
+                        }, {
+                            type: "danger"
+                        });
+                        return false;
+                    }
                 }
                 /**
                  * Check current edit mode.
@@ -1832,6 +1867,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 if (item == defaultColor) {
                     colorBlock.addClass("color-border-gray");
                     localStorage.setItem('background-color', item);
+                    if (self.composer == undefined) {
+                        self.composer = self.graphComposer();
+                    }
                     self.composer._changeBackgroundColorOnly(item);
                 }
                 colorBlock.click(function (event) {

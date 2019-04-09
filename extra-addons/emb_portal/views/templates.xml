@@ -47,16 +47,6 @@
 					<div class="container emb-cart-list">
 						<div class="col-md-12">
 							<h4 class="title">
-								Items List
-							</h4>
-							<div id="cart-list">
-								<div class="cart-table">
-									<table class="table table-stripped" id='cl'></table>
-								</div>
-							</div>
-						</div>
-						<div class="col-md-12">
-							<h4 class="title">
 								Customer Info
 							</h4>
 							<table class="table buyerinfo table-borderless">
@@ -111,6 +101,18 @@
 									</td>
 								</tr>
 							</table>
+						</div>
+						<div class="col-md-12">
+							<h4 class="title">
+								Items List
+							</h4>
+							<div id="cart-list">
+								<div class="cart-table">
+									<table class="table table-stripped" id='cl'></table>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-12">
 							<div class="form-group green-border-focus">
 								<h4 class="title">
 									Message
@@ -135,6 +137,14 @@
 									</td>
 									<td>
 										$ 0.0
+									</td>
+								</tr>
+								<tr>
+									<td>
+										Total Discount($)
+									</td>
+									<td>
+										<span><input type="text" id="total-discount" class="form-control" style="width:80px;"/></span>
 									</td>
 								</tr>
 								<tr>
