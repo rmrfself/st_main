@@ -109,7 +109,7 @@
 							<div id="cart-list">
 								<div class="cart-table">
 									<table class="table table-stripped" id='cl'></table>
-									<div id='emptymsg' class='emptymsg'>Empty now.</div>
+									<div id='emptymsg' class='emptymsg'></div>
 									<div id="cations"></div>
 								</div>
 							</div>
