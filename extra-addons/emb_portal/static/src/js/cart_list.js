@@ -69,6 +69,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                 if ($(this).prop('checked') == true) {
                     $('#rlink').show();
                 }
+                self._calTotalPrice($(this.val()));
             });
             $('input[type="text"].logo-price').blur(function (e) {
                 var p = $(this).val();
