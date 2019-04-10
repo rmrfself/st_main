@@ -328,6 +328,9 @@ odoo.define('emb_portal.cart_list', function (require) {
                             logoTr.append(ltdi_5);
                             // append logo surcharge
                             var ltdi_6 = $('<td class="minw90">');
+                            if(logoObj.surcharge == null || logoObj.surchargev == undefined) {
+                                logoObj.surcharge = 0;
+                            }
                             ltdi_6.append($('<input type="text" class="form-control logo-surcharge" data-id="' + logoObj.id + '" data-key="' + key + '" value="' + logoObj.surcharge + '">'));
                             logoTr.append(ltdi_6);
                             // append logo description
