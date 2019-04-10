@@ -65,6 +65,11 @@ odoo.define('emb_portal.cart_list', function (require) {
         },
         _bindInputEvents: function () {
             var self = this;
+            $("input[name='select[]']").on('change', function(e){
+                if ($(this).prop('checked') == true) {
+                    $('#rlink').show();
+                }
+            });
             $('input[type="text"].logo-price').blur(function (e) {
                 var p = $(this).val();
                 if (!$.isNumeric(p)) {
