@@ -1259,6 +1259,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             $('#pptable').html('').remove();
             // remove all local storages
             delete this.background.custom_attr;
+            localStorage.removeItem('background-image-index');
             localStorage.removeItem('background-color');
             localStorage.removeItem('background-image-id');
             localStorage.removeItem('background-mode');
@@ -1602,21 +1603,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
                         return false;
                     }
                     /**
-                     * Check design tables empty status
+                     * 
                      */
-                    var pptable = $('#pptable');
-                    if (pptable.length > 0) {
-                        if (pptable.find('tr').length > 1) {
-                            $.notify({
-                                icon: "glyphicon glyphicon-remove",
-                                title: "Operation error",
-                                message: "Please add your current design into cart first or remove."
-                            }, {
-                                type: "danger"
-                            });
-                            return false;
-                        }
-                    }
                     self._setHolderEditMode(id, $(this).parent(), $(this).attr('data-index'));
                     return false;
                 });
@@ -1825,6 +1813,25 @@ odoo.define("emb_portal.garment_upload", function (require) {
             }
             self._displayGmtInfo(id);
             var selectedItem = holder.children().get(selectedIndex);
+            /**
+             * Check logo edit status before changing.
+             */
+            var storedIndex = localStorage.getItem("background-image-index");
+            if (storedIndex == null || storedIndex == undefined) {
+                localStorage.setItem("background-image-index", storedIndex);
+            } else {
+                var objects = self.composer.background.getObjects();
+                if (storedIndex != selectedIndex && objects.length > 0) {
+                    $.notify({
+                        icon: "glyphicon glyphicon-remove",
+                        title: "Error occur",
+                        message: "Please remove all the logos in designing status or click design down button."
+                    }, {
+                        type: "danger"
+                    });
+                    return false;
+                }
+            }
             self._chooseGarment($(selectedItem));
         },
         /**
