@@ -374,7 +374,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                             sideRowHolder.append(sdi_4);
                         }
                         /**
-                         * 05. Total price input
+                         * 05. Total quantity input
                          */
                         var sdi_5 = $('<td>');
                         if (cindex == 0) {
@@ -383,13 +383,13 @@ odoo.define('emb_portal.cart_list', function (require) {
                             sideRowHolder.append(sdi_5);
                         }
                         /**
-                         * 06. Total quantity label.
+                         * 06. Total price label.
                          *     this field is calculated by inputs
                          */
                         var tdi_6 = $('<td>');
                         if (cindex == 0) {
                             tdi_6.attr('rowspan', sideRowCount);
-                            tdi_6.append($('<label>').attr('id', 'tp_' + key).addClass('itemp').html('0.0'));
+                            tdi_6.append($('<label>').attr('id', 'tp_' + key).attr('data-valid',1).addClass('itemp').html('0.0'));
                             sideRowHolder.append(tdi_6);
                         }
                         sideTable.append(sideRowHolder);
