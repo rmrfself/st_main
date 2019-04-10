@@ -49,12 +49,14 @@ odoo.define('emb_portal.cart_list', function (require) {
                         }, {
                             type: "success"
                         });
-                        return false;
                     }
                     /**
                      * Hide empty msg
                      */
-                    $('#emptymsg').hide();
+                    if (_.isEmpty(returned_value)) {
+                        $('#emptymsg').html('Empty').show();
+                        return false;
+                    }
                     self._createListTable(returned_value);
                 });
         },
@@ -418,7 +420,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                 }
             });
             var dl = $('<a>').html('Delete');
-            dl.attr('id','rlink');
+            dl.attr('id', 'rlink');
             dl.attr('data-toggle', 'confirmation');
             parent.append(dl);
             dl.confirmation({
@@ -436,7 +438,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                             ids.push($(this).val());
                         }
                     });
-                    if(ids.length == 0) {
+                    if (ids.length == 0) {
                         $.notify({
                             icon: "glyphicon glyphicon-ok",
                             title: "Failed",
@@ -468,8 +470,9 @@ odoo.define('emb_portal.cart_list', function (require) {
                                         $(this).parent().parent().remove();
                                     }
                                 });
-                                if($("input[name='select[]']").length == 0) {
-                                    $('#emptymsg').show();
+                                $('#cations').show();
+                                if ($("input[name='select[]']").length == 0) {
+                                    $('#emptymsg').html('Empty.').show();
                                     $('#cations').hide();
                                 }
                                 $("#cart-list").unblock();
