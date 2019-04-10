@@ -194,7 +194,6 @@ odoo.define('emb_portal.cart_list', function (require) {
              */
             var tp = 0.0;
             $('.itemp').each(function (e) {
-                console.log($(this).text());
                 var tmp = parseFloat($(this).text());
                 tp = tp + tmp;
             });
@@ -269,7 +268,6 @@ odoo.define('emb_portal.cart_list', function (require) {
                          * Loop throght every logos.
                          */
                         var sideRowHolder = $('<tr>');
-                        console.log('row count is : ' + logoCount);
                         /**
                          * 01. Add image for every side design
                          */
@@ -328,7 +326,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                             logoTr.append(ltdi_5);
                             // append logo surcharge
                             var ltdi_6 = $('<td class="minw90">');
-                            if(logoObj.surcharge == null || logoObj.surchargev == undefined) {
+                            if(logoObj.surcharge == null || logoObj.surcharge == undefined) {
                                 logoObj.surcharge = 0;
                             }
                             ltdi_6.append($('<input type="text" class="form-control logo-surcharge" data-id="' + logoObj.id + '" data-key="' + key + '" value="' + logoObj.surcharge + '">'));
@@ -407,11 +405,8 @@ odoo.define('emb_portal.cart_list', function (require) {
                 /**
                  * Unchecked status.
                  */
-                console.log('ckcik');
-                console.log(s);
                 if (s == '0') {
                     $("input[name='select[]']").each(function () {
-                        console.log($(this).val());
                         $(this).prop('checked', true);
                         $(self).attr('data-checked', '1');
                         $(self).html('Unselect');
