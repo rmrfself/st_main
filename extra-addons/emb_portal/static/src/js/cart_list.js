@@ -65,9 +65,14 @@ odoo.define('emb_portal.cart_list', function (require) {
         },
         _bindInputEvents: function () {
             var self = this;
-            $("input[name='select[]']").on('change', function(e){
+            $("input[name='select[]']").on('change', function (e) {
+                var tp = $(this).parent().parent();
+                var tpl = tp.find('.itemp');
                 if ($(this).prop('checked') == true) {
+                    tpl.attr('data-valid', 1);
                     $('#rlink').show();
+                } else {
+                    tpl.attr('data-valid', 0);
                 }
                 self._calTotalPrice($(this).val());
             });
@@ -196,7 +201,13 @@ odoo.define('emb_portal.cart_list', function (require) {
             var tp = 0.0;
             $('.itemp').each(function (e) {
                 var tmp = parseFloat($(this).text());
-                tp = tp + tmp;
+                /**
+                 * conditions when input checkbox checked
+                 */
+                var c = $(this).attr('data-valid');
+                if(parseInt(c) == 1) {
+                    tp = tp + tmp;
+                }
             });
             $('#f-subtotal').html('$ ' + tp);
             $('#f-total').html('$ ' + tp);
@@ -327,7 +338,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                             logoTr.append(ltdi_5);
                             // append logo surcharge
                             var ltdi_6 = $('<td class="minw90">');
-                            if(logoObj.surcharge == null || logoObj.surcharge == undefined) {
+                            if (logoObj.surcharge == null || logoObj.surcharge == undefined) {
                                 logoObj.surcharge = 0;
                             }
                             ltdi_6.append($('<input type="text" class="form-control logo-surcharge" data-id="' + logoObj.id + '" data-key="' + key + '" value="' + logoObj.surcharge + '">'));
