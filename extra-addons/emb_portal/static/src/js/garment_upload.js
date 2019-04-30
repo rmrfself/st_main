@@ -14,6 +14,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
 
     function LogoManager() {}
 
+    function LogoUploadManager() {}
+
     function UploadManager() {}
 
     function GraphComposer() {
@@ -2705,11 +2707,222 @@ odoo.define("emb_portal.garment_upload", function (require) {
         }
     };
 
+    LogoUploadManager.prototype = {
+        init: function () {
+            this._initComponents();
+        },
+        _initComponents: function () {
+            $('#logo-image-type').select2({
+                width: "60%"
+            }).trigger("change");
+            /**
+             * Bind events
+             */
+            var self = this;
+            $('#logo-submit-btn').click(function (e) {
+                if (self._doValidateLogoData() == false) {
+                    return false;
+                };
+                self._doSubmitData();
+            });
+            $('#logo-cancel-btn').click(function (e) {
+                $("#logo-upload-modal").modal("toggle");
+            });
+            /**
+             * Bind radio button event
+             */
+            $('input:radio[name="order-type"]').change(function () {
+                if ($("input[name='order-type']:checked").val() == 'c') {
+                    $('#logo-image-b').show();
+                }
+                if ($("input[name='order-type']:checked").val() == 'd') {
+                    $('#logo-image-b').hide();
+                }
+            });
+            // need to check the order type
+            $("#logo-file-input").change(function () {
+                /**
+                 * If dst or ai file, upload the file and save it
+                 */
+                if ($("input[name='order-type']:checked").val() == 'c') {
+                    var input = this;
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        $("#logo-preview-box").block({
+                            message: "<img src='/emb_portal/static/src/images/grid.svg' height='30' width='30' style='margin-right:10px' />loading..",
+                            css: {
+                                border: "none",
+                                left: "90%",
+                                width: "96%",
+                                background: "transparent"
+                            }
+                        });
+                        var ft = $('#logo-image-type').val();
+                        var imageData = e.target.result;
+                        var postData = {};
+                        var postUrl = '/portal/file/preview';
+                        postData['type'] = ft;
+                        postData['data'] = imageData;
+                        console.log(postData);
+                        ajax.jsonRpc(postUrl, "call", postData)
+                            .always(function () {
+                                $("#logo-preview-box").unblock();
+                                if ($.blockUI) {
+                                    $.unblockUI();
+                                }
+                            })
+                            .done(function (data) {
+                                $("#logo-preview-box").html(data['image']);
+                                $("#logo-preview-box").find('svg').attr('width','270px').attr('height','202px').attr('viewBox','0 0 270 202');
+                                if(ft == 'dst') {
+                                    $("#logo-preview-box").removeClass('ai-preview-box');
+                                    $("#logo-preview-box").addClass('dst-preview-box');
+                                } else {
+                                    $("#logo-preview-box").removeClass('dst-preview-box');
+                                    $("#logo-preview-box").addClass('ai-preview-box');
+                                }
+                            })
+                            .fail(function () {
+                                $.notify({
+                                    icon: "glyphicon glyphicon-remove",
+                                    title: "Failed",
+                                    message: "Failed to add item,please try again"
+                                }, {
+                                    type: "danger"
+                                });
+                            });
+                    };
+                    if (input.files && input.files[0]) {
+                        reader.readAsDataURL(input.files[0]);
+                    }
+                };
+                /**
+                 * If digizing order, just preview it
+                 */
+                if ($("input[name='order-type']:checked").val() == 'd') {
+                    self._readLogoImageURL(this);
+                }
+            });
+        },
+        _doSubmitData: function() {
+            $("#logo-upload-modal").block({
+                message: "<img src='/emb_portal/static/src/images/grid.svg' height='30' width='30' style='margin-right:10px' />loading..",
+                css: {
+                    border: "none",
+                    left: "90%",
+                    width: "96%",
+                    background: "transparent"
+                }
+            });
+            var postData = {};
+            var postUrl = '/portal/logo/save';
+            ajax.jsonRpc(postUrl, "call", postData)
+                            .always(function () {
+                                $("#logo-upload-modal").unblock();
+                                if ($.blockUI) {
+                                    $.unblockUI();
+                                }
+                            })
+                            .done(function (data) {
+                                setTimeout(function(){ $("#logo-upload-modal").modal("toggle"); }, 3000);
+                            })
+                            .fail(function () {
+                                $.notify({
+                                    icon: "glyphicon glyphicon-remove",
+                                    title: "Failed",
+                                    message: "Failed to add item,please try again"
+                                }, {
+                                    type: "danger"
+                                });
+                            });
+        },
+        _readLogoImageURL: function (input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#logo-image-preview').attr('height', 202);
+                    $('#logo-image-preview').attr('src', e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        },
+        _doValidateLogoData: function () {
+            var ln = $('#logo-name').val();
+            if (_.isEmpty(ln)) {
+                $("#logo-name").qtip({
+                    content: {
+                        text: "Please input a name here."
+                    },
+                    position: {
+                        my: "top center",
+                        at: "bottom center"
+                    },
+                    show: {
+                        event: false
+                    }
+                }).qtip("show");
+                return false;
+            }
+            var lf = $('#logo-file-input').val();
+            if (_.isEmpty(lf)) {
+                $("#logo-file-input").qtip({
+                    content: {
+                        text: "Please input a file here."
+                    },
+                    position: {
+                        my: "top center",
+                        at: "bottom center"
+                    },
+                    show: {
+                        event: false
+                    }
+                }).qtip("show");
+                return false;
+            }
+            var lw = $('#logo-width').val();
+            if (_.isEmpty(lw)) {
+                $("#logo-width").qtip({
+                    content: {
+                        text: "Please input a width value."
+                    },
+                    position: {
+                        my: "top center",
+                        at: "bottom center"
+                    },
+                    show: {
+                        event: false
+                    }
+                }).qtip("show");
+                return false;
+            }
+            var lh = $('#logo-height').val();
+            if (_.isEmpty(lh)) {
+                $("#logo-height").qtip({
+                    content: {
+                        text: "Please input a height value."
+                    },
+                    position: {
+                        my: "top center",
+                        at: "bottom center"
+                    },
+                    show: {
+                        event: false
+                    }
+                }).qtip("show");
+                return false;
+            }
+            return true;
+        }
+    };
+
     $(document).ready(function () {
         var garmentManager = new GmManager();
         var uploadModelWin = new UploadManager();
+        var logoUploadWin = new LogoUploadManager();
+
         garmentManager.startup(uploadModelWin);
         uploadModelWin.init();
+        logoUploadWin.init();
 
         var upload_window = $("gmt-upload-modal");
         if (!upload_window.length) {

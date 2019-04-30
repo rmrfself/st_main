@@ -2,7 +2,8 @@
 	<data>
 		<template id="footer_copyright_emb" inherit_id="website.layout" name="Emb Footer Copyright">
 			<xpath expr="//footer" position="replace">
-				<div class="container mt16 mb8"></div>
+				<div class="container mt16 mb8">
+				</div>
 			</xpath>
 		</template>
 		<template id="assets_frontend_emb_portal" inherit_id="web.assets_frontend" name="Emb Portal Frontend Assets">
@@ -30,7 +31,8 @@
 				<t t-set="website_sale_order" t-value="website.sale_get_order()" />
 				<li id="my_cart" t-att-class="'' if website_sale_order and website_sale_order.cart_quantity else 'hidden'">
 					<a href="/portal/cart">
-						<i class="fa fa-shopping-cart"></i>
+						<i class="fa fa-shopping-cart">
+						</i>
 						My Cart
 						<sup t-attf-class="my_cart_quantity label label-primary" t-esc="website_sale_order and website_sale_order.cart_quantity or ''" />
 					</a>
@@ -108,9 +110,12 @@
 							</h4>
 							<div id="cart-list">
 								<div class="cart-table">
-									<table class="table table-stripped" id='cl'></table>
-									<div id='emptymsg' class='emptymsg'></div>
-									<div id="cations"></div>
+									<table class="table table-stripped" id="cl">
+									</table>
+									<div id="emptymsg" class="emptymsg">
+									</div>
+									<div id="cations">
+									</div>
 								</div>
 							</div>
 						</div>
@@ -119,7 +124,8 @@
 								<h4 class="title">
 									Message
 								</h4>
-								<textarea class="form-control" rows="8"></textarea>
+								<textarea class="form-control" rows="8">
+								</textarea>
 							</div>
 							<h4 class="title">
 								Order Total
@@ -130,7 +136,8 @@
 										SubTotal
 									</td>
 									<td>
-										<span id="f-subtotal"></span>
+										<span id="f-subtotal">
+										</span>
 									</td>
 								</tr>
 								<tr>
@@ -146,7 +153,9 @@
 										Total Discount(%)
 									</td>
 									<td>
-										<span><input type="text" id="total-discount" class="form-control" style="width:80px;"/></span>
+										<span>
+											<input type="text" id="total-discount" class="form-control" style="width:80px;" />
+										</span>
 									</td>
 								</tr>
 								<tr>
@@ -154,15 +163,17 @@
 										Total
 									</td>
 									<td>
-										<span id="f-total">0.0</span>
+										<span id="f-total">
+											0.0
+										</span>
 									</td>
 								</tr>
 							</table>
 							<div class="btns">
-								<button id='btn-quot' type="button" class="btn btn-default">
+								<button id="btn-quot" type="button" class="btn btn-default">
 									Ask For Quotation
 								</button>
-								<button id='btn-order' type="button" class="btn btn-default">
+								<button id="btn-order" type="button" class="btn btn-default">
 									Continue Ordering
 								</button>
 							</div>
@@ -183,10 +194,15 @@
 							<div id="assets_manager" class="col-md-6">
 								<div class="assets_box">
 									<div class="actions">
-										<button type="button" class="btn green" data-target="#gmt-upload-modal" data-toggle="modal" aria-pressed="false" autocomplete="off">
+										<button type="button" class="btn btn-primary" data-target="#gmt-upload-modal" data-toggle="modal" aria-pressed="false" autocomplete="off">
 											<span class="glyphicon glyphicon-open" aria-hidden="true">
 											</span>
-											upload
+											Upload Garment
+										</button>
+										<button type="button" class="btn btn-primary" data-target="#logo-upload-modal" data-toggle="modal" aria-pressed="false" autocomplete="off">
+											<span class="glyphicon glyphicon-open" aria-hidden="true">
+											</span>
+											Upload Logo
 										</button>
 									</div>
 									<ul id="assets_nav" class="nav nav-tabs">
@@ -311,7 +327,7 @@
 												</span>
 												zoom out
 											</button>
-											<button id="btn-clear-all" type="button" data-toggle='confirmation' class="btn green" aria-pressed="false" autocomplete="off">
+											<button id="btn-clear-all" type="button" data-toggle="confirmation" class="btn green" aria-pressed="false" autocomplete="off">
 												<span class="glyphicon glyphicon-refresh" aria-hidden="true">
 												</span>
 												clear all
@@ -329,7 +345,8 @@
 									<div class="hint">
 										* Remove the logo by double-clicking it.
 									</div>
-									<div id='logo-info'></div>
+									<div id="logo-info">
+									</div>
 									<div id="logo-lines-container">
 										<h5>
 											Line Colors
@@ -340,16 +357,20 @@
 										<div class="hint">
 											* Design down button is enabled after all below fields are filled out.
 										</div>
-										<div id="line-container"></div>
+										<div id="line-container">
+										</div>
 									</div>
-									<div id="ddbox"></div>
+									<div id="ddbox">
+									</div>
 									<div class="submit-area">
 										<button type="button" id="submit-edit-ok" class="btn btn-primary" aria-pressed="false" autocomplete="off">
-											<span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+											<span class="glyphicon glyphicon-edit" aria-hidden="true">
+											</span>
 											Design Down
 										</button>
 										<button type="button" id="submit-edit-finish" disabled="true" class="btn btn-success" aria-pressed="false" autocomplete="off">
-											<span class="glyphicon glyphicon-shopping-cart" aria-hidden="true"></span>
+											<span class="glyphicon glyphicon-shopping-cart" aria-hidden="true">
+											</span>
 											Add Cart
 										</button>
 									</div>
@@ -358,7 +379,7 @@
 						</div>
 					</div>
 					<!-- Modal -->
-					<!-- Modal -->
+					<!-- Modal window for garment upload begin -->
 					<div class="modal fade" id="gmt-upload-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
 						<div class="modal-dialog" role="document">
 							<div class="modal-content">
@@ -423,11 +444,16 @@
 														<label class="col-sm-3" for="gmt-brand">
 															Color
 														</label>
-														<div class="col-sm-12 color-blocks" id="gmt-colors"></div>
+														<div class="col-sm-12 color-blocks" id="gmt-colors">
+														</div>
 													</div>
 													<div class="colorhint">
-														<p>Remove color by clicking color block.</p>
-														<p>At least choose one as default color.</p>
+														<p>
+															Remove color by clicking color block.
+														</p>
+														<p>
+															At least choose one as default color.
+														</p>
 													</div>
 													<div class="form-group row">
 														<label class="col-sm-5" for="exampleInputName2">
@@ -523,7 +549,8 @@
 															Description
 														</label>
 														<div class="col-sm-12">
-															<textarea id="gmt-desc" class="form-control" rows="7" placeholder="Input more information here."></textarea>
+															<textarea id="gmt-desc" class="form-control" rows="7" placeholder="Input more information here.">
+															</textarea>
 														</div>
 													</div>
 													<div class="form-group row submits">
@@ -550,6 +577,126 @@
 							</div>
 						</div>
 					</div>
+					<!-- Modal window for garment upload end -->
+					<!-- Modal window for logos upload begin -->
+					<div class="modal fade" id="logo-upload-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+						<div class="modal-dialog" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+										<span aria-hidden="true">
+											x
+										</span>
+									</button>
+									<h4 class="modal-title" id="myModalLabel">
+										Logo Upload
+									</h4>
+								</div>
+								<div class="modal-body" id="logo-upload">
+									<div class="content">
+										<div class="row">
+											<form class="form-horizontal">
+												<div class="col-md-7">
+													<div class="form-group logo_order">
+														<div class="col-sm-5">
+															<label class="radio-inline">
+																<input name="order-type" value="c" type="radio" checked="checked" />
+																Common Order
+															</label>
+														</div>
+														<div class="col-sm-7">
+															<label class="radio-inline">
+																<input name="order-type" value="d" type="radio" />
+																Digizing Order
+															</label>
+														</div>
+													</div>
+													<div class="form-group row">
+														<label class="col-sm-3" for="logo-name">
+															Name
+														</label>
+														<div class="col-sm-9">
+															<input type="text" class="form-control protip" id="logo-name" placeholder="Input a name here" data-pt-title="Input your logo name!" />
+														</div>
+													</div>
+													<div class="form-group row" id='logo-image-b'>
+														<label class="col-sm-3" for="exampleInputName2">
+															Type
+														</label>
+														<div class="col-sm-9">
+															<select id="logo-image-type" class="form-control form-control-lg">
+																<option value="dst">
+																	.DST
+																</option>
+																<option value="ai">
+																	.AI
+																</option>
+															</select>
+														</div>
+													</div>
+													<div class="form-group row">
+														<label class="col-sm-3" for="exampleInputName2">
+															Select File
+														</label>
+														<div class="col-sm-9">
+															<input type="file" id="logo-file-input" />
+														</div>
+													</div>
+													<div class="form-group row">
+														<label class="col-sm-3" for="logo-name">
+															Description
+														</label>
+														<div class="col-sm-9">
+															<textarea id="logo-desc" class="form-control" placeholder="Input a description here" rows="7" ></textarea>
+														</div>
+													</div>
+												</div>
+												<div class="col-md-5">
+													<div id="logo-preview-box">
+														<img id='logo-image-preview' src="/emb_portal/static/src/images/placeholder-image.png" height="202" />
+													</div>
+													<h5>
+														Image Size
+													</h5>
+													<div class="form-group" style="margin-bottom: 0;">
+														<label class="col-sm-6">
+															Width:
+															<input type="text" class="form-control protip" id="logo-width" placeholder="0" data-pt-title="logo size!"/>
+														</label>
+														<label class="col-sm-6">
+															Height:
+															<input type="text" class="form-control protip" id="logo-height" placeholder="0" data-pt-title="logo size!" />
+														</label>
+													</div>
+													<div class="form-group" style="margin-left: 0px;">
+														<label class="radio-inline">
+															<input name="size-unit" value="c" type="radio" checked="checked" />
+															Mm
+														</label>
+														<label class="radio-inline">
+															<input name="size-unit" value="c" type="radio" />
+															Inch
+														</label>
+													</div>
+												</div>
+											</form>
+											<div class="form-group row submits">
+												<div class="col-md-12 text-center" style="padding-top: 20px;">
+													<button type="button" id="logo-cancel-btn" class="btn btn-primary">
+														Cancel
+													</button>
+													<button type="button" id="logo-submit-btn" class="btn btn-success">
+														Save
+													</button>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- Modal window for logos upload end -->
 				</div>
 			</t>
 		</template>

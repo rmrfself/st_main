@@ -9,6 +9,7 @@ from odoo import http, _
 from odoo.tools import config
 import base64
 import tempfile
+import hashlib
 
 import os
 from subprocess import call
@@ -220,3 +221,38 @@ class Portal(http.Controller):
             'design_template': json.dumps(post)
         })
         return {'result': {'data': 'success'}}
+    # By zhang qinghua
+    # created at 2019/04/11
+    @http.route('/portal/file/preview', auth='user', methods=['POST'], type='json', website=True)
+    def binary_file_preview(self, *args, **post):
+        fileType = post['type']
+        fileData = post['data'].split(',')[1]
+        if fileType == 'dst':
+            # Create dst file i mage
+            dst_file, dst_filename = tempfile.mkstemp()
+            os.write(dst_file, base64.b64decode(fileData))
+            shutil.copy(dst_filename, dst_filename + '.dst')
+            new_dst_file = dst_filename + '.dst'
+            # Create website used image
+            svg_dir = tempfile.mkdtemp()
+            svg_filename = hashlib.md5(fileData.encode()).hexdigest()
+            svg_file = svg_dir + '/' + svg_filename + '.svg'
+            # Image converter call
+            call(["libembroidery-convert", new_dst_file, svg_file])
+            svg_content = open(svg_file, 'r').read()
+            svg_image = svg_content
+        if fileType == 'ai':
+            # Create dst file image
+            ai_file, ai_filename = tempfile.mkstemp()
+            os.write(ai_file, base64.b64decode(fileData))
+            shutil.copy(ai_filename, ai_filename + '.ai')
+            new_ai_file = ai_filename + '.ai'
+            # create svg file image
+            svg_dir = tempfile.mkdtemp()
+            svg_filename = hashlib.md5(fileData.encode()).hexdigest()
+            svg_file = svg_dir + '/' + svg_filename + '.svg'
+            # image converter call
+            call(["pdftocairo", new_ai_file, "-svg", svg_file])
+            svg_content = open(svg_file, 'r').read()
+            svg_image = svg_content
+        return {'image': svg_image}
