@@ -9,6 +9,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
 
     var rpc = require("web.rpc");
     var ajax = require("web.ajax");
+    var session = require('web.session');
 
     function GmManager() {}
 
@@ -369,6 +370,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
          * 7.3 Drag the logo into canvas handler.
          */
         _onLogoDragged: function (event) {
+            console.log('saf');
             var dataId = $(event.target).attr("data-id");
             var dataType = $(event.target).attr("data-type");
             localStorage.setItem("drag-data-id", dataId);
@@ -2710,6 +2712,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
     LogoUploadManager.prototype = {
         init: function () {
             this._initComponents();
+            this._loadLogoData();
         },
         _initComponents: function () {
             $('#logo-image-type').select2({
@@ -2723,7 +2726,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 if (self._doValidateLogoData() == false) {
                     return false;
                 };
-                self._doSubmitData();
+                self._doSubmitLogoData();
             });
             $('#logo-cancel-btn').click(function (e) {
                 $("#logo-upload-modal").modal("toggle");
@@ -2804,7 +2807,15 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 }
             });
         },
-        _doSubmitData: function() {
+        _onLogoDragged: function (event) {
+            console.log('saf');
+            var dataId = $(event.target).attr("data-id");
+            var dataType = $(event.target).attr("data-type");
+            localStorage.setItem("drag-data-id", dataId);
+            localStorage.setItem("drag-data-type", dataType);
+        },
+        _doSubmitLogoData: function() {
+            var self = this;
             $("#logo-upload-modal").block({
                 message: "<img src='/emb_portal/static/src/images/grid.svg' height='30' width='30' style='margin-right:10px' />loading..",
                 css: {
@@ -2814,7 +2825,25 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     background: "transparent"
                 }
             });
-            var postData = {};
+            var name = $('#logo-name').val();
+            var desc = $('#logo-desc').val();
+            var type = $('#logo-image-type').val();
+            var imageRaw = $('#logo-file-input').val();
+            var svgImage = $('#logo-preview-box').html();
+            var width = $('#logo-width').val();
+            var height = $('#logo-height').val();
+            var unit = $("input[name='size-unit']:checked").val();
+
+            var postData = {
+                name: name,
+                desc: desc,
+                type: type,
+                imageRaw: imageRaw,
+                svgImage: btoa(svgImage),
+                width: width,
+                height: height,
+                unit: unit
+            };
             var postUrl = '/portal/logo/save';
             ajax.jsonRpc(postUrl, "call", postData)
                             .always(function () {
@@ -2825,6 +2854,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                             })
                             .done(function (data) {
                                 setTimeout(function(){ $("#logo-upload-modal").modal("toggle"); }, 3000);
+                                self._clearUploadWindow();
                             })
                             .fail(function () {
                                 $.notify({
@@ -2844,6 +2874,56 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     $('#logo-image-preview').attr('src', e.target.result);
                 }
                 reader.readAsDataURL(input.files[0]);
+            }
+        },
+        _clearUploadWindow: function() {
+            $('#logo-name').val('');
+            $('#logo-desc').val('');
+            $('#logo-image-type').val('dst').trigger();
+            $('#logo-file-input').val('');
+            $('#logo-preview-box').html('');
+            $('#logo-width').val('0');
+            $('#logo-height').val('0');
+        },
+        _loadLogoData: function() {
+            var self = this;
+            var args = [
+                [
+                    ["create_uid", "=", odoo.session_info.user_id]
+                ],
+                ["id", "name", "content_type","image"]
+            ];
+            rpc.query({
+                    model: "product.logo",
+                    method: "search_read",
+                    args: args
+                }).then(function (returned_value) {
+                    self._appendLogoImages(returned_value);
+                });
+        },
+        _appendLogoImages: function(list) {
+            var parent = $('#lc');
+            for(var k in list) {
+                var tmp = list[k];
+                var id = tmp['id'];
+                var type = tmp['content_type'];
+                var image = tmp['image'];
+                var src = "data:image/svg+xml;base64," + image;
+                //<a href="#" class="logo-asset" id="logo-id-1" data-id="1">
+                var link = $('<a>').addClass('logo-asset').attr('id','logo-id-' + id).attr('data-id',id);
+                link.attr('data-type',type).attr('data-id',id).attr('href','#');
+                // <img data-type="dst" data-id="1"
+                var img = $('<img>').attr('data-type',type).attr('data-id',id);
+                img.attr('src',src);
+                link.append(img);
+                parent.append(link);
+
+                var self = this;
+                var targets = $(".logo-assets").find("a");
+                targets.each(function (e) {
+                    $(this).attr("draggable", "true");
+                    $(this).on("dragstart", self._onLogoDragged);
+                });
             }
         },
         _doValidateLogoData: function () {

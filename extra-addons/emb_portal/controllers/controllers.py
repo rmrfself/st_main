@@ -221,6 +221,7 @@ class Portal(http.Controller):
             'design_template': json.dumps(post)
         })
         return {'result': {'data': 'success'}}
+
     # By zhang qinghua
     # created at 2019/04/11
     @http.route('/portal/file/preview', auth='user', methods=['POST'], type='json', website=True)
@@ -256,3 +257,18 @@ class Portal(http.Controller):
             svg_content = open(svg_file, 'r').read()
             svg_image = svg_content
         return {'image': svg_image}
+
+    # By zhang qinghua
+    # created at 2019/04/18
+    @http.route('/portal/logo/save', auth='user', methods=['POST'], type='json', website=True)
+    def save_logo(self, *args, **post):
+        rcd = {}
+        rcd['name'] = post['name']
+        rcd['content_type'] = post['type']
+        rcd['description'] = post['desc']
+        rcd['width'] = int(post['width'])
+        rcd['height'] = int(post['height'])
+        rcd['image'] = post['svgImage']
+        LogoTemplate = request.env['product.logo']
+        LogoTemplate.create(rcd)
+        return {'result': {'data': 'success'}}
