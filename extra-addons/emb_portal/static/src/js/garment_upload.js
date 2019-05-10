@@ -397,11 +397,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
             // mock data
             var targetId = localStorage.getItem("drag-data-id");
             var targetType = localStorage.getItem("drag-data-type");
-            var dragTarget = $("#logo-id-" + targetId)
-                .find("img")
-                .attr("src");
-            var encodeData = dragTarget.split(",");
-            var targetData = atob(encodeData[1]);
+            var dragTarget = $("#logo-id-" + targetId);
+            var targetData = dragTarget.html();
             var paths = fabric.loadSVGFromString(targetData, function (
                 objects,
                 options
@@ -2834,6 +2831,15 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var height = $('#logo-height').val();
             var unit = $("input[name='size-unit']:checked").val();
 
+            /**
+             * Bugfix temp
+             */
+            if(svgImage.length > 0) {
+                svgImage = svgImage.replace('width="270px"','width="80px"');
+                svgImage = svgImage.replace('height="202px"','height="120px"');
+                svgImage = svgImage.replace('viewbox="0 0 270 202"','viewbox="-40 -60 80 120"');
+            }
+
             var postData = {
                 name: name,
                 desc: desc,
@@ -2853,7 +2859,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                                 }
                             })
                             .done(function (data) {
-                                setTimeout(function(){ $("#logo-upload-modal").modal("toggle"); }, 3000);
+                                setTimeout(function(){ $("#logo-upload-modal").modal("toggle"); self._loadLogoData();}, 3000);
                                 self._clearUploadWindow();
                             })
                             .fail(function () {
@@ -2879,7 +2885,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
         _clearUploadWindow: function() {
             $('#logo-name').val('');
             $('#logo-desc').val('');
-            $('#logo-image-type').val('dst').trigger();
             $('#logo-file-input').val('');
             $('#logo-preview-box').html('');
             $('#logo-width').val('0');
@@ -2903,21 +2908,17 @@ odoo.define("emb_portal.garment_upload", function (require) {
         },
         _appendLogoImages: function(list) {
             var parent = $('#lc');
+            parent.html('');
             for(var k in list) {
                 var tmp = list[k];
                 var id = tmp['id'];
                 var type = tmp['content_type'];
-                var image = tmp['image'];
-                var src = "data:image/svg+xml;base64," + image;
+                var image = atob(tmp['image']);
                 //<a href="#" class="logo-asset" id="logo-id-1" data-id="1">
                 var link = $('<a>').addClass('logo-asset').attr('id','logo-id-' + id).attr('data-id',id);
                 link.attr('data-type',type).attr('data-id',id).attr('href','#');
-                // <img data-type="dst" data-id="1"
-                var img = $('<img>').attr('data-type',type).attr('data-id',id);
-                img.attr('src',src);
-                link.append(img);
+                link.html(image);
                 parent.append(link);
-
                 var self = this;
                 var targets = $(".logo-assets").find("a");
                 targets.each(function (e) {
