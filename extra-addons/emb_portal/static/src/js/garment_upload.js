@@ -2960,6 +2960,23 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 }).qtip("show");
                 return false;
             }
+            var file_ext = lf.substr(lf.lastIndexOf('.')+1,lf.length);
+            var lt = $('#logo-image-type').val().toLowerCase();
+            if(file_ext == null || file_ext != lt) {
+                $("#logo-file-input").qtip({
+                    content: {
+                        text: "Please input a file DST or AI here."
+                    },
+                    position: {
+                        my: "top center",
+                        at: "bottom center"
+                    },
+                    show: {
+                        event: false
+                    }
+                }).qtip("show");
+                return false;
+            }
             var lw = $('#logo-width').val();
             if (_.isEmpty(lw)) {
                 $("#logo-width").qtip({
