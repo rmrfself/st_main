@@ -232,7 +232,7 @@
 										</div>
 										<div role="tabpanel" class="tab-pane" id="logo-box">
 											<div class="content">
-												<div class="logo-assets" id='lc'></div>
+												<div class="logo-assets clearfix" id='lc'></div>
 											</div>
 											<div class="bottom-actions">
 												Filter:

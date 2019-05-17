@@ -2726,6 +2726,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 self._doSubmitLogoData();
             });
             $('#logo-cancel-btn').click(function (e) {
+                self._clearUploadWindow();
                 $("#logo-upload-modal").modal("toggle");
             });
             /**
@@ -2886,7 +2887,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             $('#logo-name').val('');
             $('#logo-desc').val('');
             $('#logo-file-input').val('');
-            $('#logo-preview-box').html('');
+            $('#logo-preview-box').html('<img id="logo-image-preview" src="/emb_portal/static/src/images/placeholder-image.png" height="202">');
             $('#logo-width').val('0');
             $('#logo-height').val('0');
         },
@@ -2960,9 +2961,12 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 }).qtip("show");
                 return false;
             }
+            console.log(lf);
             var file_ext = lf.substr(lf.lastIndexOf('.')+1,lf.length);
+            console.log(file_ext);
             var lt = $('#logo-image-type').val().toLowerCase();
-            if(file_ext == null || file_ext != lt) {
+            console.log(lt);
+            if(file_ext == null || file_ext.toLowerCase() != lt) {
                 $("#logo-file-input").qtip({
                     content: {
                         text: "Please input a file DST or AI here."
