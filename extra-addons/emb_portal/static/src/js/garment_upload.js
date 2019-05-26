@@ -2733,6 +2733,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
              * Bind radio button event
              */
             $('input:radio[name="order-type"]').change(function () {
+                self._clearUploadWindow();
                 if ($("input[name='order-type']:checked").val() == 'c') {
                     $('#logo-image-b').show();
                 }
@@ -2745,8 +2746,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 /**
                  * If dst or ai file, upload the file and save it
                  */
+                var input = this;
                 if ($("input[name='order-type']:checked").val() == 'c') {
-                    var input = this;
                     var reader = new FileReader();
                     reader.onload = function (e) {
                         $("#logo-preview-box").block({
@@ -2764,7 +2765,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
                         var postUrl = '/portal/file/preview';
                         postData['type'] = ft;
                         postData['data'] = imageData;
-                        console.log(postData);
                         ajax.jsonRpc(postUrl, "call", postData)
                             .always(function () {
                                 $("#logo-preview-box").unblock();
@@ -2773,9 +2773,13 @@ odoo.define("emb_portal.garment_upload", function (require) {
                                 }
                             })
                             .done(function (data) {
+                                $('#logo-width').val(data['width']);
+                                $('#logo-height').val(data['height']);         
                                 $("#logo-preview-box").html(data['image']);
                                 $("#logo-preview-box").find('svg').attr('width','270px').attr('height','202px').attr('viewBox','0 0 270 202');
                                 if(ft == 'dst') {
+                                    $('#logo-name').val(data['uid']);
+                                    $('#logo-stitch').val(data['stitch']);
                                     $("#logo-preview-box").removeClass('ai-preview-box');
                                     $("#logo-preview-box").addClass('dst-preview-box');
                                 } else {
@@ -2801,12 +2805,59 @@ odoo.define("emb_portal.garment_upload", function (require) {
                  * If digizing order, just preview it
                  */
                 if ($("input[name='order-type']:checked").val() == 'd') {
-                    self._readLogoImageURL(this);
+                    var designReader = new FileReader();
+                    designReader.onload = function (e) {
+                        /**
+                         * Get image file extension,to check the pdf file
+                         */
+                        var filePath = $(input).val(); 
+                        var file_ext = filePath.substr(filePath.lastIndexOf('.')+1,filePath.length);
+                        if(file_ext == 'pdf') {
+                            $("#logo-preview-box").block({
+                                message: "<img src='/emb_portal/static/src/images/grid.svg' height='30' width='30' style='margin-right:10px' />loading..",
+                                css: {
+                                    border: "none",
+                                    left: "90%",
+                                    width: "96%",
+                                    background: "transparent"
+                                }
+                            });
+                            /**
+                             * Convert pdf into image
+                             */
+                            var pdfData = {};
+                            var pdfData = e.target.result;
+                            var postPdfUrl = '/portal/pdf/preview';
+                            pdfData['data'] = pdfData;
+                            ajax.jsonRpc(postUrl, "call", pdfData)
+                            .always(function () {
+                                $("#logo-preview-box").unblock();
+                                if ($.blockUI) {
+                                    $.unblockUI();
+                                }
+                            })
+                            .done(function (data) {
+                                
+                            })
+                            .fail(function () {
+                                $.notify({
+                                    icon: "glyphicon glyphicon-remove",
+                                    title: "Failed",
+                                    message: "Failed to add item,please try again"
+                                }, {
+                                    type: "danger"
+                                });
+                            });
+                        } else {
+                            $('#logo-image-preview').attr('height', 202);
+                            $('#logo-image-preview').attr('src', e.target.result);
+                        }
+                    }
+                    designReader.readAsDataURL(input.files[0]);
                 }
             });
         },
         _onLogoDragged: function (event) {
-            console.log('saf');
             var dataId = $(event.target).attr("data-id");
             var dataType = $(event.target).attr("data-type");
             localStorage.setItem("drag-data-id", dataId);
@@ -2836,9 +2887,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
              * Bugfix temp
              */
             if(svgImage.length > 0) {
-                svgImage = svgImage.replace('width="270px"','width="80px"');
-                svgImage = svgImage.replace('height="202px"','height="120px"');
-                svgImage = svgImage.replace('viewbox="0 0 270 202"','viewbox="-40 -60 80 120"');
+                svgImage = svgImage.replace('width="270px"','');
+                svgImage = svgImage.replace('height="202px"','');
+                svgImage = svgImage.replace('viewbox="0 0 270 202"','');
             }
 
             var postData = {
@@ -2897,7 +2948,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 [
                     ["create_uid", "=", odoo.session_info.user_id]
                 ],
-                ["id", "name", "content_type","image"]
+                ["id", "name", "content_type","image","width","height"]
             ];
             rpc.query({
                     model: "product.logo",
@@ -2915,10 +2966,17 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 var id = tmp['id'];
                 var type = tmp['content_type'];
                 var image = atob(tmp['image']);
+                var width = parseInt(tmp['width']);
+                var height = parseInt(tmp['height']);
                 //<a href="#" class="logo-asset" id="logo-id-1" data-id="1">
                 var link = $('<a>').addClass('logo-asset').attr('id','logo-id-' + id).attr('data-id',id);
                 link.attr('data-type',type).attr('data-id',id).attr('href','#');
+                /**
+                 * Fix image width and height and scale it to appriciated one.
+                 */
                 link.html(image);
+                var jImage = link.find('svg');
+
                 parent.append(link);
                 var self = this;
                 var targets = $(".logo-assets").find("a");
@@ -2961,11 +3019,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 }).qtip("show");
                 return false;
             }
-            console.log(lf);
             var file_ext = lf.substr(lf.lastIndexOf('.')+1,lf.length);
-            console.log(file_ext);
             var lt = $('#logo-image-type').val().toLowerCase();
-            console.log(lt);
             if(file_ext == null || file_ext.toLowerCase() != lt) {
                 $("#logo-file-input").qtip({
                     content: {

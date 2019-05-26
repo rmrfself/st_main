@@ -41,6 +41,10 @@ class LogoTemplate(models.Model):
     raw_data = fields.Binary('Raw Data', attachment=True)
     # raw image
     image = fields.Binary('Image', attachment=True)
+    # unique ID
+    uid = fields.Char('UID', required=True)
+    # Stitch count
+    stitch = fields.Integer(required=True, default=0)
 
 
 class GarmentTemplate(models.Model):

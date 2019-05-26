@@ -601,14 +601,6 @@
 															</label>
 														</div>
 													</div>
-													<div class="form-group row">
-														<label class="col-sm-3" for="logo-name">
-															Name
-														</label>
-														<div class="col-sm-9">
-															<input type="text" class="form-control protip" id="logo-name" placeholder="Input a name here" data-pt-title="Input your logo name!" />
-														</div>
-													</div>
 													<div class="form-group row" id='logo-image-b'>
 														<label class="col-sm-3" for="exampleInputName2">
 															Type
@@ -630,6 +622,15 @@
 														</label>
 														<div class="col-sm-9">
 															<input type="file" id="logo-file-input" />
+														</div>
+													</div>
+													<div class="form-group row">
+														<label class="col-sm-3" for="logo-name">
+															Name
+														</label>
+														<div class="col-sm-9">
+															<input type="text" class="form-control protip" id="logo-name" placeholder="Input a name here" data-pt-title="Input your logo name!" />
+															<input name="logo-stitch" value="0" type="hidden" />
 														</div>
 													</div>
 													<div class="form-group row">

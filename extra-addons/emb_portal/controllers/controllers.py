@@ -17,6 +17,8 @@ import shutil
 import json
 import hashlib
 
+import re
+
 from odoo.exceptions import AccessError, UserError
 import logging
 _logger = logging.getLogger(__name__)
@@ -229,11 +231,34 @@ class Portal(http.Controller):
         fileType = post['type']
         fileData = post['data'].split(',')[1]
         if fileType == 'dst':
-            # Create dst file i mage
+            # Create dst file image
             dst_file, dst_filename = tempfile.mkstemp()
             os.write(dst_file, base64.b64decode(fileData))
             shutil.copy(dst_filename, dst_filename + '.dst')
             new_dst_file = dst_filename + '.dst'
+            # Read dst file information
+            dstWidth = 0
+            dstHeight = 0
+            stitch = 0
+            uid = ''
+            with open(new_dst_file,'rb') as search:
+                search.seek(0, 0)  # Go to beginning of the file
+                fl = search.read(20)
+                uidRaw = fl.decode('utf-8')
+                la = uidRaw.split(':')[1]
+                uid = la.rstrip()
+                sl = search.read(100)
+                sRaw = sl.decode('utf-8').split('\r')
+                for line in sRaw:
+                    wt = re.findall("\+X:\s+([0-9]+)", line)
+                    ht = re.findall("\+Y:\s+([0-9]+)", line)
+                    st = re.findall("ST:\s+([0-9]+)", line)
+                    if wt:
+                        dstWidth = wt[0]
+                    if ht:
+                        dstHeight = ht[0]    
+                    if st:
+                        stitch = st[0]
             # Create website used image
             svg_dir = tempfile.mkdtemp()
             svg_filename = hashlib.md5(fileData.encode()).hexdigest()
@@ -242,12 +267,26 @@ class Portal(http.Controller):
             call(["libembroidery-convert", new_dst_file, svg_file])
             svg_content = open(svg_file, 'r').read()
             svg_image = svg_content
+            return {'image': svg_image,'width': dstWidth, 'height': dstHeight,'stitch': stitch, 'uid': uid}
         if fileType == 'ai':
             # Create dst file image
             ai_file, ai_filename = tempfile.mkstemp()
             os.write(ai_file, base64.b64decode(fileData))
             shutil.copy(ai_filename, ai_filename + '.ai')
             new_ai_file = ai_filename + '.ai'
+            # get ai files width/height data
+            # %%BoundingBox: 0 0 289 82
+            aiWidth = 0
+            aiHeight = 0
+            with open(new_ai_file,'rb') as search:
+                search.seek(190, 0)
+                bRaw = search.read(70)
+                boundBox = bRaw.decode('utf-8')
+                bd = re.findall("%%BoundingBox: ([0-9\s]+)", boundBox)
+                if bd:
+                    bdd = bd[0].rstrip().split(' ')
+                    aiWidth = bdd[-2]
+                    aiHeight = bdd[-1]
             # create svg file image
             svg_dir = tempfile.mkdtemp()
             svg_filename = hashlib.md5(fileData.encode()).hexdigest()
@@ -256,19 +295,25 @@ class Portal(http.Controller):
             call(["pdftocairo", new_ai_file, "-svg", svg_file])
             svg_content = open(svg_file, 'r').read()
             svg_image = svg_content
-        return {'image': svg_image}
-
+            return {'image': svg_image,'width': aiWidth, 'height': aiHeight}
+        return {}
     # By zhang qinghua
     # created at 2019/04/18
     @http.route('/portal/logo/save', auth='user', methods=['POST'], type='json', website=True)
     def save_logo(self, *args, **post):
         rcd = {}
         rcd['name'] = post['name']
+        rcd['uid'] = post['name']
         rcd['content_type'] = post['type']
         rcd['description'] = post['desc']
         rcd['width'] = int(post['width'])
         rcd['height'] = int(post['height'])
+        rcd['stitch'] = int(post['stitch'])
         rcd['image'] = post['svgImage']
+        # set stitch information
+        # set uid information for dst file
+        # parse the width and height data
+        contentType = rcd['content_type'].lower()
         LogoTemplate = request.env['product.logo']
         LogoTemplate.create(rcd)
         return {'result': {'data': 'success'}}
