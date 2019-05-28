@@ -2713,7 +2713,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
         },
         _initComponents: function () {
             $('#logo-image-type').select2({
-                width: "60%"
+                width: "100%"
             }).trigger("change");
             /**
              * Bind events
@@ -2734,19 +2734,54 @@ odoo.define("emb_portal.garment_upload", function (require) {
              */
             $('input:radio[name="order-type"]').change(function () {
                 self._clearUploadWindow();
+                $('#logo-image-type').select2("destroy").empty().trigger('change');
                 if ($("input[name='order-type']:checked").val() == 'c') {
-                    $('#logo-image-b').show();
+                    /**
+                     * Add dst or ai options
+                     */
+                    $('#logo-image-type').append(new Option('.dst','dst',true,true));
+                    $('#logo-image-type').append(new Option('.ai','ai',true,true));
+                    $('#logo-image-type').select2().trigger('change');
                 }
                 if ($("input[name='order-type']:checked").val() == 'd') {
-                    $('#logo-image-b').hide();
+                    /**
+                     * Aad pdf option or jpg 
+                     */
+                    $('#logo-image-type').append(new Option('.png','png',true,true));
+                    $('#logo-image-type').append(new Option('.jpg','jpg',true,true));
+                    $('#logo-image-type').append(new Option('.pdf','pdf',true,true));
+                    $('#logo-image-type').select2().trigger('change');
                 }
+                
             });
             // need to check the order type
             $("#logo-file-input").change(function () {
+                var input = this;
+                var selectedType = $('#logo-image-type').val();
+                /**
+                 * Check file extension
+                 */
+                var filePath = $(input).val(); 
+                var file_ext = filePath.substr(filePath.lastIndexOf('.') + 1, filePath.length);
+                if(file_ext.toLowerCase() != selectedType.toLowerCase()) {
+                    $('#logo-image-type').qtip({
+                        content: {
+                            text: "Please select a right file type."
+                        },
+                        position: {
+                            my: "top center",
+                            at: "bottom center"
+                        },
+                        show: {
+                            event: false
+                        }
+                    }).qtip("show");
+                    return false;
+                }
                 /**
                  * If dst or ai file, upload the file and save it
                  */
-                var input = this;
+                
                 if ($("input[name='order-type']:checked").val() == 'c') {
                     var reader = new FileReader();
                     reader.onload = function (e) {
@@ -2773,6 +2808,22 @@ odoo.define("emb_portal.garment_upload", function (require) {
                                 }
                             })
                             .done(function (data) {
+                                console.log(data);
+                                if(data['error'] != undefined) {
+                                    $('#logo-image-preview').qtip({
+                                        content: {
+                                            text: "Image background handling error."
+                                        },
+                                        position: {
+                                            my: "top center",
+                                            at: "bottom center"
+                                        },
+                                        show: {
+                                            event: false
+                                        }
+                                    }).qtip("show");
+                                    return false;
+                                }
                                 $('#logo-width').val(data['width']);
                                 $('#logo-height').val(data['height']);         
                                 $("#logo-preview-box").html(data['image']);
@@ -2805,14 +2856,15 @@ odoo.define("emb_portal.garment_upload", function (require) {
                  * If digizing order, just preview it
                  */
                 if ($("input[name='order-type']:checked").val() == 'd') {
+                    /**
+                     * check file type selected
+                     */
                     var designReader = new FileReader();
                     designReader.onload = function (e) {
                         /**
                          * Get image file extension,to check the pdf file
                          */
-                        var filePath = $(input).val(); 
-                        var file_ext = filePath.substr(filePath.lastIndexOf('.')+1,filePath.length);
-                        if(file_ext == 'pdf') {
+                        if(file_ext == 'pdf' && selectedType == 'pdf') {
                             $("#logo-preview-box").block({
                                 message: "<img src='/emb_portal/static/src/images/grid.svg' height='30' width='30' style='margin-right:10px' />loading..",
                                 css: {
@@ -2826,10 +2878,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
                              * Convert pdf into image
                              */
                             var pdfData = {};
-                            var pdfData = e.target.result;
                             var postPdfUrl = '/portal/pdf/preview';
-                            pdfData['data'] = pdfData;
-                            ajax.jsonRpc(postUrl, "call", pdfData)
+                            pdfData['data'] = e.target.result;
+                            ajax.jsonRpc(postPdfUrl, "call", pdfData)
                             .always(function () {
                                 $("#logo-preview-box").unblock();
                                 if ($.blockUI) {
@@ -2837,7 +2888,22 @@ odoo.define("emb_portal.garment_upload", function (require) {
                                 }
                             })
                             .done(function (data) {
-                                
+                                if(data['error'] != undefined) {
+                                    $('#logo-image-preview').qtip({
+                                        content: {
+                                            text: "Image background handling error."
+                                        },
+                                        position: {
+                                            my: "top center",
+                                            at: "bottom center"
+                                        },
+                                        show: {
+                                            event: false
+                                        }
+                                    }).qtip("show");
+                                    return false;
+                                }
+                                $('#logo-image-preview').attr('src','data:image/png;base64,' + data['image'])
                             })
                             .fail(function () {
                                 $.notify({
@@ -2874,6 +2940,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     background: "transparent"
                 }
             });
+            
             var name = $('#logo-name').val();
             var desc = $('#logo-desc').val();
             var type = $('#logo-image-type').val();
@@ -2883,6 +2950,57 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var height = $('#logo-height').val();
             var unit = $("input[name='size-unit']:checked").val();
 
+            /**
+             * Check order type
+             */
+            var orderType = $("input[name='order-type']:checked").val();
+            if (orderType == 'c') {
+                /**
+                 * Validate preview content
+                 */
+                if($('#logo-preview-box').find('img').length > 0) {
+                    console.log('no dst/ai preview image found.');
+                }
+            }
+
+            if (orderType == 'd') {
+                var designImage = $('#logo-image-preview').attr('src');
+                if(designImage != undefined && designImage.indexOf('placeholder') > 0) {
+                    console.log('no png preview image found.');
+                    return false;
+                }
+                var orderData = {
+                    name: name,
+                    desc: desc,
+                    type: type,
+                    image: designImage,
+                    width: width,
+                    height: height,
+                    unit: unit
+                };
+                var orderUrl = '/portal/dorder/save';
+                ajax.jsonRpc(orderUrl, "call", orderData)
+                                .always(function () {
+                                    $("#logo-upload-modal").unblock();
+                                    if ($.blockUI) {
+                                        $.unblockUI();
+                                    }
+                                })
+                                .done(function (data) {
+                                    self._clearUploadWindow();
+                                    setTimeout(function(){ $("#logo-upload-modal").modal("toggle");}, 3000);
+                                })
+                                .fail(function () {
+                                    $.notify({
+                                        icon: "glyphicon glyphicon-remove",
+                                        title: "Failed",
+                                        message: "Failed to add item,please try again"
+                                    }, {
+                                        type: "danger"
+                                    });
+                                });
+                return false;                
+            }
             /**
              * Bugfix temp
              */

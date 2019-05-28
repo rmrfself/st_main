@@ -62,3 +62,10 @@ class CartConfirm(models.Model):
     design_template = fields.Char('Design Template')
 
     status = fields.Boolean(default=False)
+
+class DOrderConfirm(models.Model):
+    _name = "sale.dorder.preview"
+
+    design_template = fields.Char('Design Template')
+
+    status = fields.Boolean(default=False)

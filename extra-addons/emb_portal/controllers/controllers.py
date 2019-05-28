@@ -226,6 +226,29 @@ class Portal(http.Controller):
 
     # By zhang qinghua
     # created at 2019/04/11
+    @http.route('/portal/pdf/preview', auth='user', methods=['POST'], type='json', website=True)
+    def binary_pdf_preview(self, *args, **post):
+        fileData = post['data'].split(',')[1]
+        pdf_file, pdf_filename = tempfile.mkstemp()
+        os.write(pdf_file, base64.b64decode(fileData))
+        shutil.copy(pdf_filename, pdf_filename + '.pdf')
+        new_pdf_file = pdf_filename + '.pdf'
+        # Create website used image
+        png_dir = tempfile.mkdtemp()
+        png_filename = hashlib.md5(fileData.encode()).hexdigest()
+        png_file = png_dir + '/' + png_filename
+        # Image converter call
+        try:
+            call(["pdftocairo", new_pdf_file, "-png" ,png_file])
+        except subprocess.CalledProcessError:
+            return { "error": 'true' }
+        except OSError:
+            return { "error": 'true' }
+        png_file = png_file + '-1.png'
+        png_content = open(png_file, 'rb').read()
+        return { "image": base64.b64encode(png_content) }
+    # By zhang qinghua
+    # created at 2019/04/11
     @http.route('/portal/file/preview', auth='user', methods=['POST'], type='json', website=True)
     def binary_file_preview(self, *args, **post):
         fileType = post['type']
@@ -264,8 +287,16 @@ class Portal(http.Controller):
             svg_filename = hashlib.md5(fileData.encode()).hexdigest()
             svg_file = svg_dir + '/' + svg_filename + '.svg'
             # Image converter call
-            call(["libembroidery-convert", new_dst_file, svg_file])
-            svg_content = open(svg_file, 'r').read()
+            try:
+                call(["libembroidery-convert", new_dst_file, svg_file])
+            except subprocess.CalledProcessError:
+                return { "error": 'true' }
+            except OSError:
+                return { "error": 'true' }
+            try:
+                svg_content = open(svg_file, 'r').read()
+            except IOError:
+                return { "error": 'true' }   
             svg_image = svg_content
             return {'image': svg_image,'width': dstWidth, 'height': dstHeight,'stitch': stitch, 'uid': uid}
         if fileType == 'ai':
@@ -282,18 +313,27 @@ class Portal(http.Controller):
                 search.seek(190, 0)
                 bRaw = search.read(70)
                 boundBox = bRaw.decode('utf-8')
-                bd = re.findall("%%BoundingBox: ([0-9\s]+)", boundBox)
-                if bd:
-                    bdd = bd[0].rstrip().split(' ')
-                    aiWidth = bdd[-2]
-                    aiHeight = bdd[-1]
+                if boundBox:
+                    bd = re.findall("%%BoundingBox: ([0-9\s]+)", boundBox)
+                    if bd:
+                        bdd = bd[0].rstrip().split(' ')
+                        aiWidth = bdd[-2]
+                        aiHeight = bdd[-1]
             # create svg file image
             svg_dir = tempfile.mkdtemp()
             svg_filename = hashlib.md5(fileData.encode()).hexdigest()
             svg_file = svg_dir + '/' + svg_filename + '.svg'
             # image converter call
-            call(["pdftocairo", new_ai_file, "-svg", svg_file])
-            svg_content = open(svg_file, 'r').read()
+            try:
+                call(["pdftocairo", new_ai_file, "-svg", svg_file])
+            except subprocess.CalledProcessError:
+                return { "error": 'true' }
+            except OSError:
+                return { "error": 'true' } 
+            try:            
+                svg_content = open(svg_file, 'r').read()
+            except IOError:
+                return { "error": 'true' }    
             svg_image = svg_content
             return {'image': svg_image,'width': aiWidth, 'height': aiHeight}
         return {}
@@ -317,3 +357,18 @@ class Portal(http.Controller):
         LogoTemplate = request.env['product.logo']
         LogoTemplate.create(rcd)
         return {'result': {'data': 'success'}}
+
+    # By zhang qinghua
+    # created at 2019/04/18
+    @http.route('/portal/dorder/save', auth='user', methods=['POST'], type='json', website=True)
+    def save_dorder(self, *args, **post):
+        # 1. Create product.template for:
+        #  contains 1 product.garment
+        #  contains image
+        #  contains attribute of color
+        #  contains bom of logos(prouduct)
+        DOrderTpl = request.env['sale.dorder.preview']
+        DOrderTpl.create({
+            'design_template': json.dumps(post)
+        })
+        return {'result': {'data': 'success'}}                

@@ -608,10 +608,10 @@
 														<div class="col-sm-9">
 															<select id="logo-image-type" class="form-control form-control-lg">
 																<option value="dst">
-																	.DST
+																	.dst
 																</option>
 																<option value="ai">
-																	.AI
+																	.ai
 																</option>
 															</select>
 														</div>
