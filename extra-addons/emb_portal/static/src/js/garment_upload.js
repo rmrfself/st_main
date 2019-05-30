@@ -2948,6 +2948,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var svgImage = $('#logo-preview-box').html();
             var width = $('#logo-width').val();
             var height = $('#logo-height').val();
+            var stitch = $('#logo-stitch').val() || 0;
             var unit = $("input[name='size-unit']:checked").val();
 
             /**
@@ -3005,9 +3006,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
              * Bugfix temp
              */
             if(svgImage.length > 0) {
-                svgImage = svgImage.replace('width="270px"','');
-                svgImage = svgImage.replace('height="202px"','');
-                svgImage = svgImage.replace('viewbox="0 0 270 202"','');
+                svgImage = svgImage.replace('width="270px"','width="120px"');
+                svgImage = svgImage.replace('height="202px"','height="120px"');
+                svgImage = svgImage.replace('viewbox="0 0 270 202"','viewbox="-40 -60 80 120"');
             }
 
             var postData = {
@@ -3018,7 +3019,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 svgImage: btoa(svgImage),
                 width: width,
                 height: height,
-                unit: unit
+                unit: unit,
+                stitch: stitch
             };
             var postUrl = '/portal/logo/save';
             ajax.jsonRpc(postUrl, "call", postData)
@@ -3084,8 +3086,10 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 var id = tmp['id'];
                 var type = tmp['content_type'];
                 var image = atob(tmp['image']);
-                var width = parseInt(tmp['width']);
-                var height = parseInt(tmp['height']);
+                //var width = parseInt(tmp['width']);
+                var width = 382;
+                //var height = parseInt(tmp['height']);
+                var height = 110;
                 //<a href="#" class="logo-asset" id="logo-id-1" data-id="1">
                 var link = $('<a>').addClass('logo-asset').attr('id','logo-id-' + id).attr('data-id',id);
                 link.attr('data-type',type).attr('data-id',id).attr('href','#');
@@ -3093,9 +3097,33 @@ odoo.define("emb_portal.garment_upload", function (require) {
                  * Fix image width and height and scale it to appriciated one.
                  */
                 link.html(image);
+                
+                /**
+                 * Fix width and height issue
+                 */
                 var jImage = link.find('svg');
+                /**
+                 * For these width more than height
+                 * 
+                 */
+                if(width >= height && width > 120) {
+                    var hratio = parseFloat(120/width);
+                    jImage.attr('transform', "translate(-60, -" + (height * hratio)/2 + ") scale(" + hratio + ")");
+                    jImage.attr('width', '120px');
+                    jImage.attr('height', '120px');
+                    jImage.attr('viewBox','-40 -60 80 120');
+                }
 
+                if(height >= width && height > 120) {
+                    var hratio = parseFloat(120/height);
+                    jImage.attr('transform', "translate(-" + (width * hratio)/2 + ",-60) scale(" + hratio + ")");
+                    jImage.attr('height',  '120px');
+                    jImage.attr('width', '120px');
+                }
                 parent.append(link);
+                /**
+                 * For height more than width
+                 */
                 var self = this;
                 var targets = $(".logo-assets").find("a");
                 targets.each(function (e) {
