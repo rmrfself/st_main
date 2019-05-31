@@ -2808,7 +2808,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
                                 }
                             })
                             .done(function (data) {
-                                console.log(data);
                                 if(data['error'] != undefined) {
                                     $('#logo-image-preview').qtip({
                                         content: {
@@ -3108,7 +3107,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                  */
                 if(width >= height && width > 120) {
                     var hratio = parseFloat(120/width);
-                    jImage.attr('transform', "translate(-60, -" + (height * hratio)/2 + ") scale(" + hratio + ")");
+                    //jImage.attr('transform', "translate(-60, -" + (height * hratio)/2 + ") scale(" + hratio + ")");
                     jImage.attr('width', '120px');
                     jImage.attr('height', '120px');
                     jImage.attr('viewBox','-40 -60 80 120');
