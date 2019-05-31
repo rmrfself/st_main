@@ -2945,8 +2945,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var type = $('#logo-image-type').val();
             var imageRaw = $('#logo-file-input').val();
             var svgImage = $('#logo-preview-box').html();
-            var width = $('#logo-width').val();
-            var height = $('#logo-height').val();
+            var width = parseFloat($('#logo-width').val());
+            var height = parseFloat($('#logo-height').val());
             var stitch = $('#logo-stitch').val() || 0;
             var unit = $("input[name='size-unit']:checked").val();
 
@@ -3005,9 +3005,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
              * Bugfix temp
              */
             if(svgImage.length > 0) {
-                svgImage = svgImage.replace('width="270px"','width="120px"');
-                svgImage = svgImage.replace('height="202px"','height="120px"');
-                svgImage = svgImage.replace('viewbox="0 0 270 202"','viewbox="-40 -60 80 120"');
+                svgImage = svgImage.replace('width="270px"','');
+                svgImage = svgImage.replace('height="202px"','');
+                svgImage = svgImage.replace('viewbox="0 0 270 202"','');
             }
 
             var postData = {
@@ -3067,7 +3067,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 [
                     ["create_uid", "=", odoo.session_info.user_id]
                 ],
-                ["id", "name", "content_type","image","width","height"]
+                ["id", "name", "content_type","image","width","height","stitch"]
             ];
             rpc.query({
                     model: "product.logo",
@@ -3085,11 +3085,16 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 var id = tmp['id'];
                 var type = tmp['content_type'];
                 var image = atob(tmp['image']);
-                //var width = parseInt(tmp['width']);
-                var width = 382;
-                //var height = parseInt(tmp['height']);
-                var height = 110;
+                var width = parseInt(tmp['width']);
+                var originWidth = parseInt(tmp['width']);
+                var originHeight = parseInt(tmp['height']);
+                //var width = 382;
+                var height = parseInt(tmp['height']);
+                var name = tmp['name'];
+                var stitch = tmp['stitch'] || 0;
+                //var height = 110;
                 //<a href="#" class="logo-asset" id="logo-id-1" data-id="1">
+                var linkCon = $('<div class="logocon">');
                 var link = $('<a>').addClass('logo-asset').attr('id','logo-id-' + id).attr('data-id',id);
                 link.attr('data-type',type).attr('data-id',id).attr('href','#');
                 /**
@@ -3105,21 +3110,71 @@ odoo.define("emb_portal.garment_upload", function (require) {
                  * For these width more than height
                  * 
                  */
-                if(width >= height && width > 120) {
-                    var hratio = parseFloat(120/width);
-                    //jImage.attr('transform', "translate(-60, -" + (height * hratio)/2 + ") scale(" + hratio + ")");
-                    jImage.attr('width', '120px');
-                    jImage.attr('height', '120px');
-                    jImage.attr('viewBox','-40 -60 80 120');
+                if(parseInt(width) == 0 || parseInt(height) == 0) {
+                    width = 240;
+                    height = 100;
+                }
+                if(width > 0 && type == 'dst') {
+                    if(width > 240) {
+                        width = 240;
+                    }
+                    if(height > 100) {
+                        height = 100;
+                    }
+                    jImage.attr('width', width + 'px');
+                    jImage.attr('height', height + 'px');
+                    jImage.removeAttr('viewBox');
+                    jImage.each(function () { $(this)[0].setAttribute('viewBox', (-width/2) + ' ' + (-height/2) + ' ' + width + ' ' + height) });
                 }
 
-                if(height >= width && height > 120) {
-                    var hratio = parseFloat(120/height);
-                    jImage.attr('transform', "translate(-" + (width * hratio)/2 + ",-60) scale(" + hratio + ")");
-                    jImage.attr('height',  '120px');
-                    jImage.attr('width', '120px');
+                if (type == 'ai') {
+                    jImage.attr('width', width + 'px');
+                    jImage.attr('height', height + 'px');
                 }
-                parent.append(link);
+
+                linkCon.append(link);
+
+                /**
+                 * Append origin information of width and height and stitch
+                 */
+                var linfoHolder = $('<div class="linfo">');
+                var s1 = $('<span>').html('Name: ');
+                s1.append(name);
+                linfoHolder.append(s1);
+                var s2 = $('<span>').html('Type: ');
+                s2.append(type);
+                linfoHolder.append(s2);
+                var s3 = $('<span>').html('Width: ');
+                s3.append(originWidth);
+                linfoHolder.append(s3);
+                var s4 = $('<span>').html('Height: ');
+                s4.append(originHeight);
+                linfoHolder.append(s4);
+
+                if(type == 'dst') {
+                    var s5 = $('<span>').html('Stitches: ');
+                    s5.append(stitch);
+                    linfoHolder.append(s5);
+                }
+
+                var s6 = $('<a class="lr">').html('remove');
+
+                s6.click(function(e) {
+                    var args = [id];
+                    rpc.query({
+                        model: "product.logo",
+                        method: "unlink",
+                        args: args
+                    }).then(function (returned_value) {
+                        console.log('removed');
+                        parent.hide();
+                    });
+                });
+                linkCon.append(s6);
+                linkCon.append(link);
+                linkCon.append(linfoHolder);
+                parent.append(linkCon);
+
                 /**
                  * For height more than width
                  */

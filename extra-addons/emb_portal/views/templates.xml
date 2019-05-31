@@ -118,6 +118,20 @@
 									</div>
 								</div>
 							</div>
+							<h4 class="title">
+								Digital Order List
+							</h4>
+							<div id="do-cart-list">
+								<div class="cart-table">
+									<table class="table table-stripped" id="dl">
+										<tr>
+											<td>Image</td>
+										</tr>
+									</table>
+									<div id="do_emptymsg" class="emptymsg">Empty</div>
+									<div id="dations"></div>
+								</div>
+							</div>
 						</div>
 						<div class="col-md-12">
 							<div class="form-group green-border-focus">
@@ -222,12 +236,6 @@
 											<div class="content" id="garment-list">
 											</div>
 											<div class="bottom-actions">
-												<a href="#">
-													St garments
-												</a>
-												<a href="#">
-													My garments
-												</a>
 											</div>
 										</div>
 										<div role="tabpanel" class="tab-pane" id="logo-box">
@@ -235,13 +243,7 @@
 												<div class="logo-assets clearfix" id='lc'></div>
 											</div>
 											<div class="bottom-actions">
-												Filter:
-												<a href="#">
-													St logos
-												</a>
-												<a href="#">
-													My logos
-												</a>
+												
 											</div>
 										</div>
 									</div>
@@ -630,7 +632,7 @@
 														</label>
 														<div class="col-sm-9">
 															<input type="text" class="form-control protip" id="logo-name" placeholder="Input a name here" data-pt-title="Input your logo name!" />
-															<input name="logo-stitch" value="0" type="hidden" />
+															<input id="logo-stitch" name="logo-stitch" value="0" type="hidden" />
 														</div>
 													</div>
 													<div class="form-group row">

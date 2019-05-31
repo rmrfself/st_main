@@ -54,6 +54,29 @@ class Portal(http.Controller):
     # This controller is for /port/cart/list page to load the data asychronised
     # By zhang qinghua
     # created at 2018/11/11
+    @http.route('/portal/cart/dlist', type='json', auth="user", csrf=False, website=True)
+    def dorder_cart_list_data(self, **kw):
+        SaleOrderTpl = request.env['sale.dorder.preview']
+        orders = SaleOrderTpl.search(
+            [('status', '=', False), ('create_uid', '=', request.env.context.get('uid'))])
+
+        container = []
+        for data in orders:
+            topLevel = {}
+            dataTpl = json.loads(data.design_template)
+            name = dataTpl['name']
+            desc = dataTpl['desc']
+            ltype = dataTpl['type']
+            image = dataTpl['image']
+            width = dataTpl['width']
+            height = dataTpl['height']
+            unit = dataTpl['unit']
+            container.append(topLevel)
+        return container    
+
+    # This controller is for /port/cart/list page to load the data asychronised
+    # By zhang qinghua
+    # created at 2018/11/11
     @http.route('/portal/cart/list', type='json', auth="user", csrf=False, website=True)
     def cart_list_data(self, **kw):
         SaleOrderTpl = request.env['sale.order.preview']
@@ -283,6 +306,7 @@ class Portal(http.Controller):
                     if st:
                         stitch = st[0]
             # Create website used image
+            print('stitch: ' + stitch)
             svg_dir = tempfile.mkdtemp()
             svg_filename = hashlib.md5(fileData.encode()).hexdigest()
             svg_file = svg_dir + '/' + svg_filename + '.svg'
@@ -369,6 +393,7 @@ class Portal(http.Controller):
         #  contains bom of logos(prouduct)
         DOrderTpl = request.env['sale.dorder.preview']
         DOrderTpl.create({
-            'design_template': json.dumps(post)
+            'design_template': json.dumps(post),
+            'status': True
         })
         return {'result': {'data': 'success'}}                

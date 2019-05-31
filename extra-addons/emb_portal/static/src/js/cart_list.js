@@ -59,6 +59,37 @@ odoo.define('emb_portal.cart_list', function (require) {
                     }
                     self._createListTable(returned_value);
                 });
+
+                /**
+                 * Load digital order list
+                 */
+                rpc
+                .query({
+                    route: "/portal/cart/dlist",
+                    params: []
+                })
+                .then(function (returned_value) {
+                    $("#do-cart-list").unblock();
+                    if ($.blockUI) {
+                        $.unblockUI();
+                    }
+                    /**
+                     * Hide empty msg
+                     */
+                    if (_.isEmpty(returned_value)) {
+                        $('#do-emptymsg').html('Empty').show();
+                        return false;
+                    }
+                    self._createDoListTable(returned_value);
+                });
+        },
+        _createDoListTable: function(list) {
+            for(key in item) {
+                var data = item[key];
+                var row = $('<tr>');
+                
+            }
+
         },
         _onLogoPriceChange: function () {
 
