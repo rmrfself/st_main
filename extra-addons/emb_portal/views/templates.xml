@@ -125,7 +125,15 @@
 								<div class="cart-table">
 									<table class="table table-stripped" id="dl">
 										<tr>
-											<td>Image</td>
+											<th>Image</th>
+											<th>Name</th>
+											<th>Image Type</th>
+											<th>Width</th>
+											<th>Height</th>
+											<th>Unit</th>
+											<th>Price</th>
+											<th>Surcharge</th>
+											<th>Action</th>
 										</tr>
 									</table>
 									<div id="do_emptymsg" class="emptymsg">Empty</div>

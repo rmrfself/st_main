@@ -17,9 +17,15 @@ odoo.define('emb_portal.cart_list', function (require) {
     };
 
     CarListTable.prototype = {
+        /**
+         * Init events here
+         */
         init: function () {
             this._loadCartData();
         },
+        /**
+         * Run load data methods.
+         */
         _loadCartData: function () {
             var self = this;
             $("#cart-list").block({
@@ -83,17 +89,129 @@ odoo.define('emb_portal.cart_list', function (require) {
                     self._createDoListTable(returned_value);
                 });
         },
+        
+        /**
+         * @description
+         * Create table list for d-order
+         * @param {*} list
+         */
         _createDoListTable: function(list) {
-            for(key in item) {
-                var data = item[key];
+            if(_.isEmpty(list)) {
+                $('#do_emptymsg').html('Empty').show();
+            } else {
+                $('#do_emptymsg').hide();
+            }
+            var parent = $('#dl');
+            for(var key in list) {
+                var data = list[key];
                 var row = $('<tr>');
-                
+                /**
+                 * Image field
+                 */
+                var imgf = $('<img>').attr('src', data['image']);
+                imgf.attr('width','120');
+                var imgf_td = $('<td width="120">');
+                imgf_td.append(imgf);
+                row.append(imgf_td);
+                /**
+                 * Name field
+                 */
+                var nmf = $('<td>').html(data['name']);
+                row.append(nmf);
+                var imgtf = $('<td>').html(data['ltype']);
+                row.append(imgtf);
+                var imgwf = $('<td>').html(data['width']);
+                row.append(imgwf);
+                var imghf = $('<td>').html(data['height']);
+                row.append(imghf);
+                var imguf = $('<td>').html(data['unit']);
+                row.append(imguf);
+                /**
+                 * Add price input and surcharge
+                 */
+                var pin = $('<input type="text" id="do_price_' + data['id'] + '" placeholder="0.00" class="form-control">');
+                var pintd = $('<td>').append(pin);
+                row.append(pintd);
+
+                var scin = $('<input type="text" id="do_sc_' + data['id'] + '" placeholder="0.00" class="form-control">');
+                var sctd = $('<td>').append(scin);
+                row.append(sctd);
+
+                var da = $('<a>').attr('href','#').html('Remove');
+                da.attr('data-toggle', 'confirmation');
+                var did = data['id'];
+                da.confirmation({
+                    onCancel: function () {
+                        console.log('You didn\'t choose anything');
+                    },
+                    onConfirm: function (value) {
+                        var args = [did];
+                        rpc.query({
+                            model: "sale.dorder.preview",
+                            method: "unlink",
+                            args: args
+                        }).then(function (returned_value) {
+                            parent.hide();
+                        });
+                    }
+                });
+                var af = $('<td>').html(da);
+                row.append(af);
+                parent.append(row);
             }
 
         },
         _onLogoPriceChange: function () {
 
         },
+        _collectOrderData: function() {
+            var self = this;
+            var eOrderHolder = $("input[name='select[]']");
+            var postData = [];
+            eOrderHolder.each(function(item) {
+                var obj = {};
+                var designId = this.value;
+                obj['id'] = designId;
+                obj['qty'] = [];
+                obj['logos'] = [];
+                var topLevelTable = $('#ot_' + this.value);
+                /**
+                 * Search count labels
+                 */
+                var sizeInputs = topLevelTable.find("input[name='qty[]']");
+                sizeInputs.each(function(item){
+                    var sizeObj = {};
+                    var key = $(this).attr('data-label');
+                    sizeObj[key] = $(this).val();
+                    obj['qty'].push(sizeObj);
+                });
+                /**
+                 * Search the logo ids in current table
+                 */
+                var logoIds = topLevelTable.find("input[name='logoid[]']");
+                logoIds.each(function(item){
+                    var logoObj = {};
+                    var id = $(this).val();
+                    logoObj['id'] = id
+                    logoObj['price'] = topLevelTable.find("input[data-id='logo_price_" + id + "']").val();
+                    logoObj['surcharge'] = topLevelTable.find("input[data-id='logo_surcharge_" + id + "']").val();
+                    logoObj['discount'] = topLevelTable.find("input[data-id='logo_discount_" + id + "']").val();
+                    obj['logos'].push(logoObj);
+                });
+                postData.push(obj);
+                
+            });
+            console.log(postData);
+        },
+        _submitQtOrder: function() {
+            this._collectOrderData();
+        },
+        _submitOrder: function() {
+
+        },
+        /**
+         * Binding events for all table list
+         */
         _bindInputEvents: function () {
             var self = this;
             $("input[name='select[]']").on('change', function (e) {
@@ -164,27 +282,29 @@ odoo.define('emb_portal.cart_list', function (require) {
                 self._calTotalPrice($(this).attr('data-key'));
             });
             $('#btn-quot').click(function (e) {
-                $("#cart-list").block({
-                    message: "<img src='/emb_portal/static/src/images/grid.svg' height='30' width='30' style='margin-right:10px' />loading..",
-                    css: {
-                        border: "none",
-                        left: "90%",
-                        width: "96%",
-                        background: "transparent"
-                    }
-                });
-                setTimeout(function () {
-                    $("#cart-list").unblock();
-                    $.notify({
-                        icon: "glyphicon glyphicon-ok",
-                        title: "OK",
-                        message: "Quotattion order has been created already."
-                    }, {
-                        type: "success"
-                    });
-                }, 3000);
+                self._submitQtOrder();
+                // $("#cart-list").block({
+                //     message: "<img src='/emb_portal/static/src/images/grid.svg' height='30' width='30' style='margin-right:10px' />loading..",
+                //     css: {
+                //         border: "none",
+                //         left: "90%",
+                //         width: "96%",
+                //         background: "transparent"
+                //     }
+                // });
+                // setTimeout(function () {
+                //     $("#cart-list").unblock();
+                //     $.notify({
+                //         icon: "glyphicon glyphicon-ok",
+                //         title: "OK",
+                //         message: "Quotattion order has been created already."
+                //     }, {
+                //         type: "success"
+                //     });
+                // }, 3000);
             });
             $('#btn-order').click(function (e) {
+                self._submitOrder();
                 $("#cart-list").block({
                     message: "<img src='/emb_portal/static/src/images/grid.svg' height='30' width='30' style='margin-right:10px' />loading..",
                     css: {
@@ -206,6 +326,9 @@ odoo.define('emb_portal.cart_list', function (require) {
                 }, 3000);
             });
         },
+        /**
+         * Calculate total price here
+         */
         _calTotalPrice: function (key) {
             /**
              * Cal total quantity
@@ -243,6 +366,9 @@ odoo.define('emb_portal.cart_list', function (require) {
             $('#f-subtotal').html('$ ' + tp);
             $('#f-total').html('$ ' + tp);
         },
+        /**
+         * Create list table
+         */
         _createListTable: function (list) {
             var parent = $('#cl');
             for (var item in list) {
@@ -260,7 +386,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                  */
                 var t_tdi_2 = $('<td>');
                 var sideTable = $('<table>').addClass('table table-borderless');
-                /**
+                /*
                  * Prepare the head of table
                  */
                 var tHeadRow = $('<tr>');
@@ -285,6 +411,10 @@ odoo.define('emb_portal.cart_list', function (require) {
                 sideTable.append(tHeadRow);
 
                 for (var key in dr) {
+                    /**
+                     * set content table id
+                     */
+                    sideTable.attr('id','ot_' + key);
                     /**
                      * ip_tdi_1 value
                      */
@@ -361,18 +491,19 @@ odoo.define('emb_portal.cart_list', function (require) {
                             logoTr.append(ltdi_3);
                             // append unit price
                             var ltdi_4 = $('<td class="minw100">');
-                            ltdi_4.append($('<input type="text" value="0.0" class="form-control logo-price" data-id="' + logoObj.id + '" data-key="' + key + '">'));
+                            ltdi_4.append($('<input type="text" value="0.0" class="form-control logo-price" data-id="logo_price_' + logoObj.id + '" data-key="' + key + '">'));
                             logoTr.append(ltdi_4);
+                            logoTr.append($('<input type="hidden" name="logoid[]" value="' + logoObj.id + '">'));
                             // append logo discount
                             var ltdi_5 = $('<td class="minw90">');
-                            ltdi_5.append($('<input type="text" class="form-control logo-discount" data-id="' + logoObj.id + '" data-key="' + key + '" value="' + 0 + '">'));
+                            ltdi_5.append($('<input type="text" class="form-control logo-discount" data-id="logo_discount_' + logoObj.id + '" data-key="' + key + '" value="' + 0 + '">'));
                             logoTr.append(ltdi_5);
                             // append logo surcharge
                             var ltdi_6 = $('<td class="minw90">');
                             if (logoObj.surcharge == null || logoObj.surcharge == undefined) {
                                 logoObj.surcharge = 0;
                             }
-                            ltdi_6.append($('<input type="text" class="form-control logo-surcharge" data-id="' + logoObj.id + '" data-key="' + key + '" value="' + logoObj.surcharge + '">'));
+                            ltdi_6.append($('<input type="text" class="form-control logo-surcharge" data-id="logo_surcharge_' + logoObj.id + '" data-key="' + key + '" value="' + logoObj.surcharge + '">'));
                             logoTr.append(ltdi_6);
                             // append logo description
                             var ltdi_7 = $('<td class="minw100">');
@@ -395,7 +526,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                                 totalq = totalq + parseInt(cc);
                                 var ccd = $('<div>').addClass('ccd');
                                 var label = $('<label>').addClass('qq_label').html(s + ':');
-                                var ip_size = $('<input type="text" data-key="' + key + '" value="' + cc + '" class="form-control cart-qq">');
+                                var ip_size = $('<input type="text" name="qty[]" data-label="' + s + '" data-id="' + key + '" value="' + cc + '" class="form-control cart-qq">');
                                 ip_size.addClass('cart-qq-' + key);
                                 ccd.append(label);
                                 ccd.append(ip_size);

@@ -58,19 +58,19 @@ class Portal(http.Controller):
     def dorder_cart_list_data(self, **kw):
         SaleOrderTpl = request.env['sale.dorder.preview']
         orders = SaleOrderTpl.search(
-            [('status', '=', False), ('create_uid', '=', request.env.context.get('uid'))])
-
+            [('status', '=', True), ('create_uid', '=', request.env.context.get('uid'))])
         container = []
         for data in orders:
             topLevel = {}
             dataTpl = json.loads(data.design_template)
-            name = dataTpl['name']
-            desc = dataTpl['desc']
-            ltype = dataTpl['type']
-            image = dataTpl['image']
-            width = dataTpl['width']
-            height = dataTpl['height']
-            unit = dataTpl['unit']
+            topLevel['id'] = data.id
+            topLevel['name'] = dataTpl['name']
+            topLevel['desc'] = dataTpl['desc']
+            topLevel['ltype'] = dataTpl['type']
+            topLevel['image'] = dataTpl['image']
+            topLevel['width'] = dataTpl['width']
+            topLevel['height'] = dataTpl['height']
+            topLevel['unit'] = dataTpl['unit']
             container.append(topLevel)
         return container    
 

@@ -2988,7 +2988,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
                                 })
                                 .done(function (data) {
                                     self._clearUploadWindow();
-                                    setTimeout(function(){ $("#logo-upload-modal").modal("toggle");}, 3000);
+                                    var loc = session.debug ? '/portal/cart?debug=true' : '/portal/cart';
+                                    var redhref = loc + '#dl';
+                                    setTimeout(function(){ $("#logo-upload-modal").modal("toggle");window.location.href = redhref;}, 3000);
                                 })
                                 .fail(function () {
                                     $.notify({
