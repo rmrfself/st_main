@@ -95,6 +95,8 @@ class Portal(http.Controller):
             # Search garment data object
             ProductGarment = request.env['product.garment']
             gmt = ProductGarment.search([('id', '=', int(gId))])
+            if not gmt.design_template:
+                continue
             designTpl = json.loads(gmt.design_template)
             # Create top level array
             topLevel[data.id] = []
