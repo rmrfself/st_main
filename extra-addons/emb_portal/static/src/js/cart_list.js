@@ -151,7 +151,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                             method: "unlink",
                             args: args
                         }).then(function (returned_value) {
-                            parent.hide();
+                            row.hide();
                         });
                     }
                 });
