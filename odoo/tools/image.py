@@ -52,7 +52,7 @@ def image_resize_image(base64_source, size=(1024, 1024), encoding='base64', file
     if not base64_source:
         return False
     if size == (None, None):
-        return base64_source
+        return base64_source 
     image_stream = io.BytesIO(codecs.decode(base64_source, encoding))
     image = Image.open(image_stream)
     # store filetype here, as Image.new below will lose image.format

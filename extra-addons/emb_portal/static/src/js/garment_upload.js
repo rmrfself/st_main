@@ -1032,7 +1032,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
             for (var i = 0; i < faces.length; i++) {
                 var savedData = 'line-' + garmentId + '-' + faces[i];
                 var v = localStorage.getItem(savedData);
-                console.log(v);
                 if (v != undefined) {
                     var pd = JSON.parse(v);
                     var imgd = $('#lm-' + garmentId + '-' + faces[i]);

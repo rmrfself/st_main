@@ -4,6 +4,7 @@ odoo.define('emb_portal.cart_list', function (require) {
     var rpc = require("web.rpc");
     var ajax = require('web.ajax');
     var core = require('web.core');
+    var session = require('web.session');
 
     var qweb = core.qweb;
     var _t = core._t;
@@ -199,12 +200,12 @@ odoo.define('emb_portal.cart_list', function (require) {
                     obj['logos'].push(logoObj);
                 });
                 postData.push(obj);
-                
             });
             console.log(postData);
+            return postData;
         },
         _submitQtOrder: function() {
-            this._collectOrderData();
+            
         },
         _submitOrder: function() {
 
@@ -282,26 +283,48 @@ odoo.define('emb_portal.cart_list', function (require) {
                 self._calTotalPrice($(this).attr('data-key'));
             });
             $('#btn-quot').click(function (e) {
-                self._submitQtOrder();
-                // $("#cart-list").block({
-                //     message: "<img src='/emb_portal/static/src/images/grid.svg' height='30' width='30' style='margin-right:10px' />loading..",
-                //     css: {
-                //         border: "none",
-                //         left: "90%",
-                //         width: "96%",
-                //         background: "transparent"
-                //     }
-                // });
-                // setTimeout(function () {
-                //     $("#cart-list").unblock();
-                //     $.notify({
-                //         icon: "glyphicon glyphicon-ok",
-                //         title: "OK",
-                //         message: "Quotattion order has been created already."
-                //     }, {
-                //         type: "success"
-                //     });
-                // }, 3000);
+                $("#cart-list").block({
+                    message: "<img src='/emb_portal/static/src/images/grid.svg' height='30' width='30' style='margin-right:10px' />loading..",
+                    css: {
+                        border: "none",
+                        left: "90%",
+                        width: "96%",
+                        background: "transparent"
+                    }
+                });
+                var postData = {};
+                postData['eorder'] = self._collectOrderData();
+                if(_.isEmpty(postData)) {
+                    console.log('empty cart data.');
+                    return false;
+                }
+                var postUrl = '/portal/cart/create';
+                var debugStr = session.debug ? "?debug=true" : "";
+                ajax.jsonRpc(postUrl + debugStr, "call", postData)
+                    .always(function () {
+                        $("#cart-list").unblock();
+                        if ($.blockUI) {
+                            $.unblockUI();
+                        }
+                    })
+                    .done(function (data) {
+                        $.notify({
+                            icon: "glyphicon glyphicon-ok",
+                            title: "Item is added.",
+                            message: "Items are submitted successfully."
+                        }, {
+                            type: "success"
+                        });
+                    })
+                    .fail(function () {
+                        $.notify({
+                            icon: "glyphicon glyphicon-remove",
+                            title: "Failed",
+                            message: "Failed to add item,please try again"
+                        }, {
+                            type: "danger"
+                        });
+                    });
             });
             $('#btn-order').click(function (e) {
                 self._submitOrder();

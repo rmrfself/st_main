@@ -172,6 +172,29 @@ class Portal(http.Controller):
         return result
 
     # By zhang qinghua
+    # created at 2018/12/12
+    @http.route('/portal/cart/create', auth='user', methods=['POST'], type='json', website=True)
+    def create_cart(self, *args, **post):
+        eOrderData = post['eorder']
+        # Create one order on start here
+        so = request.env['sale.order'].create({
+            'partner_id': request.env.user.partner_id.id,
+            'partner_invoice_id': request.env.user.partner_id.id,
+            'partner_shipping_id': request.env.user.partner_id.id
+        })
+        print(' ==== ===== 888888')
+        print(so.id)
+        for item in eOrderData:
+            did = item['id']
+            OrderPrvModel = request.env['sale.order.preview']
+            orderPrv = OrderPrvModel.search([('id', '=', int(did))])
+            # Parse the preview data into products and sales orders 
+            # Begin here
+            tplData = json.loads(orderPrv.design_template)
+            self._create_parent_product(tplData, so.id)
+        return {}
+
+    # By zhang qinghua
     # created at 2018/11/11
     @http.route('/portal/garments/create', auth='user', methods=['POST'], type='json', website=True)
     def create_garment(self, *args, **post):
@@ -308,7 +331,6 @@ class Portal(http.Controller):
                     if st:
                         stitch = st[0]
             # Create website used image
-            print('stitch: ' + stitch)
             svg_dir = tempfile.mkdtemp()
             svg_filename = hashlib.md5(fileData.encode()).hexdigest()
             svg_file = svg_dir + '/' + svg_filename + '.svg'
@@ -398,4 +420,58 @@ class Portal(http.Controller):
             'design_template': json.dumps(post),
             'status': True
         })
-        return {'result': {'data': 'success'}}                
+        return {'result': {'data': 'success'}}      
+
+    # By zhang qinghua
+    # created at 2019/06/01
+    def _create_parent_product(self, parent_data, order_id):
+        ProductTemplate = request.env['product.product']
+        # Map the post data into variables
+        dataHolder = parent_data['data']
+        sizeAttrs = parent_data['count']
+        garmentId = int(parent_data['gid'])
+        name = '#' + str(garmentId)
+
+        # Garment object
+        garment = request.env['product.garment'].search([('id','=',garmentId)])
+
+        gDesignData = json.loads(garment.design_template)
+        sizeTpl = gDesignData['size_tpl']
+        # Get attributes
+        size_attr = request.env['product.attribute'].search([('name','=',sizeTpl)])
+        req_size_values = sizeAttrs.keys()
+        size_values = request.env['product.attribute.value'].search([('name','in',req_size_values)])
+
+        # Get images list
+        images = []
+        exImgs = []
+        for k,v in dataHolder.items():
+            cf = (0,0,)
+            tmp = {}
+            tmp['name'] = v['image_face']
+            imgt = v['image']
+            # Get content type
+            imgtStr = imgt.split(';')[0]
+            imgType = imgtStr.split('/')[1]
+            imgC = imgt.split(',')[1]
+            tmp['name'] += '|' + imgType
+            tmp['image'] = imgC + '=' * (-len(imgt) % 4)
+            exImgs.append(imgC)
+            images.append(cf + (tmp,))
+
+            # Start to create the product template
+            productTpl = ProductTemplate.create({
+                'name': name,
+                'image': imgC
+            })    
+            try:  
+                sale_order_line = request.env['sale.order.line'].create({
+                    'name': '#line-' + str(garmentId),
+                    'product_id': productTpl.product_variant_id.id,
+                    'order_id': order_id,
+                    'price_unit': 0.0
+                })
+            except Exception as e:
+                print(e)   
+        # Create sub product components
+        # https://www.cybrosys.com/blog/make-to-order-and-make-to-stock-in-odoo-v12
