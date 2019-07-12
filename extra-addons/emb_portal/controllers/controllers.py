@@ -182,17 +182,92 @@ class Portal(http.Controller):
             'partner_invoice_id': request.env.user.partner_id.id,
             'partner_shipping_id': request.env.user.partner_id.id
         })
-        print(' ==== ===== 888888')
-        print(so.id)
+        order_id = so.id
+        mappedDataArr = []
+        # Step 1 
+        # re-mapped the post into logo arrays
         for item in eOrderData:
             did = item['id']
+            logoExData = item['logos']
+            quantity = item['qty']
             OrderPrvModel = request.env['sale.order.preview']
             orderPrv = OrderPrvModel.search([('id', '=', int(did))])
             # Parse the preview data into products and sales orders 
             # Begin here
             tplData = json.loads(orderPrv.design_template)
-            self._create_parent_product(tplData, so.id)
-        return {}
+            # Transform the json data into python objects of dict
+            # Unit by 1.orderline <-----> 1.product <----> 1.logo <----> N.garments
+            # Created by zhang qinghua
+            transformData = self._transformData(tplData, logoExData, quantity)
+            mappedDataArr.append(transformData)
+            # Create order
+            # self._generateOrderFromDesign(transformData)
+
+        # Step 2 merge garment data info array
+        logoContainer = []
+        for topItemArr in mappedDataArr:
+            for logoItem in topItemArr:
+                logoContainer.append(logoItem)
+        
+        # Merge the same logo in the array 
+        newLogoContainer = []
+        deleteIds = []
+        newLogoContainerCopy = logoContainer.copy()
+        for newItem in logoContainer:
+            # loop again to search the same logo
+            iid = newItem['id']
+            rawId = newItem['rawId']
+            colorHashId = newItem['key']
+            for newNewItem in newLogoContainerCopy:
+                oldIid = newNewItem['id']
+                oldRid = newNewItem['rawId']
+                oldColorHashId = newNewItem['key']
+                if oldIid not in deleteIds and oldIid != iid and oldRid == rawId and oldColorHashId == colorHashId:
+                    oldGarment = newNewItem['garments'][0]
+                    newItem['garments'].append(oldGarment)
+                    deleteIds.append(oldIid)
+            if iid not in deleteIds:
+                newLogoContainer.append(newItem)
+
+        # Begin to create product
+        # Start to make orderline
+        ProductTemplate = request.env['product.product']
+        ProductLogo = request.env['product.logo']
+        for godLogo in newLogoContainer:
+            # Get logo data
+            rawLogoId = int(godLogo['rawId'])
+            rawLogo = request.env['product.logo'].search([('id','=',rawLogoId)])
+            logoName = rawLogo.name
+            logoImage = godLogo['image'].split(',')[1]
+            # Start to create the product template
+            productTpl = ProductTemplate.create({
+                'name': logoName,
+                'image': logoImage
+            })    
+            # Create bom
+            logoProductBom = request.env['mrp.bom'].create({
+                'product_id': productTpl.id,
+                'product_tmpl_id': productTpl.product_tmpl_id.id,
+                'product_uom_id': 1,
+                'product_qty': 4.0,
+                'type': 'normal'
+            })
+            # <----- Create bom of logo ---->
+
+            bomGarmentList = godLogo['garments']
+            # for g in bomGarmentList:
+
+            try:  
+                sale_order_line = request.env['sale.order.line'].create({
+                    'name': logoName,
+                    'product_id': productTpl.product_variant_id.id,
+                    'order_id': order_id,
+                    'price_unit': 0.0
+                })
+            except Exception as e:
+                print("4444444")
+                print(e)   
+        return []
 
     # By zhang qinghua
     # created at 2018/11/11
@@ -421,10 +496,42 @@ class Portal(http.Controller):
             'status': True
         })
         return {'result': {'data': 'success'}}      
-
+    
+    # Transform logo data into dictionary
+    #  Put all the logos into one array
+    #  Date: 2019/07/12
+    #  By Zhang qinghua
+    def _transformData(self, dataHolder,exData,exQty):
+        flattenLogoTopObjects = []
+        designData = dataHolder['data']
+        # Loop through every face: top / left / right ...
+        for k,v in designData.items():
+            logoArr = v['logos']
+            # Loop through the array of logos
+            newLogoObject = {}
+            for logoObj in logoArr:
+                logoId = logoObj['id']
+                logoColors = json.dumps(logoObj['colors'])
+                newKey = hashlib.md5(logoColors.encode('utf-8')).hexdigest()
+                # merge the ex-data
+                for exDataItem in exData:
+                    if exDataItem['id'] == logoId:
+                        logoObj.update(exDataItem)
+                newLogoObject = dict(logoObj)
+                newLogoObject['key'] = newKey
+                newGarment = {}
+                newLogoObject['garments'] = []
+                newGarment['gid'] = v['gid']
+                newGarment['g_image_id'] = v['image_id']
+                newGarment['g_image_face'] = v['image_face']
+                newGarment['g_qty'] = exQty
+                newLogoObject['garments'].append(newGarment)
+                newLogoObject['image'] = v['image']
+                flattenLogoTopObjects.append(newLogoObject)           
+        return flattenLogoTopObjects
     # By zhang qinghua
     # created at 2019/06/01
-    def _create_parent_product(self, parent_data, order_id):
+    def _generateOrderFromDesign(self, parent_data, order_id):
         ProductTemplate = request.env['product.product']
         # Map the post data into variables
         dataHolder = parent_data['data']

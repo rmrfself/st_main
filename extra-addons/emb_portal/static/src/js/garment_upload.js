@@ -428,6 +428,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 obj.resourceType = targetType;
                 obj.resourceId = CryptoJS.MD5('data' + new Date().getTime()).toString().substring(0, 5);
                 console.log(obj.resourceId);
+                obj.rawId = targetId;
                 obj.cid = 1;
                 //obj.subTargetCheck = true;
                 //obj.selectable = true;
@@ -940,6 +941,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     self._saveLogoAttrToCanvas(Gmtid, item.resourceId, 'surchargeDescription', item.surchargeDescription);
                 }
                 self._saveLogoAttrToCanvas(Gmtid, item.resourceId, 'service', item.service);
+                self._saveLogoAttrToCanvas(Gmtid, item.resourceId, 'rawId', item.rawId);
             }
             if (unCompleted) {
                 var inputs = $('#line-container').find('input');
@@ -3167,8 +3169,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                         method: "unlink",
                         args: args
                     }).then(function (returned_value) {
-                        console.log('removed');
-                        parent.hide();
+                        linkCon.hide();
                     });
                 });
                 linkCon.append(s6);

@@ -294,6 +294,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                 });
                 var postData = {};
                 postData['eorder'] = self._collectOrderData();
+                console.log(postData['eorder']);
                 if(_.isEmpty(postData)) {
                     console.log('empty cart data.');
                     return false;
