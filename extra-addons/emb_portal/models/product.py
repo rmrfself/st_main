@@ -46,6 +46,27 @@ class LogoTemplate(models.Model):
     # Stitch count
     stitch = fields.Integer(required=True, default=0)
 
+class Product(models.Model):
+    _inherit = "product.product"
+
+    garment_info_id = fields.Many2one(
+        'product.garment.info', 'Product Garment', ondelete='cascade')
+
+class GarmentInfo(models.Model):
+    _name = "product.garment.info"
+
+    # Brand
+    brand = fields.Char('Brand', required=True)
+    # Style
+    style = fields.Char('Style', required=True)
+    # Color
+    color = fields.Char('Color', required=True)
+    # Size
+    size_data = fields.Char('Size', required=True)
+    # Size
+    total = fields.Integer('Total', required=True, default=0)
+    # Position
+    position = fields.Char('Position', required=True)
 
 class GarmentTemplate(models.Model):
     _name = "product.garment"

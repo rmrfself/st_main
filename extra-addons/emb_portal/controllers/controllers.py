@@ -252,11 +252,35 @@ class Portal(http.Controller):
                 'product_qty': 4.0,
                 'type': 'normal'
             })
+
             # <----- Create bom of logo ---->
-
             bomGarmentList = godLogo['garments']
-            # for g in bomGarmentList:
+            for g in bomGarmentList:
+                # Create product for every garment, 
+                # Include those fields:
+                # gid, images
+                bomGid = g['gid']
+                bomGImageFace = g['g_image_face']
+                garmentQty = g['g_qty']
 
+                garmentTmp = request.env['product.garment'].search([('id','=',bomGid)])
+                gInfoObj = json.loads(garmentTmp['design_template'])
+                garmentIds = garmentTmp.image_ids
+                for img in garmentIds:
+                    if img.name == bomGImageFace:
+                        gImage = img.image
+
+                gProductTpl = ProductTemplate.create({
+                    'name': gInfoObj['name'],
+                    'image': gImage
+                }) 
+
+                test_bom_l3 = request.env['mrp.bom.line'].create({
+                    'bom_id': logoProductBom.id,
+                    'product_id': gProductTpl.id,
+                    'product_qty': 1,
+                    'attribute_value_ids': [(4, 1)],
+                })
             try:  
                 sale_order_line = request.env['sale.order.line'].create({
                     'name': logoName,
@@ -522,6 +546,7 @@ class Portal(http.Controller):
                 newGarment = {}
                 newLogoObject['garments'] = []
                 newGarment['gid'] = v['gid']
+                newGarment['color'] = dataHolder['color']
                 newGarment['g_image_id'] = v['image_id']
                 newGarment['g_image_face'] = v['image_face']
                 newGarment['g_qty'] = exQty
