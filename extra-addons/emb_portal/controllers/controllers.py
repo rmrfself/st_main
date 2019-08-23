@@ -242,7 +242,8 @@ class Portal(http.Controller):
             # Start to create the product template
             productTpl = ProductTemplate.create({
                 'name': logoName,
-                'image': logoImage
+                'image': logoImage,
+                'description': json.dumps(godLogo)
             })    
             # Create bom
             logoProductBom = request.env['mrp.bom'].create({
@@ -272,7 +273,8 @@ class Portal(http.Controller):
 
                 gProductTpl = ProductTemplate.create({
                     'name': gInfoObj['name'],
-                    'image': gImage
+                    'image': gImage,
+                    'description': json.dumps(g)
                 }) 
 
                 test_bom_l3 = request.env['mrp.bom.line'].create({

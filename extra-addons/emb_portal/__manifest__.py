@@ -28,7 +28,8 @@
         'data/product_attribute_value_data.xml',
         'security/ir.model.access.csv',
         'views/templates.xml',
-        'views/views.xml'
+        'views/views.xml',
+        'views/sale_order_views.xml'
     ],
     # only loaded in demonstration mode
     'demo': [

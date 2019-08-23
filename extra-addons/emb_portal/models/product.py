@@ -52,6 +52,8 @@ class Product(models.Model):
     garment_info_id = fields.Many2one(
         'product.garment.info', 'Product Garment', ondelete='cascade')
 
+    description = fields.Char('Description', required=False)   
+
 class GarmentInfo(models.Model):
     _name = "product.garment.info"
 
@@ -90,3 +92,71 @@ class DOrderConfirm(models.Model):
     design_template = fields.Char('Design Template')
 
     status = fields.Boolean(default=False)
+
+class SaleOrderLine(models.Model):
+    _inherit = 'sale.order.line'
+
+    product_discount = fields.Char(string='Discount', store=False, compute='_get_product_dc')
+    product_surcharge = fields.Char(string='Surcharge', store=False, compute='_get_product_sc')
+    product_unit_price = fields.Float(string='UnitPrice', store=False, compute='_get_product_up')
+    product_type = fields.Char(string='Type', store=False, compute='_get_product_type')
+    product_stitch = fields.Char(string='Ks', store=False, compute='_get_product_stitch')
+    product_uid = fields.Char(string='Product', store=False, compute='_get_product_uid')
+    product_service = fields.Char(string='Service', store=False, compute='_get_product_service')
+    product_desc = fields.Char(string='Discription', store=False, compute='_get_product_desc')
+
+    @api.multi
+    def _get_product_dc(self):
+        for ol in self:
+            prod_desc = json.loads(ol.product_id.description)
+            ol.product_discount = prod_desc['discount']
+
+    @api.multi
+    def _get_product_sc(self):
+        for ol in self:
+            prod_desc = json.loads(ol.product_id.description)
+            ol.product_surcharge = prod_desc['surcharge']
+
+    @api.multi
+    def _get_product_up(self):
+        for ol in self:
+            prod_desc = json.loads(ol.product_id.description)
+            ol.product_unit_price = prod_desc['price']
+
+    @api.multi
+    def _get_product_desc(self):
+        for ol in self:
+            prod_desc = json.loads(ol.product_id.description)
+            lid = int(prod_desc['rawId'])
+            rawLogo = self.env['product.logo'].browse(lid)
+            ol.product_desc = rawLogo.description
+
+    @api.multi
+    def _get_product_type(self):
+        for ol in self:
+            prod_desc = json.loads(ol.product_id.description)
+            lid = int(prod_desc['rawId'])
+            rawLogo = self.env['product.logo'].browse(lid)
+            ol.product_type = rawLogo.content_type.upper()
+
+    @api.multi
+    def _get_product_stitch(self):
+        for ol in self:
+            prod_desc = json.loads(ol.product_id.description)
+            lid = int(prod_desc['rawId'])
+            rawLogo = self.env['product.logo'].browse(lid)
+            ol.product_stitch = rawLogo.stitch
+
+    @api.multi
+    def _get_product_uid(self):
+        for ol in self:
+            prod_desc = json.loads(ol.product_id.description)
+            lid = int(prod_desc['rawId'])
+            rawLogo = self.env['product.logo'].browse(lid)
+            ol.product_uid = rawLogo.uid
+
+    @api.multi
+    def _get_product_service(self):
+        for ol in self:
+            prod_desc = json.loads(ol.product_id.description)
+            ol.product_service = prod_desc['service']

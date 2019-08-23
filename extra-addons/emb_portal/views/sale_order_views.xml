@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Add "Asset Category" to supplier invoices -->
+    <record model="ir.ui.view" id="view_invoice_asset_category">
+        <field name="name">sale.order.form</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='order_line']/tree/field[@name='product_id']" position="replace">
+                <field string="Product" name="product_uid" />
+                <field string="Service" name="product_service" />
+                <field string="Type" name="product_type" />
+                <field invisible="1" name="name" />
+                <field string="Surcharge" name="product_surcharge" />
+                <field string="Ks" name="product_stitch" />
+                <field string="UnitPrice" name="product_unit_price" />
+                <field string="Discount" name="product_discount" />
+                <field string="Discription" name="product_desc" />
+            </xpath>
+        </field>
+    </record>
+</odoo>
