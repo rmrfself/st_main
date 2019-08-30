@@ -184,13 +184,48 @@ class Portal(http.Controller):
         })
         order_id = so.id
         mappedDataArr = []
-        # Step 1 
+
+        OrderPrvModel = request.env['sale.order.preview']
+
+        # Step 1
+        # re-mapped the post into garment view
+        for item in eOrderData:
+            did = item['id']
+            orderPrv = OrderPrvModel.search([('id', '=', int(did))])
+            tplData = json.loads(orderPrv.design_template)
+            gid = tplData['gid']
+            # Get preview design data
+            designData = tplData['data']
+            # Include multi-side data
+            for k,v in designData.items():
+                logosData = v['logos']
+                logoLocs = []
+                logoNums = []
+                for logo in logosData:
+                    logoLocs.append(logo['location'])
+                    logoNums.append(logo['id'])
+
+            # Garment design data
+            garment = request.env['product.garment'].search([('id','=',gid)])
+            gDesignData = json.loads(garment.design_template)
+            # Create garment list
+            sale_order_garment = request.env['sale.order.garment'].create({
+                    'order_id': order_id,
+                    'name': gDesignData['name'],
+                    'garment_style': gDesignData['style'],
+                    'garment_brand': gDesignData['brand'],
+                    'garment_color': gDesignData['colors'],
+                    'garment_size': str(item['qty']),
+                    'garment_qty': '10',
+                    'garment_location': ','.join(logoLocs),
+                    'garment_designs': ','.join(logoNums)
+                })
+        # Step 2
         # re-mapped the post into logo arrays
         for item in eOrderData:
             did = item['id']
             logoExData = item['logos']
             quantity = item['qty']
-            OrderPrvModel = request.env['sale.order.preview']
             orderPrv = OrderPrvModel.search([('id', '=', int(did))])
             # Parse the preview data into products and sales orders 
             # Begin here

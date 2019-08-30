@@ -1,13 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="product_template_form_view" model="ir.ui.view">
+        <field name="name">product.template.common.form</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='notes']/group[@name='description_internal']" position="replace">
+                <field name="image" widget="image"/>
+            </xpath>
+            <xpath expr="//page[@name='notes']/group[@name='description']" position="attributes">
+                <attribute name="invisible" eval="True"/>
+            </xpath>
+            <xpath expr="//page[@name='notes']/group[@name='warning']" position="attributes">
+                <attribute name="invisible" eval="True"/>
+            </xpath>
+        </field>
+    </record>
     <!-- Add "Asset Category" to supplier invoices -->
-    <record model="ir.ui.view" id="view_invoice_asset_category">
+    <record model="ir.ui.view" id="view_order_form_new">
         <field name="name">sale.order.form</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='order_line']/tree/field[@name='product_id']" position="replace">
-                <field string="Product" name="product_uid" />
+                <field string="Product#" name="product_uid" />
                 <field string="Service" name="product_service" />
                 <field string="Type" name="product_type" />
                 <field invisible="1" name="name" />
@@ -16,6 +32,25 @@
                 <field string="UnitPrice" name="product_unit_price" />
                 <field string="Discount" name="product_discount" />
                 <field string="Discription" name="product_desc" />
+            </xpath>
+            <xpath expr="/form/sheet/notebook/page[2]" position="before">
+                <page string="Garment Information">
+                    <field name="order_garment" mode="tree">
+                        <tree string="Garments" editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name" string="Product#"/>
+                            <field name="garment_type" string="Type"/>
+                            <field name="garment_style" string="Style"/>
+                            <field name="garment_brand" string="Brand"/>
+                            <field name="garment_color" string="Color"/>
+                            <field name="garment_size" string="Size"/>
+                            <field name="garment_qty" string="Qty"/>
+                            <field name="garment_location" string="Location"/>
+                            <field name="garment_designs" string="Design#"/>        
+                        </tree>
+                    </field>
+                    <div class="oe_clear"/>
+                </page>
             </xpath>
         </field>
     </record>

@@ -93,9 +93,32 @@ class DOrderConfirm(models.Model):
 
     status = fields.Boolean(default=False)
 
+class SaleOrderGarment(models.Model):
+    _name = 'sale.order.garment'
+    _description = 'Sales Order Garment List'
+    _order = 'order_id, id' 
+
+    order_id = fields.Many2one('sale.order', string='Order Reference', required=True, ondelete='cascade', index=True, copy=False)   
+    name = fields.Text(string='Description', required=True)
+    sequence = fields.Integer(string='Sequence', default=10)
+
+    garment_type = fields.Text(string='Garment Type')
+    garment_style = fields.Text(string='Garment Style')
+    garment_brand = fields.Text(string='Garment Brand')
+    garment_color = fields.Text(string='Garment Color')
+    garment_size = fields.Text(string='Garment Size')
+    garment_qty = fields.Integer(string='Garment Qty')
+    garment_location = fields.Text(string='Logo Location')
+    garment_designs = fields.Text(string='Logo Designs')
+
+class SaleOrder(models.Model):
+    _inherit = "sale.order"
+
+    order_garment = fields.One2many('sale.order.garment', 'order_id', string='Order Garments', states={'cancel': [('readonly', True)], 'done': [('readonly', True)]}, copy=True, auto_join=True)
+
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
-
+    
     product_discount = fields.Char(string='Discount', store=False, compute='_get_product_dc')
     product_surcharge = fields.Char(string='Surcharge', store=False, compute='_get_product_sc')
     product_unit_price = fields.Float(string='UnitPrice', store=False, compute='_get_product_up')
