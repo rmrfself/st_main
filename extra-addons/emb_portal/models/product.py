@@ -46,13 +46,24 @@ class LogoTemplate(models.Model):
     # Stitch count
     stitch = fields.Integer(required=True, default=0)
 
+class MrpBomLine(models.Model):
+    _inherit = 'mrp.bom.line'
+
+    product_brand = fields.Char(related='product_id.garment_info_id.brand',string='Brand', store=False)
+    product_style = fields.Char(related='product_id.garment_info_id.style',string='Style', store=False)
+    product_color = fields.Char(related='product_id.garment_info_id.color',string='Color', store=False)
+    product_position = fields.Char(related='product_id.garment_info_id.position',string='Position', store=False)
+    product_size_data = fields.Char(related='product_id.garment_info_id.size_data',string='Size Data' ,store=False)
+    product_total = fields.Integer(related='product_id.garment_info_id.total',string='Total', store=False)
+
+
 class Product(models.Model):
     _inherit = "product.product"
 
     garment_info_id = fields.Many2one(
         'product.garment.info', 'Product Garment', ondelete='cascade')
 
-    description = fields.Char('Description', required=False)   
+    description = fields.Char('Description', required=False)  
 
 class GarmentInfo(models.Model):
     _name = "product.garment.info"

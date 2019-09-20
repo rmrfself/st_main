@@ -54,4 +54,23 @@
             </xpath>
         </field>
     </record>
+    <!-- Modify "bom" bom line tree views -->
+    <record model="ir.ui.view" id="mrp_bom_form_view_with_garment">
+        <field name="name">mrp.bom.form</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='bom_line_ids']/tree" position="replace">
+                <tree string="Components" editable="bottom">
+                    <field name="sequence" widget="handle"/>
+                    <field name="product_id" context="{'default_type': 'product'}"/>
+                    <field name="product_style"/>  
+                    <field name="product_brand"/>
+                    <field name="product_color"/> 
+                    <field name="product_size_data"/>
+                    <field name="product_total"/>     
+                </tree>
+            </xpath>
+        </field>
+    </record>
 </odoo>
