@@ -57,19 +57,19 @@
 										Buyer
 									</td>
 									<td>
-										<input class="form-control" type="text" name="order-buyer" />
+										<input id='order_buyer' class="form-control" type="text" name="order-buyer" />
 									</td>
 									<td>
 										P.O.#
 									</td>
 									<td>
-										<input class="form-control" type="text" name="order-buyer" />
+										<input id='order_po' class="form-control" type="text" name="order-po" />
 									</td>
 									<td>
 										Job Title
 									</td>
 									<td>
-										<input class="form-control" type="text" name="order-buyer" />
+										<input id='order_jt' class="form-control" type="text" name="order-jt" />
 									</td>
 								</tr>
 								<tr>
@@ -77,29 +77,19 @@
 										Shipper
 									</td>
 									<td>
-										<select id="sc-list" class="sc-list">
-											<option>
-												Shipper-01
-											</option>
-											<option>
-												Shipper-02
-											</option>
-											<option>
-												Shipper-03
-											</option>
-										</select>
+										<input id='order_shipper' class="form-control" type="text" name="order-shipper" />
 									</td>
 									<td>
 										Shipping Date
 									</td>
 									<td>
-										<input class="form-control shipping-date" type="text" name="order-buyer" />
+										<input id='order_ship_date' class="form-control shipping-date" type="text" name="order-sd" />
 									</td>
 									<td>
 										Repare At
 									</td>
 									<td>
-										<input class="form-control shipping-date" type="text" name="order-buyer" />
+										<input id='order_require_at' class="form-control shipping-date" type="text" name="order-ra" />
 									</td>
 								</tr>
 							</table>
@@ -146,7 +136,7 @@
 								<h4 class="title">
 									Message
 								</h4>
-								<textarea class="form-control" rows="8">
+								<textarea id='instr' class="form-control" rows="8">
 								</textarea>
 							</div>
 							<h4 class="title">

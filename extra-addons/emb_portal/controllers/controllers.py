@@ -176,8 +176,22 @@ class Portal(http.Controller):
     @http.route('/portal/cart/create', auth='user', methods=['POST'], type='json', website=True)
     def create_cart(self, *args, **post):
         eOrderData = post['eorder']
+        buyer = post['buyer']
+        order_po = post['order_po']
+        job_title = post['job_title']
+        shipper = post['shipper']
+        order_sd = post['order_sd']
+        order_ra = post['order_ra']
+        instruction = post['instruction']
         # Create one order on start here
         so = request.env['sale.order'].create({
+            'buyer_name': buyer,
+            'po_number': order_po,
+            'job_title': job_title,
+            'shipper_name': shipper,
+            'ship_date': order_sd,
+            'require_date': order_ra,
+            'instruction': instruction,
             'partner_id': request.env.user.partner_id.id,
             'partner_invoice_id': request.env.user.partner_id.id,
             'partner_shipping_id': request.env.user.partner_id.id

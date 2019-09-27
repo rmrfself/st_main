@@ -127,6 +127,14 @@ class SaleOrder(models.Model):
 
     order_garment = fields.One2many('sale.order.garment', 'order_id', string='Order Garments', states={'cancel': [('readonly', True)], 'done': [('readonly', True)]}, copy=True, auto_join=True)
 
+    buyer_name = fields.Char(string='Buyer')
+    po_number  = fields.Char(string='P.O#')
+    job_title  = fields.Char(string='Job Title')
+    shipper_name  = fields.Char(string='Shipper')
+    ship_date  = fields.Char(string='Ship Date')
+    require_date  = fields.Char(string='Require Date')
+    instruction  = fields.Text(string='Instruction')
+
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
     

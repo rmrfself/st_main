@@ -293,8 +293,21 @@ odoo.define('emb_portal.cart_list', function (require) {
                     }
                 });
                 var postData = {};
+                var buyer = $('#order_buyer').val();
+                var order_po = $('#order_po').val();
+                var job_title = $('#order_jt').val();
+                var shipper = $('#order_shipper').val();
+                var order_sd = $('#order_ship_date').val();
+                var order_ra = $('#order_require_at').val();
+                var instruction = $('#instr').val();
+                postData['buyer'] = buyer;
+                postData['order_po'] = order_po;
+                postData['job_title'] = job_title;
+                postData['shipper'] = shipper;
+                postData['order_sd'] = order_sd;
+                postData['order_ra'] = order_ra;
+                postData['instruction'] = instruction;
                 postData['eorder'] = self._collectOrderData();
-                console.log(postData['eorder']);
                 if(_.isEmpty(postData)) {
                     console.log('empty cart data.');
                     return false;
