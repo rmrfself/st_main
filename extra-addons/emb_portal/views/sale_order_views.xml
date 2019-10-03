@@ -39,7 +39,6 @@
                 <field invisible="1" name="name" />
                 <field string="Surcharge" name="product_surcharge" />
                 <field string="Ks" name="product_stitch" />
-                <field string="UnitPrice" name="product_unit_price" />
                 <field string="Discount" name="product_discount" />
                 <field string="Discription" name="product_desc" />
             </xpath>

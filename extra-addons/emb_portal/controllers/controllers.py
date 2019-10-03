@@ -296,7 +296,10 @@ class Portal(http.Controller):
             # Start to create the product template
             productTpl = ProductTemplate.create({
                 'name': logoName,
+                'type': 'product',
                 'image': logoImage,
+                'price': float(godLogo['price']),
+                'price_extra': float(godLogo['surcharge']),
                 'description': json.dumps(godLogo),
                 'route_ids': [(6, 0, [route_manufacture, route_mto])]
             })    
@@ -311,6 +314,7 @@ class Portal(http.Controller):
 
             # <----- Create bom of logo ---->
             bomGarmentList = godLogo['garments']
+            totalQty = 0
             for g in bomGarmentList:
                 # Create product for every garment, 
                 # Include those fields:
@@ -318,6 +322,16 @@ class Portal(http.Controller):
                 bomGid = g['gid']
                 bomGImageFace = g['g_image_face']
                 garmentQty = g['g_qty']
+                print('======')
+                print(garmentQty)
+                garmentQtyDict = {}
+                for tmpa in garmentQty:
+                    garmentQtyDict.update(tmpa)
+                print(garmentQtyDict)    
+                garmentTotalQty = sum(int(garmentQtyDict[item]) for item in garmentQtyDict)
+                print(garmentTotalQty)
+                totalQty = totalQty + garmentTotalQty
+                print(totalQty)
                 # Get garment design information
                 garmentTmp = request.env['product.garment'].search([('id','=',bomGid)])
                 gInfoObj = json.loads(garmentTmp['design_template'])
@@ -329,7 +343,7 @@ class Portal(http.Controller):
                     'color': g['color'],
                     'position': g['g_image_face'],
                     'size_data': g['g_qty'],
-                    'total': 100
+                    'total': garmentTotalQty
                 })
                 # Choose image as default image
                 for img in garmentIds:
@@ -339,6 +353,7 @@ class Portal(http.Controller):
                 gProductTpl = ProductTemplate.create({
                     'name': gInfoObj['name'],
                     'image': gImage,
+                    'taxes_id': False,
                     'description': json.dumps(g),
                     'garment_info_id': gProductInfo.id
                 }) 
@@ -355,7 +370,8 @@ class Portal(http.Controller):
                     'name': logoName,
                     'product_id': productTpl.product_variant_id.id,
                     'order_id': order_id,
-                    'price_unit': 0.0
+                    'product_uom_qty': totalQty,
+                    'discount': float(godLogo['discount']),
                 })
             except Exception as e:
                 print(e)   

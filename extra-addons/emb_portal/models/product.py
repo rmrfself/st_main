@@ -147,6 +147,20 @@ class SaleOrderLine(models.Model):
     product_service = fields.Char(string='Service', store=False, compute='_get_product_service')
     product_desc = fields.Char(string='Discription', store=False, compute='_get_product_desc')
 
+    @api.depends('product_uom_qty', 'discount', 'price_unit', 'tax_id')
+    def _compute_amount(self):
+        """
+        Compute the amounts of the SO line.
+        """
+        for line in self:
+            price = line.price_unit * (1 - (line.discount or 0.0) / 100.0)
+            taxes = line.tax_id.compute_all(price, line.order_id.currency_id, line.product_uom_qty, product=line.product_id, partner=line.order_id.partner_shipping_id)
+            line.update({
+                'price_tax': sum(t.get('amount', 0.0) for t in taxes.get('taxes', [])),
+                'price_total': taxes['total_included'],
+                'price_subtotal': taxes['total_excluded'] + float(line.product_surcharge) * line.product_uom_qty,
+            })
+
     @api.multi
     def _get_product_dc(self):
         for ol in self:
@@ -164,6 +178,7 @@ class SaleOrderLine(models.Model):
         for ol in self:
             prod_desc = json.loads(ol.product_id.description)
             ol.product_unit_price = prod_desc['price']
+            ol.price_subtotal += float(prod_desc['price']) 
 
     @api.multi
     def _get_product_desc(self):

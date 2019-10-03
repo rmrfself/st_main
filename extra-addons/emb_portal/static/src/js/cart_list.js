@@ -382,7 +382,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                 var price = parseFloat($(this).find('.logo-price').val());
                 var disc = parseInt($(this).find('.logo-discount').val());
                 var surcharge = parseFloat($(this).find('.logo-surcharge').val());
-                var tmp = price * (disc / 100) + surcharge;
+                var tmp = price * (1 - (disc / 100)) + surcharge;
                 singlePrice = singlePrice + tmp;
             });
             $('#tp_' + key).html(singlePrice * tq);
