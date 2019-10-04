@@ -322,16 +322,10 @@ class Portal(http.Controller):
                 bomGid = g['gid']
                 bomGImageFace = g['g_image_face']
                 garmentQty = g['g_qty']
-                print('======')
-                print(garmentQty)
-                garmentQtyDict = {}
+                garmentTotalQty = 0
                 for tmpa in garmentQty:
-                    garmentQtyDict.update(tmpa)
-                print(garmentQtyDict)    
-                garmentTotalQty = sum(int(garmentQtyDict[item]) for item in garmentQtyDict)
-                print(garmentTotalQty)
+                    garmentTotalQty +=int(next(iter(tmpa.values())))
                 totalQty = totalQty + garmentTotalQty
-                print(totalQty)
                 # Get garment design information
                 garmentTmp = request.env['product.garment'].search([('id','=',bomGid)])
                 gInfoObj = json.loads(garmentTmp['design_template'])
