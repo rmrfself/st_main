@@ -65,6 +65,8 @@ class Product(models.Model):
 
     description = fields.Char('Description', required=False)  
 
+    product_type = fields.Char('Type', required=False) 
+
 class GarmentInfo(models.Model):
     _name = "product.garment.info"
 

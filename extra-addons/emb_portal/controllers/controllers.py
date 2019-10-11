@@ -298,6 +298,7 @@ class Portal(http.Controller):
                 'name': logoName,
                 'type': 'product',
                 'image': logoImage,
+                'product_type': 'logo',
                 'price': float(godLogo['price']),
                 'price_extra': float(godLogo['surcharge']),
                 'description': json.dumps(godLogo),
@@ -347,6 +348,7 @@ class Portal(http.Controller):
                 gProductTpl = ProductTemplate.create({
                     'name': gInfoObj['name'],
                     'image': gImage,
+                    'product_type': 'garment',
                     'taxes_id': False,
                     'description': json.dumps(g),
                     'garment_info_id': gProductInfo.id
@@ -624,7 +626,7 @@ class Portal(http.Controller):
                 newGarment = {}
                 newLogoObject['garments'] = []
                 newGarment['gid'] = v['gid']
-                newGarment['color'] = dataHolder['color']
+                newGarment['color'] = dataHolder['color'] or '#FFFFFF'
                 newGarment['g_image_id'] = v['image_id']
                 newGarment['g_image_face'] = v['image_face']
                 newGarment['g_qty'] = exQty
