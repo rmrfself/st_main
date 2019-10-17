@@ -75,7 +75,7 @@ class GarmentInfo(models.Model):
     # Style
     style = fields.Char('Style', required=True)
     # Color
-    color = fields.Char('Color', required=True)
+    color = fields.Char('Color', required=False)
     # Size
     size_data = fields.Char('Size', required=True)
     # Size

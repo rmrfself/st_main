@@ -18,6 +18,7 @@ import json
 import hashlib
 
 import re
+from cairosvg import svg2png
 
 from odoo.exceptions import AccessError, UserError
 import logging
@@ -288,7 +289,13 @@ class Portal(http.Controller):
             rawLogoId = int(godLogo['rawId'])
             rawLogo = request.env['product.logo'].search([('id','=',rawLogoId)])
             logoName = rawLogo.name
-            logoImage = godLogo['image'].split(',')[1]
+            logoImage = rawLogo.image
+            c = base64.b64decode(logoImage).decode('utf-8')
+            c = c.replace('<!--?xml version="1.0"?-->','')
+            c = c.replace('<!-- Embroidermodder 2 SVG Embroidery File -->','')
+            c = c.replace('<!-- Embroidermodder 2 SVG Embroidery File -->','')
+            c = c.replace('<svg', '<svg viewBox="-30 -30 50 50"')
+            d = svg2png(bytestring=c, parent_width=110, parent_height=60)
             # Set route_ids for each product
             warehouse = request.env.ref('stock.warehouse0')
             route_manufacture = warehouse.manufacture_pull_id.route_id.id
@@ -297,7 +304,7 @@ class Portal(http.Controller):
             productTpl = ProductTemplate.create({
                 'name': logoName,
                 'type': 'product',
-                'image': logoImage,
+                'image': base64.b64encode(d),
                 'product_type': 'logo',
                 'price': float(godLogo['price']),
                 'price_extra': float(godLogo['surcharge']),
