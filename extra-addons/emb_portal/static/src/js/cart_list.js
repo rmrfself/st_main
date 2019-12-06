@@ -6,11 +6,7 @@ odoo.define('emb_portal.cart_list', function (require) {
     var core = require('web.core');
     var session = require('web.session');
 
-    var qweb = core.qweb;
-    var _t = core._t;
-    var ZeroClipboard = window.ZeroClipboard;
-
-    function CarListTable() {}
+    function CarListTable() { }
 
     $.blockUI.defaults.overlayCSS = {
         opacity: 0.1,
@@ -67,10 +63,10 @@ odoo.define('emb_portal.cart_list', function (require) {
                     self._createListTable(returned_value);
                 });
 
-                /**
-                 * Load digital order list
-                 */
-                rpc
+            /**
+             * Load digital order list
+             */
+            rpc
                 .query({
                     route: "/portal/cart/dlist",
                     params: []
@@ -90,27 +86,27 @@ odoo.define('emb_portal.cart_list', function (require) {
                     self._createDoListTable(returned_value);
                 });
         },
-        
+
         /**
          * @description
          * Create table list for d-order
          * @param {*} list
          */
-        _createDoListTable: function(list) {
-            if(_.isEmpty(list)) {
+        _createDoListTable: function (list) {
+            if (_.isEmpty(list)) {
                 $('#do_emptymsg').html('Empty').show();
             } else {
                 $('#do_emptymsg').hide();
             }
             var parent = $('#dl');
-            for(var key in list) {
+            for (var key in list) {
                 var data = list[key];
                 var row = $('<tr>');
                 /**
                  * Image field
                  */
                 var imgf = $('<img>').attr('src', data['image']);
-                imgf.attr('width','120');
+                imgf.attr('width', '120');
                 var imgf_td = $('<td width="120">');
                 imgf_td.append(imgf);
                 row.append(imgf_td);
@@ -138,7 +134,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                 var sctd = $('<td>').append(scin);
                 row.append(sctd);
 
-                var da = $('<a>').attr('href','#').html('Remove');
+                var da = $('<a>').attr('href', '#').html('Remove');
                 da.attr('data-toggle', 'confirmation');
                 var did = data['id'];
                 da.confirmation({
@@ -165,11 +161,11 @@ odoo.define('emb_portal.cart_list', function (require) {
         _onLogoPriceChange: function () {
 
         },
-        _collectOrderData: function() {
+        _collectOrderData: function () {
             var self = this;
             var eOrderHolder = $("input[name='select[]']");
             var postData = [];
-            eOrderHolder.each(function(item) {
+            eOrderHolder.each(function (item) {
                 var obj = {};
                 var designId = this.value;
                 obj['id'] = designId;
@@ -180,7 +176,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                  * Search count labels
                  */
                 var sizeInputs = topLevelTable.find("input[name='qty[]']");
-                sizeInputs.each(function(item){
+                sizeInputs.each(function (item) {
                     var sizeObj = {};
                     var key = $(this).attr('data-label');
                     sizeObj[key] = $(this).val();
@@ -190,7 +186,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                  * Search the logo ids in current table
                  */
                 var logoIds = topLevelTable.find("input[name='logoid[]']");
-                logoIds.each(function(item){
+                logoIds.each(function (item) {
                     var logoObj = {};
                     var id = $(this).val();
                     logoObj['id'] = id
@@ -204,10 +200,10 @@ odoo.define('emb_portal.cart_list', function (require) {
             console.log(postData);
             return postData;
         },
-        _submitQtOrder: function() {
-            
+        _submitQtOrder: function () {
+
         },
-        _submitOrder: function() {
+        _submitOrder: function () {
 
         },
         /**
@@ -228,6 +224,7 @@ odoo.define('emb_portal.cart_list', function (require) {
             });
             $('input[type="text"].logo-price').blur(function (e) {
                 var p = $(this).val();
+                var dataId = $(this).attr('data-id');
                 if (!$.isNumeric(p)) {
                     $.notify({
                         icon: "glyphicon glyphicon-remove",
@@ -238,10 +235,19 @@ odoo.define('emb_portal.cart_list', function (require) {
                     });
                     return false;
                 }
+                /**
+                 * Search the same data id and set them the same val()
+                 */
+                $('input[type="text"].logo-price').each(function () {
+                    if ($(this).attr('data-id') == dataId) {
+                        $(this).val(p);
+                    }
+                });
                 self._calTotalPrice($(this).attr('data-key'));
             });
             $('input[type="text"].logo-discount').blur(function (e) {
                 var v = parseInt($(this).val());
+                var dataId = $(this).attr('data-id');
                 if (v < 0 || v > 100) {
                     $.notify({
                         icon: "glyphicon glyphicon-remove",
@@ -252,6 +258,14 @@ odoo.define('emb_portal.cart_list', function (require) {
                     });
                     return false;
                 }
+                /**
+                 * Search the same data id and set them the same val()
+                 */
+                $('input[type="text"].logo-discount').each(function () {
+                    if ($(this).attr('data-id') == dataId) {
+                        $(this).val(v);
+                    }
+                });
                 self._calTotalPrice($(this).attr('data-key'));
             });
             $('input[type="text"].logo-surcharge').blur(function (e) {
@@ -308,7 +322,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                 postData['order_ra'] = order_ra;
                 postData['instruction'] = instruction;
                 postData['eorder'] = self._collectOrderData();
-                if(_.isEmpty(postData)) {
+                if (_.isEmpty(postData)) {
                     console.log('empty cart data.');
                     return false;
                 }
@@ -385,7 +399,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                 var tmp = price * (1 - (disc / 100)) + surcharge;
                 singlePrice = singlePrice + tmp;
             });
-            $('#tp_' + key).html(singlePrice * tq);
+            $('#tp_' + key).html((singlePrice * tq).toFixed(2));
             /**
              * cal total price
              */
@@ -396,12 +410,12 @@ odoo.define('emb_portal.cart_list', function (require) {
                  * conditions when input checkbox checked
                  */
                 var c = $(this).attr('data-valid');
-                if(parseInt(c) == 1) {
+                if (parseInt(c) == 1) {
                     tp = tp + tmp;
                 }
             });
-            $('#f-subtotal').html('$ ' + tp);
-            $('#f-total').html('$ ' + tp);
+            $('#f-subtotal').html('$ ' + tp.toFixed(2));
+            $('#f-total').html('$ ' + tp.toFixed(2));
         },
         /**
          * Create list table
@@ -451,7 +465,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                     /**
                      * set content table id
                      */
-                    sideTable.attr('id','ot_' + key);
+                    sideTable.attr('id', 'ot_' + key);
                     /**
                      * ip_tdi_1 value
                      */
@@ -588,7 +602,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                         var tdi_6 = $('<td>');
                         if (cindex == 0) {
                             tdi_6.attr('rowspan', sideRowCount);
-                            tdi_6.append($('<label>').attr('id', 'tp_' + key).attr('data-valid',1).addClass('itemp').html('0.0'));
+                            tdi_6.append($('<label>').attr('id', 'tp_' + key).attr('data-valid', 1).addClass('itemp').html('0.0'));
                             sideRowHolder.append(tdi_6);
                         }
                         sideTable.append(sideRowHolder);
@@ -673,11 +687,11 @@ odoo.define('emb_portal.cart_list', function (require) {
                     });
                     if (ids.length > 0) {
                         rpc.query({
-                                route: "/portal/cart/remove",
-                                params: {
-                                    ids: ids
-                                }
-                            })
+                            route: "/portal/cart/remove",
+                            params: {
+                                ids: ids
+                            }
+                        })
                             .then(function (returned_value) {
                                 $("input[name='select[]']").each(function () {
                                     if ($(this).prop('checked') == true) {

@@ -154,24 +154,6 @@
 								</tr>
 								<tr>
 									<td>
-										Texes
-									</td>
-									<td>
-										$ 0.0
-									</td>
-								</tr>
-								<tr>
-									<td>
-										Total Discount(%)
-									</td>
-									<td>
-										<span>
-											<input type="text" id="total-discount" class="form-control" style="width:80px;" />
-										</span>
-									</td>
-								</tr>
-								<tr>
-									<td>
 										Total
 									</td>
 									<td>

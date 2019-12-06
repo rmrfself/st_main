@@ -426,7 +426,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 //obj.lockScalingY = true;
                 obj.inner_paths = [];
                 obj.resourceType = targetType;
-                obj.resourceId = CryptoJS.MD5('data' + new Date().getTime()).toString().substring(0, 5);
+                // Generate common resource id based on line colors and resource id
+                obj.resourceId = CryptoJS.MD5('W' + new Date().getTime()).toString().substring(0, 8);
+                obj.resourceId = 'D-' + obj.resourceId.toUpperCase();
                 console.log(obj.resourceId);
                 obj.rawId = targetId;
                 obj.cid = 1;
@@ -1038,6 +1040,14 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     var pd = JSON.parse(v);
                     var imgd = $('#lm-' + garmentId + '-' + faces[i]);
                     pd['image'] = imgd.attr('src');
+                    /**
+                     * Update logo id here
+                     */
+                    var logos = pd['logos'];
+                    for (var i = 0; i < logos.length; i++) {
+                        var tmpLogo = logos[i];
+                        tmpLogo['id'] = 'W' + CryptoJS.MD5(JSON.stringify(tmpLogo['colors']) + tmpLogo['rawId']).toString().substring(0, 5).toUpperCase();
+                    }
                     postData['data'][savedData] = pd;
                 }
             }
