@@ -15,7 +15,6 @@ class ProductGarmentBrand(models.Model):
 
 # contains 6 positions: t,b,f,b,l,r
 
-
 class ProductImage(models.Model):
     _name = 'product.garment.image'
 
@@ -49,23 +48,14 @@ class LogoTemplate(models.Model):
 class MrpBomLine(models.Model):
     _inherit = 'mrp.bom.line'
 
-    product_brand = fields.Char(related='product_id.garment_info_id.brand',string='Brand', store=False)
-    product_style = fields.Char(related='product_id.garment_info_id.style',string='Style', store=False)
-    product_color = fields.Char(related='product_id.garment_info_id.color',string='Color', store=False)
-    product_position = fields.Char(related='product_id.garment_info_id.position',string='Position', store=False)
-    product_size_data = fields.Char(related='product_id.garment_info_id.size_data',string='Size Data' ,store=False)
-    product_total = fields.Integer(related='product_id.garment_info_id.total',string='Total', store=False)
-
 
 class Product(models.Model):
     _inherit = "product.product"
 
-    garment_info_id = fields.Many2one(
-        'product.garment.info', 'Product Garment', ondelete='cascade')
+    garment_id = fields.Many2one('sale_order_garment', string='Garment Reference', required=False, ondelete='cascade', index=False, copy=True)
 
-    description = fields.Char('Description', required=False)  
-
-    product_type = fields.Char('Type', required=False) 
+    logo_id = fields.Many2one('sale_order_logo', string='Logo Reference', required=False, ondelete='cascade', index=False, copy=True)
+    
 
 class GarmentInfo(models.Model):
     _name = "product.garment.info"
@@ -112,9 +102,17 @@ class SaleOrderGarment(models.Model):
     _order = 'order_id, id' 
 
     order_id = fields.Many2one('sale.order', string='Order Reference', required=True, ondelete='cascade', index=True, copy=False)   
+    garment_id = fields.Many2one('product.garment', string='Garment Reference', required=True)
+
+    logo_ids = fields.One2many('sale.order.logo', 'sale_order_garment_id', string='Order Logos', states={'cancel': [('readonly', True)], 'done': [('readonly', True)]}, copy=True, auto_join=True)
+
+    image = fields.Binary('Image', attachment=True)
+    design_image = fields.Binary('Image', attachment=True)
+
     name = fields.Text(string='Description', required=True)
     sequence = fields.Integer(string='Sequence', default=10)
 
+    garment_face = fields.Text(string='Garment Face')
     garment_type = fields.Text(string='Garment Type')
     garment_style = fields.Text(string='Garment Style')
     garment_brand = fields.Text(string='Garment Brand')
@@ -123,6 +121,37 @@ class SaleOrderGarment(models.Model):
     garment_qty = fields.Integer(string='Garment Qty')
     garment_location = fields.Text(string='Logo Location')
     garment_designs = fields.Text(string='Logo Designs')
+
+class SaleOrderLogo(models.Model):
+    _name = 'sale.order.logo'
+    _description = 'Sales Order Logo List'
+    _order = 'order_id, id' 
+
+    order_id = fields.Many2one('sale.order', string='Order Reference', required=True, ondelete='cascade', index=True, copy=False)   
+
+    sale_order_garment_id = fields.Many2one('sale.order.garment', string='Garment', required=True, ondelete='cascade', index=True, copy=False)
+    
+    image = fields.Binary('Image', attachment=True)
+    
+    name = fields.Char(string='Description', required=True)
+    sequence = fields.Integer(string='Sequence', default=10)
+
+    surcharge = fields.Float(string='Surcharge')
+    surcharge_description = fields.Char(string='Surcharge Desc')
+    service_type = fields.Char(string='Serice Type')
+    service_name = fields.Char(string='Service Name')
+
+    line_data = fields.Char(string='Line Data')
+
+    price = fields.Float(string='Price')
+    discount = fields.Float(string='Discount')
+    location = fields.Char(string='Location')
+    garment_qty = fields.Integer(string='Quantity')
+
+    position_left = fields.Float(string='Position left')
+    position_top = fields.Float(string='Position top')
+
+    stitch = fields.Integer(string='Stitch', default=0)
 
 class SaleOrder(models.Model):
     _inherit = "sale.order"
@@ -140,82 +169,8 @@ class SaleOrder(models.Model):
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
     
-    product_discount = fields.Char(string='Discount', store=False, compute='_get_product_dc')
-    product_surcharge = fields.Char(string='Surcharge', store=False, compute='_get_product_sc')
-    product_unit_price = fields.Float(string='UnitPrice', store=False, compute='_get_product_up')
-    product_type = fields.Char(string='Type', store=False, compute='_get_product_type')
-    product_stitch = fields.Char(string='Ks', store=False, compute='_get_product_stitch')
-    product_uid = fields.Char(string='Product', store=False, compute='_get_product_uid')
-    product_service = fields.Char(string='Service', store=False, compute='_get_product_service')
-    product_desc = fields.Char(string='Discription', store=False, compute='_get_product_desc')
+    surcharge = fields.Float(string='Surcharge', default=0)
 
-    @api.depends('product_uom_qty', 'discount', 'price_unit', 'tax_id')
-    def _compute_amount(self):
-        """
-        Compute the amounts of the SO line.
-        """
-        for line in self:
-            price = line.price_unit * (1 - (line.discount or 0.0) / 100.0)
-            taxes = line.tax_id.compute_all(price, line.order_id.currency_id, line.product_uom_qty, product=line.product_id, partner=line.order_id.partner_shipping_id)
-            line.update({
-                'price_tax': sum(t.get('amount', 0.0) for t in taxes.get('taxes', [])),
-                'price_total': taxes['total_included'],
-                'price_subtotal': taxes['total_excluded'] + float(line.product_surcharge) * line.product_uom_qty,
-            })
-
-    @api.multi
-    def _get_product_dc(self):
-        for ol in self:
-            prod_desc = json.loads(ol.product_id.description)
-            ol.product_discount = prod_desc['discount']
-
-    @api.multi
-    def _get_product_sc(self):
-        for ol in self:
-            prod_desc = json.loads(ol.product_id.description)
-            ol.product_surcharge = prod_desc['surcharge']
-
-    @api.multi
-    def _get_product_up(self):
-        for ol in self:
-            prod_desc = json.loads(ol.product_id.description)
-            ol.product_unit_price = prod_desc['price']
-            ol.price_subtotal += float(prod_desc['price']) 
-
-    @api.multi
-    def _get_product_desc(self):
-        for ol in self:
-            prod_desc = json.loads(ol.product_id.description)
-            lid = int(prod_desc['rawId'])
-            rawLogo = self.env['product.logo'].browse(lid)
-            ol.product_desc = rawLogo.description
-
-    @api.multi
-    def _get_product_type(self):
-        for ol in self:
-            prod_desc = json.loads(ol.product_id.description)
-            lid = int(prod_desc['rawId'])
-            rawLogo = self.env['product.logo'].browse(lid)
-            ol.product_type = rawLogo.content_type.upper()
-
-    @api.multi
-    def _get_product_stitch(self):
-        for ol in self:
-            prod_desc = json.loads(ol.product_id.description)
-            lid = int(prod_desc['rawId'])
-            rawLogo = self.env['product.logo'].browse(lid)
-            ol.product_stitch = rawLogo.stitch
-
-    @api.multi
-    def _get_product_uid(self):
-        for ol in self:
-            prod_desc = json.loads(ol.product_id.description)
-            lid = int(prod_desc['rawId'])
-            rawLogo = self.env['product.logo'].browse(lid)
-            ol.product_uid = rawLogo.uid
-
-    @api.multi
-    def _get_product_service(self):
-        for ol in self:
-            prod_desc = json.loads(ol.product_id.description)
-            ol.product_service = prod_desc['service']
+    # top bottom left right front back
+    garment_ids = fields.Many2many(
+        'sale.order.garment','sale_order_line_garment_rel','sale_order_line_id','garment_id', string='Garments', required=True)

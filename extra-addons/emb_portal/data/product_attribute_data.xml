@@ -13,5 +13,23 @@
         <record id="product_attribute_3" model="product.attribute">
             <field name="name">GM_COLOR</field>
         </record>
+        <record id="sequence_sale_order_garment" model="ir.sequence">
+            <field name="name">Sale Order Garment</field>
+            <field name="code">sale.order.garment</field>
+            <field name="active">TRUE</field>
+            <field name="prefix">G</field>
+            <field name="padding">5</field>
+            <field name="number_next">10001</field>
+            <field name="number_increment">2</field>
+        </record>
+        <record id="sequence_sale_order_logo" model="ir.sequence">
+            <field name="name">Sale Order Logo</field>
+            <field name="code">sale.order.logo</field>
+            <field name="active">TRUE</field>
+            <field name="prefix">W</field>
+            <field name="padding">6</field>
+            <field name="number_next">500000</field>
+            <field name="number_increment">2</field>
+        </record>
     </data>
 </odoo>

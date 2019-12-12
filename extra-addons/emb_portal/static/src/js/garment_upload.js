@@ -427,8 +427,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 obj.inner_paths = [];
                 obj.resourceType = targetType;
                 // Generate common resource id based on line colors and resource id
-                obj.resourceId = CryptoJS.MD5('W' + new Date().getTime()).toString().substring(0, 8);
-                obj.resourceId = 'D-' + obj.resourceId.toUpperCase();
+                obj.resourceId = CryptoJS.MD5(new Date().getTime().toString()).toString().substring(0, 8);
+                obj.resourceId = 'U' + obj.resourceId.toUpperCase();
                 console.log(obj.resourceId);
                 obj.rawId = targetId;
                 obj.cid = 1;
@@ -1030,11 +1030,13 @@ odoo.define("emb_portal.garment_upload", function (require) {
             $('input[name^="gmt-face"]').each(function (item) {
                 faces.push(this.value);
             });
+            console.log('faces posted: ' + faces);
             postData['gid'] = garmentId;
             postData['color'] = localStorage.getItem("background-color");
             postData['data'] = {};
             for (var i = 0; i < faces.length; i++) {
                 var savedData = 'line-' + garmentId + '-' + faces[i];
+                console.log(savedData);
                 var v = localStorage.getItem(savedData);
                 if (v != undefined) {
                     var pd = JSON.parse(v);
@@ -1044,9 +1046,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
                      * Update logo id here
                      */
                     var logos = pd['logos'];
-                    for (var i = 0; i < logos.length; i++) {
-                        var tmpLogo = logos[i];
-                        tmpLogo['id'] = 'W' + CryptoJS.MD5(JSON.stringify(tmpLogo['colors']) + tmpLogo['rawId']).toString().substring(0, 5).toUpperCase();
+                    for (var k = 0; k < logos.length; k++) {
+                        var tmpLogo = logos[k];
+                        tmpLogo['uid'] = 'D' + CryptoJS.MD5(JSON.stringify(tmpLogo['colors']) + tmpLogo['rawId']).toString().substring(0, 8).toUpperCase();
                     }
                     postData['data'][savedData] = pd;
                 }
@@ -1273,7 +1275,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
             delete this.background.custom_attr;
             localStorage.removeItem('background-image-index');
             localStorage.removeItem('background-color');
-            localStorage.removeItem('background-image-id');
             localStorage.removeItem('background-mode');
             localStorage.removeItem('background-face');
             localStorage.removeItem('current-logo-id');
@@ -1347,9 +1348,11 @@ odoo.define("emb_portal.garment_upload", function (require) {
          * 15.1 Get custom data from garment id
          */
         _canvasDataHolder: function (id) {
+            console.log('in _canvasDataHolder now: ' + id);
             if (id == undefined || id == null) {
                 return false;
             }
+            console.log('in _canvasDataHolder now:  custom_attr' + this.background.custom_attr);
             if (this.background.custom_attr == undefined) {
                 this.background.custom_attr = {};
             }
@@ -1357,6 +1360,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             if (holder[id] == undefined || holder[id] == null) {
                 holder[id] = {};
             }
+            console.log('in _canvasDataHolder now:  holder' + holder);
             return holder[id];
         },
         /**

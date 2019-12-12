@@ -453,7 +453,8 @@ odoo.define('emb_portal.cart_list', function (require) {
                 tSubTr.append($('<td class="minw80">').html('Location'));
                 tSubTr.append($('<td class="minw100">').html('Unit Price($)'));
                 tSubTr.append($('<td class="minw90">').html('Discount(%)'));
-                tSubTr.append($('<td class="minw90">').html('Surcharge($)'));
+                tSubTr.append($('<td class="minw90">').html('Surcharge'));
+                tSubTr.append($('<td class="minw90">').html('Surcharge Desc'));
                 tSubHead.append(tSubTr);
                 tHeadRow.append($('<th>').append(tSubHead));
                 tHeadRow.append($('<th>').append('Quantity'));
@@ -532,7 +533,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                             logoTr.append(ltdi_1);
                             // append logo design Num
                             var ltdi_2 = $('<td class="minw80">');
-                            var logo_d = $('<label>').html(logoObj.id);
+                            var logo_d = $('<label>').html(logoObj.uid);
                             ltdi_2.append(logo_d);
                             logoTr.append(ltdi_2);
                             // append logo location
@@ -557,9 +558,9 @@ odoo.define('emb_portal.cart_list', function (require) {
                             ltdi_6.append($('<input type="text" class="form-control logo-surcharge" data-id="logo_surcharge_' + logoObj.id + '" data-key="' + key + '" value="' + logoObj.surcharge + '">'));
                             logoTr.append(ltdi_6);
                             // append logo description
-                            var ltdi_7 = $('<td class="minw100">');
+                            var ltdi_7 = $('<td class="minw90">');
                             ltdi_7.append($('<label>').html(logoObj.surchargeDescription));
-                            //logoTr.append(ltdi_7);
+                            logoTr.append(ltdi_7);
                             logoTable.append(logoTr);
                         }
                         sdi_3.append(logoTable);
