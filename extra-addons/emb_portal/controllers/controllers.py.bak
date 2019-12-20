@@ -201,23 +201,12 @@ class Portal(http.Controller):
         order_id = so.id
         deisgnLogoIds = []
         OrderPrvModel = request.env['sale.order.preview']
+
         # design container for bom search in 3th step
         design_container = []
-        logoDict = {}
-        # Step 0 Get All different logos based on ID and surcharge
-        # re-mapped the post into garment view
-        for item in eOrderData:
-            did = item['id']
-            orderPrv = OrderPrvModel.search([('id', '=', int(did))])
-            tplData = json.loads(orderPrv.design_template)
-            # Get preview design data
-            designData = self._mergePriceData(tplData, item)
-            designDataHolder = designData['data']
-            oneItemLogos = self._getDifferentLogos(designDataHolder)
-            logoDict.update(oneItemLogos)
 
-        # Step 1 Get all garments side by side grouped by garment ID
-        garmentListDict = {}
+        # Step 1
+        # re-mapped the post into garment view
         for item in eOrderData:
             did = item['id']
             orderPrv = OrderPrvModel.search([('id', '=', int(did))])
@@ -232,159 +221,183 @@ class Portal(http.Controller):
             tmpQuantity = 0
             for tmp in designData['qty']:
                 tmpQuantity = tmpQuantity + int(tuple(tmp.values())[0])
+            
             designDataHolder = designData['data']
+
             # Start to create garment data from design data
             # Garment design data
             garment = request.env['product.garment'].search([('id','=',gid)])
             # Data format is
             # {"category_id": 1, "name": "Nike", "brand": "Nike", "sizes": ["15", "16", "17"], "description": "asdf", "style": "ssss", "size_tpl": "EU_SIZE", "colors": ["#000000", "#444444", "#ffebcd"], "default_color": "#000000"}
             gDesignData = json.loads(garment.design_template)
-
-            # Create garment basic info
-            sale_order_garment_info = request.env['sale.order.garment.info'].create({
+            
+            # Create garment item for each design
+            sale_order_garment = request.env['sale.order.garment'].create({
                 'order_id': order_id,
                 'garment_id': garment.id,
-                'name': request.env['ir.sequence'].with_context(force_company=request.env.user.company_id.id).next_by_code('sale.order.garment'),
-                'style': gDesignData['style'],
-                'color': designData['color'],
-                'brand': gDesignData['brand'],
-                'qty': tmpQuantity,
-                'qty_data': designData['qty']
+                'name': gDesignData['name'],
+                'garment_style': gDesignData['style'],
+                'garment_brand': gDesignData['brand'],
+                'garment_color': tplData['color'],
+                'garment_size': str(item['qty']),
+                'garment_qty': tmpQuantity,
             })
-            # Initialize garment data
-            garmentDict = []
-            for item, sideFace in designDataHolder.items():
-                sharedGarmentObject = {}
-                faceImg = sideFace['image'].split(',')[1]
-                # Collect garment data
-                sharedGarmentObject['gid'] = sideFace['gid']
-                sharedGarmentObject['name'] = gDesignData['name']
-                sharedGarmentObject['code'] = sale_order_garment_info.name
-                sharedGarmentObject['style'] = gDesignData['style']
-                sharedGarmentObject['brand'] = gDesignData['brand']
-                sharedGarmentObject['color'] = designData['color']
-                sharedGarmentObject['face'] = sideFace['image_face']
-                sharedGarmentObject['image_id'] = sideFace['image_id']
-                sharedGarmentObject['qty'] = tmpQuantity
-                sharedGarmentObject['qty_data'] = designData['qty']
-                sharedGarmentObject['image'] = faceImg
-                designLogoData = sideFace['logos']
-                # 包含的情况
-                # 2个logo 同时出现在一件衣服的同一面时
-                # 2个logo 同时出现在一件衣服的不同面时
-                for logoItem in designLogoData:
-                    uid = logoItem['uid']
-                    price = logoItem['price']
-                    surcharge = logoItem['surcharge']
-                    ukey = hashlib.md5((uid + str(price) + surcharge).encode('utf-8')).hexdigest()
-                    if ukey not in garmentListDict:
-                        garmentListDict[ukey] = []
-                    insideGarmentList = garmentListDict[ukey]
-                    sharedGarmentObject['location'] = logoItem['location']
-                    sharedGarmentObject['line_info'] = logoItem['colors']
-                    insideGarmentList.append(sharedGarmentObject)
 
-        # Step 3 Merge garment and logo and create product and its bills of materials
-        for dictKey,logoItem in logoDict.items():
-            rawId = logoItem['rawId']
-            rawLogo = request.env['product.logo'].search([('id','=',int(rawId))])
-            logoName = rawLogo.name
-            # Image handle start here
-            # Possible bugs:
-            # viewBox is the point,  the size is fixed at the current time, it should be variables.
-            logoImage = rawLogo.image
-            c = base64.b64decode(logoImage).decode('utf-8')
-            c = c.replace('<!--?xml version="1.0"?-->','')
-            c = c.replace('<!-- Embroidermodder 2 SVG Embroidery File -->','')
-            c = c.replace('<!-- Embroidermodder 2 SVG Embroidery File -->','')
-            c = c.replace('<svg', '<svg viewBox="-30 -30 50 50"')
-            d = svg2png(bytestring=c, parent_width=110, parent_height=60)
-            # Image handle end here
-            pngImage = base64.b64encode(d)
-            # basic infor parts
-            productType = 'Logo'
-            # Prepare the price surcharge and discount of each logo
-            price = round(float(logoItem['price']),2)
-            discount = round(float(logoItem['discount']),2)
-            surcharge = round(float(logoItem['surcharge']),2)
-            endPrice = price * (1 - discount/100) + surcharge
-            sale_order_logo = request.env['sale.order.logo'].create({
-                'name': request.env['ir.sequence'].next_by_code('sale.order.logo'),
-                'image': pngImage,
-                'surchage': surcharge,
-                'surcharge_description': logoItem['surchargeDescription'],
-                'price': price,
-                'service': logoItem['service'],
-                'discount': discount,
-                'stitch': rawLogo['stitch']
-            })
-            LogoProductTemplate = request.env['product.product']
-            # It is a big bug here: start
-            # Create product for each logo here
-            warehouse = request.env.ref('stock.warehouse0')
-            route_manufacture = warehouse.manufacture_pull_id.route_id.id
-            route_mto = warehouse.mto_pull_id.route_id.id
-            # It is a mock warehouse. this data need to be redefined later.
-            # Chech if the product is already created with the same name and price
-            # Weather this product is repeatable ?????????  
-            # The logo product must be one-2-one relation with sale.order.logo, because of design activity
-            logoProductTpl = LogoProductTemplate.create({
-                'name': logoName,
-                'default_code': sale_order_logo.name,
-                'product_type': 'Logo',
-                'image': pngImage,
-                'price': endPrice,
-                'route_ids': [(6, 0, [route_manufacture, route_mto])],
-                'logo_id': sale_order_logo.id
-            })
-            # Create new bom object for each new product
+            for k, sideObj in designDataHolder.items():
+                # Save current object
+                design_container.append(sideObj)
+                # Create garment list
+                # single garment data format:
+                # [{'id': '25', 'qty': [{'XS': '1'}, {'S': '1'}, {'L': '1'}, {'M': '1'}], 'logos': [{'id': 'fbc7b', 'price': '1', 'surcharge': '1', 'discount': '1'}]}, {'id': '26', 'qty': [{'XS': '1'}, {'S': '1'}, {'L': '1'}], 'logos': [{'id': '3163d', 'price': '1', 'surcharge': '111', 'discount': '1'}]}, {'id': '28', 'qty': [{'XS': '0'}, {'S': '1'}, {'L': '1'}, {'M': '0'}], 'logos': [{'id': 'c81b5', 'price': '1', 'surcharge': '11', 'discount': '1'}]}, {'id': '29', 'qty': [{'XS': '0'}, {'S': '0'}, {'L': '8'}, {'M': '0'}], 'logos': [{'id': 'W2FDB6', 'price': '1', 'surcharge': '234', 'discount': '1'}]}, {'id': '30', 'qty': [{'XS': '0'}, {'S': '0'}, {'L': '0'}, {'M': '9'}], 'logos': [{'id': 'W2FDB6', 'price': '1', 'surcharge': '123', 'discount': '1'}]}, {'id': '31', 'qty': [{'XS': '0'}, {'S': '0'}, {'L': '3'}], 'logos': [{'id': 'W2FDB6', 'price': '1', 'surcharge': '123', 'discount': '1'}]}]
+                # Get garment image
+                designLocations = []
+                designIds = []
+                logoIds = []
+
+                # Design image for each logo
+                sideDesignImage = sideObj['image']
+                if sideDesignImage:
+                    sideDesignImage = sideDesignImage.split(',')[1]
+                
+                # Start to create logo objects on each garment 
+                logosData = sideObj['logos']
+
+                # Start to handle each logo
+                for logo in logosData:
+                    # Prepare logo image from saved data
+                    rawLogoId = int(logo['rawId'])
+                    rawLogo = request.env['product.logo'].search([('id','=',rawLogoId)])
+                    logoName = rawLogo.name
+                    # Image handle start here
+                    # Possible bugs:
+                    # viewBox is the point,  the size is fixed at the current time, it should be variables.
+                    logoImage = rawLogo.image
+                    c = base64.b64decode(logoImage).decode('utf-8')
+                    c = c.replace('<!--?xml version="1.0"?-->','')
+                    c = c.replace('<!-- Embroidermodder 2 SVG Embroidery File -->','')
+                    c = c.replace('<!-- Embroidermodder 2 SVG Embroidery File -->','')
+                    c = c.replace('<svg', '<svg viewBox="-30 -30 50 50"')
+                    d = svg2png(bytestring=c, parent_width=110, parent_height=60)
+                    # Image handle end here
+                    pngImage = base64.b64encode(d)
+                    # basic infor parts
+                    serviceType = 'Garment'
+                    serviceName = '-'
+                    if logo['type'] == 'dst':
+                        serviceName = 'Embroidery Serice'
+                    elif logo['type'] == 'ai':
+                        serviceName = 'AI Service'
+                    # Prepare the price surcharge and discount of each logo
+                    price = round(float(logo['price']),2)
+                    discount = round(float(logo['discount']),2)
+                    surcharge = round(float(logo['surcharge']),2)
+                    endPrice = price * (1 - discount/100) + surcharge
+                    sale_order_logo = request.env['sale.order.logo'].create({
+                        'name': logoName,
+                        'image': pngImage,
+                        'surchage': logo['surcharge'],
+                        'surcharge_description': logo['surchargeDescription'],
+                        'service_name': serviceName,
+                        'service_type': logo['service'],
+                        'discount': discount,
+                        'price': endPrice,
+                        'stitch': rawLogo['stitch']
+                    })
+
+                    deisgnLogoIds.append(sale_order_logo.id)
+                    designIds.append(sale_order_logo.name)
+                    designLocations.append(sale_order_logo.location)
+
+                # Update logo positions
+                sale_order_garment.write({'garment_location': '<br/>'.join(designLocations),
+                        'garment_designs': '<br/>'.join(designIds)})   
+        
+        # Find how many different logos based on different design_key and price
+        logosInOrder = request.env['sale.order.logo'].search([('id','in',deisgnLogoIds)])
+        
+            
+         
+        # Step 2
+        # Sum off all the logos and create logo service
+        # Add bom line items for every bom item
+        # Prepare product for every logo with the same design and price
+        logosInOrder = request.env['sale.order.logo'].search([('id','in',deisgnLogoIds)])
+        groupDict = {}
+        LogoProductTemplate = request.env['product.product']
+        LogoSaleOrderLine = request.env['sale.order.line']
+        for logoTmp in logosInOrder:
+            
+
+
+            # Check if the order line id exists
+            sale_order_lines = LogoSaleOrderLine.search([('order_id','=',order_id), ('name','=',logoTmp.name),('surcharge','=',logoTmp.surcharge)])
+            # Check if there are same logos in this order
+            if len(sale_order_lines) > 0:
+                sale_order_line = sale_order_lines[0]
+                garmentQty = sale_order_line.product_uom_qty + logoTmp.garment_qty
+                # the surcharge and name is the same, just add their quantity
+                sale_order_line.write({'product_uom_qty': garmentQty})
+                oldGarmentIds = sale_order_line.garment_ids.ids
+                if sale_order_garment.id not in oldGarmentIds:
+                    oldGarmentIds.append(sale_order_garment.id)
+                    sale_order_line.update({'garment_ids': (6,0, oldGarmentIds)})
+                    # Add bom line here
+            else:
+                # It is a big bug here: start
+                # Create product for each logo here
+                warehouse = request.env.ref('stock.warehouse0')
+                route_manufacture = warehouse.manufacture_pull_id.route_id.id
+                route_mto = warehouse.mto_pull_id.route_id.id
+                # It is a mock warehouse. this data need to be redefined later.
+                # Chech if the product is already created with the same name and price
+                # Weather this product is repeatable ?????????  
+                # The logo product must be one-2-one relation with sale.order.logo, because of design activity
+                logoProductTpl = LogoProductTemplate.create({
+                    'name': logoTmp.name,
+                    'type': 'product',
+                    'image': logoTmp.image,
+                    'price': 0.0,
+                    'route_ids': [(6, 0, [route_manufacture, route_mto])],
+                    'design_key': logoTmp.design_key
+                })
+                sale_order_line = request.env['sale.order.line'].create({
+                    'name': logoTmp.design_key,
+                    'product_id': logoProductTpl.product_variant_id.id,
+                    'order_id': order_id,
+                    'product_uom_qty': logoTmp.garment_qty,
+                    'price_unit': logoTmp.price,
+                    'discount': logoTmp.discount,
+                    'surcharge': logoTmp.surcharge,
+                    'garment_ids': [(6,0,[sale_order_garment.id])]
+                })
+        # Step 3
+        # Prepare mrp orders for this order lines
+        sale_order_lines_mrp = LogoSaleOrderLine.search([('order_id','=',order_id)])
+        for line in sale_order_lines_mrp:
+            mrp_product = line.product_id
             logoProductBom = request.env['mrp.bom'].create({
-                'product_id': logoProductTpl.id,
-                'product_tmpl_id': logoProductTpl.product_tmpl_id.id,
-                'product_qty': 0,
+                'product_id': mrp_product.id,
+                'product_tmpl_id': mrp_product.product_tmpl_id.id,
+                'product_qty': line.product_uom_qty,
                 'type': 'normal'
             })
-            # Garment list
-            garmentList = garmentListDict[dictKey]
+
+            # The consumed materials for mrp, should be based on each side.
+            mrp_garments = line.garment_ids
             GmtProductTemplate = request.env['product.product']
-            # Create garment item for each design
-            productQty = 0
-            for gItem in garmentList:
-                sale_order_garment = request.env['sale.order.garment'].create({
-                    'garment_id': int(gItem['gid']),
-                    'name': gItem['code'],
-                    'style': gItem['style'],
-                    'brand': gItem['brand'],
-                    'color': gItem['color'],
-                    'face': gItem['face'],
-                    'image_id': gItem['image_id'],
-                    'line_info': gItem['line_info'],
-                    'location': gItem['location'],
-                })
+            for sgmt in mrp_garments:
+                # Create product for each garment
                 gmtProductTpl = GmtProductTemplate.create({
-                    'name': gItem['name'],
+                    'name': sgmt.name,
                     'type': 'consu',
-                    'garment_id': sale_order_garment.id,
-                    'image': gItem['image'],
-                    'default_code': sale_order_garment.name,
-                    'product_type': 'Garment',
+                    'sale_order_garment_id': sgmt.id,
+                    'image': sgmt.image
                 })
                 bom_line_item = request.env['mrp.bom.line'].create({
                     'bom_id': logoProductBom.id,
                     'product_id': gmtProductTpl.id,
-                    'product_qty': gItem['qty']
+                    'product_qty': sgmt.garment_qty
                 })
-                productQty = productQty + int(gItem['qty'])
-            logoProductBom.write({'product_qty': productQty})  
-
-            sale_order_line = request.env['sale.order.line'].create({
-                'name': logoProductTpl.name,
-                'product_id': logoProductTpl.product_variant_id.id,
-                'order_id': order_id,
-                'product_uom_qty': productQty,
-                'price_unit': endPrice,
-                'surcharge': surcharge
-            })
         return True
 
     # By zhang qinghua
@@ -488,7 +501,6 @@ class Portal(http.Controller):
         png_file = png_file + '-1.png'
         png_content = open(png_file, 'rb').read()
         return { "image": base64.b64encode(png_content) }
-
     # By zhang qinghua
     # created at 2019/04/11
     @http.route('/portal/file/preview', auth='user', methods=['POST'], type='json', website=True)
@@ -732,16 +744,3 @@ class Portal(http.Controller):
                 print(e)   
         # Create sub product components
         # https://www.cybrosys.com/blog/make-to-order-and-make-to-stock-in-odoo-v12
-
-    # Create different logo products
-    def _getDifferentLogos(self, dataHolder):
-        result = {}
-        for index, sideObj in dataHolder.items():
-            logoHolder = sideObj['logos']
-            for logoItem in logoHolder:
-                uid = logoItem['uid']
-                price = logoItem['price']
-                surcharge = logoItem['surcharge']
-                ukey = hashlib.md5((uid + str(price) + surcharge).encode('utf-8')).hexdigest()
-                result[ukey] = logoItem
-        return result        
