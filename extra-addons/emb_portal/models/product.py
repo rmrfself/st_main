@@ -12,15 +12,19 @@ class ProductGarmentBrand(models.Model):
     _name = "product.garment.brand"
     name = fields.Char(string="Brand", required=True)
 
+class ProductLogoImage(models.Model):
+    _name = 'product.logo.image'
+
+    image = fields.Binary('Image', attachment=True)
+
 # contains 6 positions: t,b,f,b,l,r
 
-class ProductImage(models.Model):
+class ProductGarmentImage(models.Model):
     _name = 'product.garment.image'
 
     name = fields.Char('Name', required=True)
     content_type = fields.Char('Content Type', required=True)
     image = fields.Binary('Image', attachment=True)
-
 
 class LogoTemplate(models.Model):
     _name = "product.logo"
@@ -51,11 +55,31 @@ class MrpBomLine(models.Model):
 class Product(models.Model):
     _inherit = "product.product"
 
-    product_type = fields.Char('Type', required=True)
-    
-    garment_id = fields.Many2one('sale_order_garment', string='Garment Reference', required=False, ondelete='cascade')
+    # top bottom left right front back
+    design_image_ids = fields.Many2many('product.logo.image', string='Images', required=False)
 
-    logo_id = fields.Many2one('sale_order_logo', string='Logo Reference', required=False, ondelete='cascade')
+    product_type = fields.Char(string='Product Type', store=False, related='logo_id.service')
+    
+    garment_id = fields.Many2one('sale.order.garment', string='Garment Reference', required=False, ondelete='cascade')
+
+    logo_id = fields.Many2one('sale.order.logo', string='Logo Reference', required=False, ondelete='cascade')
+
+    design_name = fields.Char(string='Design Name', store=False, related='logo_id.name')
+
+    stitch_count = fields.Integer(string='Stitches', store=False, related='logo_id.stitch')
+
+    line_data = fields.Char(string='Colors', store=False, compute='_get_line_data')
+
+    @api.multi
+    def _get_line_data(self):
+        for ol in self:
+            rawline = json.loads(ol.logo_id.line_data)
+            rawlineval = []
+            index = 1
+            for k,v in rawline.items():
+                rawlineval.append('line-' + str(index) + ":  " + v)
+                index = index + 1
+            ol.line_data = ",  ".join(rawlineval)
 
 class GarmentInfo(models.Model):
     _name = "product.garment.info"
@@ -111,6 +135,19 @@ class SaleOrderGarmentInfo(models.Model):
     color = fields.Char(string='Color')
     qty = fields.Integer(string='Quantity')
     qty_data = fields.Char(string='Quantity Detail')
+    qty_formatted = fields.Char(string='Quantity', store=False, compute='_get_quantity')
+
+    @api.multi
+    def _get_quantity(self):
+        for ol in self:
+            tmp = json.loads('{"data":' + ol.qty_data.replace('\'','"') + "}")
+            resin = []
+            for item in tmp["data"]:
+                key = tuple(item.keys())[0]
+                val = tuple(item.values())[0]
+                res = key + ": " + val
+                resin.append(res)
+            ol.qty_formatted = "   ".join(resin)
 
 class SaleOrderGarment(models.Model):
     _name = 'sale.order.garment'

@@ -1,71 +1,121 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="product_template_form_view" model="ir.ui.view">
-        <field name="name">product.template.common.form</field>
-        <field name="model">product.template</field>
-        <field name="inherit_id" ref="product.product_template_form_view"/>
-        <field name="arch" type="xml">
-            <xpath expr="//page[@name='notes']/group[@name='description_internal']" position="replace">
-                <field name="image" widget="image"/>
-            </xpath>
-            <xpath expr="//page[@name='notes']/group[@name='description']" position="attributes">
-                <attribute name="invisible" eval="True"/>
-            </xpath>
-            <xpath expr="//page[@name='notes']/group[@name='warning']" position="attributes">
-                <attribute name="invisible" eval="True"/>
-            </xpath>
-        </field>
-    </record>
-    <!-- Add "Asset Category" to supplier invoices -->
-    <record model="ir.ui.view" id="view_order_form_new">
-        <field name="name">sale.order.form</field>
-        <field name="model">sale.order</field>
-        <field name="inherit_id" ref="sale.view_order_form"/>
-        <field name="arch" type="xml">
-            <xpath expr="//field[@name='partner_shipping_id']" position="after">
-                <field string="Shipping Date" name="ship_date" />
-                <field string="Require Date" name="require_date" />
-            </xpath>
-            <xpath expr="//field[@name='payment_term_id']" position="after">
-                <field string="P.O.#" name="po_number" />
-                <field string="Job Name" name="job_title" />
-                <field string="Shipper" name="shipper_name" />
-                <field string="Instruction" name="instruction" />
-            </xpath>
-            <xpath expr="//field[@name='order_line']/tree/field[@name='product_id']" position="replace">
-                <field name="logo_name" string="Design Name" />
-                <field name="logo_service" string="Service" />
-                <field name="service_type" string="Type" />
-                <field name="logo_stitch" string="Ks" />
-                <field name="price_unit" string="Unit Price"/>
-                <field name="product_uom_qty" string="Qty"/>
-            </xpath>
-            <xpath expr="/form/sheet/notebook/page[2]" position="before">
-                <page string="Garment Information">
-                    <field name="order_garment" mode="tree">
-                        <tree string="Garments" editable="bottom">
-                            <field name="sequence" widget="handle"/>
-                            <field name="name" string="Product#"/>
-                                
-                        </tree>
-                    </field>
-                    <div class="oe_clear"/>
-                </page>
-            </xpath>
-        </field>
-    </record>
-    <!-- Modify "bom" bom line tree views -->
-    <record model="ir.ui.view" id="mrp_bom_form_view_with_garment">
-        <field name="name">mrp.bom.form</field>
-        <field name="model">mrp.bom</field>
-        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
-        <field name="arch" type="xml">
-            <xpath expr="//field[@name='bom_line_ids']/tree" position="replace">
-                <tree string="Components" editable="bottom">
-                    <field name="sequence" widget="handle"/>
-                    <field name="product_id" context="{'default_type': 'product'}"/>
-                </tree>
-            </xpath>
-        </field>
-    </record>
+    <data>
+        <!-- Custom product.form -->
+        <record id="product_normal_form_view" model="ir.ui.view">
+            <field name="name">product.product.form</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_normal_form_view"/>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <field name="type" position="after">
+                    <field name="product_type"/>
+                    <field name="design_name"/>
+                    <field name="stitch_count"/>
+                    <field name="line_data"/>
+                </field>
+                <xpath expr="//page[@name='notes']/group[@name='description_internal']" position="replace">
+                    <div class="banners">
+                        <field name="design_image_ids" mode="kanban">
+                     <kanban>
+                         <field name="image"/>
+                         <templates>
+                           <t t-name="kanban-box">
+                               <div style="position: relative;width:100%;">
+                              <div class="oe_module_vignette">
+                                  <a type="open">
+                                      <img t-att-src="'data:image/png;base64, ' + record.image.raw_value" class="oe_avatar oe_kanban_avatar_smallbox"/>
+                                  </a>
+                              </div>
+                               </div>
+                           </t>
+                         </templates>
+                     </kanban>
+                   </field>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+        <!-- end -->
+        <record id="product_template_form_view" model="ir.ui.view">
+            <field name="name">product.template.common.form</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='general_information']/group/group[@name='group_general']" position="replace">
+                    <group name="group_general_new">
+                        <field name="type" invisible="1"/>
+                        <field name="categ_id" string="Category" invisible="1"/>
+                    </group>
+                </xpath>
+                <xpath expr="//page[@name='notes']/group[@name='description']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="/form/sheet/notebook/page[@name='sales']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="/form/sheet/notebook/page[@name='purchase']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="/form/sheet/notebook/page[@name='invoicing']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+            </field>
+        </record>
+        
+        <!-- Add "Asset Category" to supplier invoices -->
+        <record model="ir.ui.view" id="view_order_form_new">
+            <field name="name">sale.order.form</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='partner_shipping_id']" position="after">
+                    <field string="Shipping Date" name="ship_date" />
+                    <field string="Require Date" name="require_date" />
+                </xpath>
+                <xpath expr="//field[@name='payment_term_id']" position="after">
+                    <field string="P.O.#" name="po_number" />
+                    <field string="Job Name" name="job_title" />
+                    <field string="Shipper" name="shipper_name" />
+                    <field string="Instruction" name="instruction" />
+                </xpath>
+                <xpath expr="//field[@name='order_line']/tree/field[@name='product_id']" position="replace">
+                    <field name="logo_name" string="Design Name" />
+                    <field name="logo_service" string="Service" />
+                    <field name="service_type" string="Type" />
+                    <field name="logo_stitch" string="Ks" />
+                </xpath>
+                <xpath expr="/form/sheet/notebook/page[2]" position="before">
+                    <page string="Garment Information">
+                        <field name="order_garment" mode="tree">
+                            <tree string="Garments" editable="bottom">
+                                <field name="sequence" widget="handle"/>
+                                <field name="name" string="Product#"/>
+                                <field name="style" string="Style"/>
+                                <field name="color" string="Color"/>
+                                <field name="brand" string="Brand"/>
+                                <field name="qty_formatted" string="Qty"/>
+                                <field name="qty" string="Total Qty"/>
+                            </tree>
+                        </field>
+                        <div class="oe_clear"/>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+        <!-- Modify "bom" bom line tree views -->
+        <record model="ir.ui.view" id="mrp_bom_form_view_with_garment">
+            <field name="name">mrp.bom.form</field>
+            <field name="model">mrp.bom</field>
+            <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='bom_line_ids']/tree" position="replace">
+                    <tree string="Components" editable="bottom">
+                        <field name="sequence" widget="handle"/>
+                        <field name="product_id" context="{'default_type': 'product'}"/>
+                    </tree>
+                </xpath>
+            </field>
+        </record>
+    </data>
 </odoo>

@@ -308,6 +308,8 @@ class Portal(http.Controller):
             discount = round(float(logoItem['discount']),2)
             surcharge = round(float(logoItem['surcharge']),2)
             endPrice = price * (1 - discount/100) + surcharge
+            # Handle color strings
+            # 
             sale_order_logo = request.env['sale.order.logo'].create({
                 'name': request.env['ir.sequence'].next_by_code('sale.order.logo'),
                 'image': pngImage,
@@ -316,7 +318,8 @@ class Portal(http.Controller):
                 'price': price,
                 'service': logoItem['service'],
                 'discount': discount,
-                'stitch': rawLogo['stitch']
+                'stitch': rawLogo['stitch'],
+                'line_data': json.dumps(logoItem['colors'])
             })
             LogoProductTemplate = request.env['product.product']
             # It is a big bug here: start
@@ -349,7 +352,10 @@ class Portal(http.Controller):
             GmtProductTemplate = request.env['product.product']
             # Create garment item for each design
             productQty = 0
+            logo_images = []
             for gItem in garmentList:
+                # Append design images into logo images
+                logo_images.append((0, 0, {'image': gItem['image']}))
                 sale_order_garment = request.env['sale.order.garment'].create({
                     'garment_id': int(gItem['gid']),
                     'name': gItem['code'],
@@ -375,8 +381,13 @@ class Portal(http.Controller):
                     'product_qty': gItem['qty']
                 })
                 productQty = productQty + int(gItem['qty'])
-            logoProductBom.write({'product_qty': productQty})  
 
+            # Post actions after done.
+            logoProductBom.write({'product_qty': productQty})  
+            logoProductTpl.write({
+                'design_image_ids': logo_images
+            })
+            
             sale_order_line = request.env['sale.order.line'].create({
                 'name': logoProductTpl.name,
                 'product_id': logoProductTpl.product_variant_id.id,
