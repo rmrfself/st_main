@@ -51,6 +51,46 @@ class LogoTemplate(models.Model):
 class MrpBomLine(models.Model):
     _inherit = 'mrp.bom.line'
 
+    # This is garment information
+    garment_type = fields.Char(string='Type', store=False, compute='_get_garment_type')
+
+    garment_style = fields.Char(string='Style', store=False, related='product_id.garment_id.style')
+
+    garment_brand = fields.Char(string='Brand', store=False, related='product_id.garment_id.brand')
+
+    garment_color = fields.Char(string='Color', store=False, related='product_id.garment_id.color')
+
+    garment_quantity = fields.Char(string='Qty', store=False, related='product_id.garment_id.quantity')
+
+    # This is garment information
+    garment_location = fields.Char(string='Location', store=False, compute='_get_garment_locations')
+
+    @api.multi
+    def _get_garment_locations(self):
+        for ol in self:
+            pid = ol.product_id
+            if pid.garment_id:
+                oid = pid.garment_id.sale_order_id.id
+                gid = pid.garment_id.garment_id.id
+                gids = self.env['sale.order.garment'].search([('sale_order_id', '=', oid),('garment_id', '=', gid)])
+                locs = []
+                for gobj in gids:
+                    loc = gobj.location
+                    locs.append(loc)
+                if locs:    
+                    ol.garment_location = ','.join(locs)
+
+    @api.multi
+    def _get_garment_type(self):
+        for ol in self:
+            pid = ol.product_id
+            gid = pid.garment_id.garment_id
+            if gid.design_template:
+                gdata = json.loads(gid.design_template)
+                print('99999999')
+                print(gdata)
+                cid = self.env['product.category'].browse(int(gdata['category_id']))
+                ol.garment_type = cid.name
 
 class Product(models.Model):
     _inherit = "product.product"
@@ -73,13 +113,17 @@ class Product(models.Model):
     @api.multi
     def _get_line_data(self):
         for ol in self:
-            rawline = json.loads(ol.logo_id.line_data)
-            rawlineval = []
-            index = 1
-            for k,v in rawline.items():
-                rawlineval.append('line-' + str(index) + ":  " + v)
-                index = index + 1
-            ol.line_data = ",  ".join(rawlineval)
+            lineDataCk = ol.logo_id.line_data
+            if lineDataCk:
+                rawline = json.loads(ol.logo_id.line_data)
+                rawlineval = []
+                index = 1
+                for k,v in rawline.items():
+                    rawlineval.append('line-' + str(index) + ":  " + v)
+                    index = index + 1
+                ol.line_data = ",  ".join(rawlineval)
+            else:
+                ol.line_data = '-'
 
 class GarmentInfo(models.Model):
     _name = "product.garment.info"
@@ -154,6 +198,7 @@ class SaleOrderGarment(models.Model):
     _description = 'Sales Order Garment List'
     _order = 'id' 
 
+    sale_order_id = fields.Many2one('sale.order', string='Order Reference', required=True)
     garment_id = fields.Many2one('product.garment', string='Garment Reference', required=True)
     product_type = fields.Char(string='Type')
     name = fields.Char(string='Description', required=True)
@@ -164,6 +209,8 @@ class SaleOrderGarment(models.Model):
     image_id = fields.Integer(string='Image Id')
     location = fields.Char(string='Location')
     line_info = fields.Char(string='Logo Colors')
+
+    quantity = fields.Char(string='Quantity')
 
 class SaleOrderLogo(models.Model):
     _name = 'sale.order.logo'

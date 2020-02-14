@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <!-- Custom product.form -->
+        <!-- Custom product.form 此处安装时，有BUG， 需要修改product_normal_form_view 为product_template_form_view， 然后再改回来s -->
         <record id="product_normal_form_view" model="ir.ui.view">
             <field name="name">product.product.form</field>
             <field name="model">product.product</field>
@@ -113,6 +113,12 @@
                     <tree string="Components" editable="bottom">
                         <field name="sequence" widget="handle"/>
                         <field name="product_id" context="{'default_type': 'product'}"/>
+                        <field name="garment_type" />
+                        <field name="garment_style" />
+                        <field name="garment_brand" />
+                        <field name="garment_color" />
+                        <field name="garment_quantity" />
+                        <field name="garment_location" />
                     </tree>
                 </xpath>
             </field>

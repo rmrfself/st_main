@@ -252,6 +252,7 @@ class Portal(http.Controller):
                 'qty_data': designData['qty']
             })
             # Initialize garment data
+            #下面的循环已经考虑过多个面了: 第一个循环就是每个面
             garmentDict = []
             for item, sideFace in designDataHolder.items():
                 sharedGarmentObject = {}
@@ -357,6 +358,7 @@ class Portal(http.Controller):
                 # Append design images into logo images
                 logo_images.append((0, 0, {'image': gItem['image']}))
                 sale_order_garment = request.env['sale.order.garment'].create({
+                    'sale_order_id': order_id,
                     'garment_id': int(gItem['gid']),
                     'name': gItem['code'],
                     'style': gItem['style'],
@@ -366,6 +368,7 @@ class Portal(http.Controller):
                     'image_id': gItem['image_id'],
                     'line_info': gItem['line_info'],
                     'location': gItem['location'],
+                    'quantity': gItem['qty']
                 })
                 gmtProductTpl = GmtProductTemplate.create({
                     'name': gItem['name'],
