@@ -111,6 +111,11 @@ odoo.define('emb_portal.cart_list', function (require) {
                 imgf_td.append(imgf);
                 row.append(imgf_td);
                 /**
+                 * Append hidden id for every d-order data.
+                 */
+                var hdid = $("<input type='hidden' value='" + data['id'] + "' id='did_" + data['id'] + "' name='d_hid[]'>");
+                imgf_td.append(hdid);
+                /**
                  * Name field
                  */
                 var nmf = $('<td>').html(data['name']);
@@ -160,6 +165,19 @@ odoo.define('emb_portal.cart_list', function (require) {
         },
         _onLogoPriceChange: function () {
 
+        },
+        _collectDOrderData: function () {
+            var dids = $("input[name*='d_hid']").map(function () { return $(this).val(); }).get();
+            var data = [];
+            for(var k in dids) {
+                var ele = {}
+                var v = dids[k];
+                ele['id'] = v;
+                ele['price'] = $("#do_price_" + v).val() || 0;
+                ele['sc'] = $("#do_sc_" + v).val() || 0;
+                data.push(ele);
+            }
+            return data;
         },
         _collectOrderData: function () {
             var self = this;
@@ -321,11 +339,18 @@ odoo.define('emb_portal.cart_list', function (require) {
                 postData['order_sd'] = order_sd;
                 postData['order_ra'] = order_ra;
                 postData['instruction'] = instruction;
+                /**
+                 * Collect E-Order data
+                 */
                 postData['eorder'] = self._collectOrderData();
                 if (_.isEmpty(postData)) {
                     console.log('empty cart data.');
                     return false;
                 }
+                postData['dorder'] = self._collectDOrderData();
+                /**
+                 * Collect D-Order data
+                 */
                 var postUrl = '/portal/cart/create';
                 var debugStr = session.debug ? "?debug=true" : "";
                 ajax.jsonRpc(postUrl + debugStr, "call", postData)

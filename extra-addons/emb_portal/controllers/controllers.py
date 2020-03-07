@@ -20,6 +20,9 @@ import hashlib
 import re
 from cairosvg import svg2png
 
+from datetime import datetime
+from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
+
 from odoo.exceptions import AccessError, UserError
 import logging
 _logger = logging.getLogger(__name__)
@@ -176,7 +179,53 @@ class Portal(http.Controller):
     # created at 2018/12/12
     @http.route('/portal/cart/create', auth='user', methods=['POST'], type='json', website=True)
     def create_cart(self, *args, **post):
-        eOrderData = post['eorder']
+        # Dorder handle begin
+        dOrderData = post['dorder']
+        if dOrderData and len(dOrderData) > 0:
+            # Create purchase order
+            # Step 02
+            po = request.env['purchase.order'].create({
+                'partner_id': request.env.user.partner_id.id
+            })
+            for ditem in dOrderData:
+                dorderId = int(ditem['id'])
+                dObj = request.env['sale.dorder.preview'].browse(dorderId)
+                dTpl = json.loads(dObj.design_template)
+                dTpl.update(ditem)
+                # Create product here
+                pLogoName = dTpl['name']
+                pImage = dTpl['image'].split(',')[1]
+                purchase_order_logo = request.env['purchase.order.logo'].create({
+                    'name': dTpl['name'],
+                    'desc': dTpl['desc'],
+                    'size': str(dTpl['width']) + 'x' + str(dTpl['height']),
+                    'price': dTpl['price'],
+                    'surcharge': dTpl['sc'],
+                    'image_type': dTpl['type'],
+                    'image': pImage
+                })
+                PProductTemplate = request.env['product.product']
+                logoProductTpl = PProductTemplate.create({
+                    'name': pLogoName,
+                    'default_code': pLogoName,
+                    'product_type': 'PLogo',
+                    'image': pImage,
+                    'price': float(dTpl['price']),
+                    'p_logo_id': purchase_order_logo.id
+                })
+                POrderlineTpl = request.env['purchase.order.line']
+                pUom = request.env.ref('product.product_uom_unit')
+                pol = POrderlineTpl.create({
+                    'order_id': po.id,
+                    'name': pLogoName,
+                    'product_id': logoProductTpl.id,
+                    'product_qty': 1.0,
+                    'price_unit': float(dTpl['price']),
+                    'product_image': pImage,
+                    'product_uom': pUom.id,
+                    'date_planned': datetime.today().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
+                })
+        # Dorder end
         buyer = post['buyer']
         order_po = post['order_po']
         job_title = post['job_title']
@@ -184,6 +233,7 @@ class Portal(http.Controller):
         order_sd = post['order_sd']
         order_ra = post['order_ra']
         instruction = post['instruction']
+        eOrderData = post['eorder']
         # Create global variables for order object
         so = request.env['sale.order'].create({
             'buyer_name': buyer,

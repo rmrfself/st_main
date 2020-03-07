@@ -104,7 +104,11 @@ class Product(models.Model):
 
     logo_id = fields.Many2one('sale.order.logo', string='Logo Reference', required=False, ondelete='cascade')
 
+    p_logo_id = fields.Many2one('purchase.order.logo', string='Purchase Logo Reference', required=False, ondelete='cascade')
+
     design_name = fields.Char(string='Design Name', store=False, related='logo_id.name')
+
+    p_design_name = fields.Char(string='Design Name', store=False, related='p_logo_id.name')
 
     stitch_count = fields.Integer(string='Stitches', store=False, related='logo_id.stitch')
 
@@ -273,3 +277,24 @@ class SaleOrderLine(models.Model):
         for ol in self:
             logo = self.env['sale.order.logo'].browse(ol.product_id.logo_id.ids)
             ol.logo_name = logo.name         
+
+class PurchaseOrderLine(models.Model):
+    _inherit = 'purchase.order.line'
+
+class PurchaseOrderLogo(models.Model):
+    _name = 'purchase.order.logo'
+    _description = 'Purchase Order Logo'
+    _order = 'id' 
+    
+    name = fields.Char(string='Desgin Name', required=True)
+    desc = fields.Char(string='Description')
+    size = fields.Char(string='Size')
+    stitiches = fields.Char(string='Stitches')
+    price = fields.Char(string='Discount')
+    surcharge = fields.Char(string='Surcharge')
+    instruction = fields.Integer(string='Instruction')
+    fabric = fields.Char(string='Fabirc')
+
+    image_type = fields.Char(string='Type')
+
+    image = fields.Binary('Image', attachment=True)    
