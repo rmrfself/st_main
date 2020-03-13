@@ -281,6 +281,20 @@ class SaleOrderLine(models.Model):
 class PurchaseOrderLine(models.Model):
     _inherit = 'purchase.order.line'
 
+    logo_id = fields.Many2one('purchase.order.logo', string='Order Design', required=True)
+
+    p_design_size = fields.Char(string='Size', store=True, related='logo_id.size')
+
+    p_specital_instr = fields.Char(string='Special Instruction', store=True, related='logo_id.instruction')
+
+    p_fabric = fields.Char(string='Fabric', store=True, related='logo_id.fabric')
+
+    p_stitch = fields.Char(string='Fabric', store=True, related='logo_id.stitiches')
+
+    design_image = fields.Binary('Upload Dst', attachment=True)
+
+    p_design_image = fields.Binary(string='Origin Image', store=False, related='logo_id.image')
+
 class PurchaseOrderLogo(models.Model):
     _name = 'purchase.order.logo'
     _description = 'Purchase Order Logo'
@@ -292,7 +306,7 @@ class PurchaseOrderLogo(models.Model):
     stitiches = fields.Char(string='Stitches')
     price = fields.Char(string='Discount')
     surcharge = fields.Char(string='Surcharge')
-    instruction = fields.Integer(string='Instruction')
+    instruction = fields.Char(string='Instruction')
     fabric = fields.Char(string='Fabirc')
 
     image_type = fields.Char(string='Type')

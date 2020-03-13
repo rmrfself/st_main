@@ -123,5 +123,39 @@
                 </xpath>
             </field>
         </record>
+        <record model="ir.ui.view" id="emb_purchase_order_form">
+			<field name="name">purchase.order.form</field>
+			<field name="model">purchase.order</field>
+			<field name="inherit_id" ref="purchase.purchase_order_form" />
+			<field name="arch" type="xml">
+                <xpath expr="//field[@name='order_line']/form/sheet/notebook/page[1]/field[@name='name']" position="replace">
+                    <field name='p_design_image' widget="image" class="oe_avatar" />
+                </xpath>
+				<xpath expr="//field[@name='order_line']/tree" position="replace">
+					<tree string="Purchase Order Lines" editable="bottom">
+						<field name="currency_id" invisible="1" />
+						<field name="state" invisible="1" />
+						<field name="sequence" widget="handle" />
+						<field name="product_id" attrs="{'readonly': [('state', 'in', ('purchase', 'to approve','done', 'cancel'))]}" context="{'partner_id':parent.partner_id, 'quantity':product_qty,'uom':product_uom, 'company_id': parent.company_id}" force_save="1" />
+						<field name="name" />
+                        <field name="p_design_size" />
+                        <field name="p_specital_instr" />
+                        <field name="p_fabric" />
+                        <field name="design_image"  widget="binary" />
+						<field name="move_dest_ids" invisible="1" />
+						<field name="company_id" groups="base.group_multi_company" options="{'no_create': True}" />
+						<field name="account_analytic_id" context="{'default_partner_id':parent.partner_id}" groups="purchase.group_analytic_accounting" />
+						<field name="analytic_tag_ids" groups="purchase.group_analytic_accounting" widget="many2many_tags" options="{'color_field': 'color'}" />
+						<field name="product_qty" />
+						<field name="qty_received" invisible="not context.get('show_purchase', True)" />
+						<field name="qty_invoiced" invisible="not context.get('show_purchase', True)" />
+			        	<field name="product_uom" groups="product.group_uom" attrs="{'readonly': [('state', 'in', ('purchase', 'done', 'cancel'))]}" force_save="1" />
+						<field name="price_unit" />
+						<field name="taxes_id" widget="many2many_tags" domain="[('type_tax_use','=','purchase')]" context="{'default_type_tax_use': 'purchase'}" options="{'no_create': True}" />
+						<field name="price_subtotal" widget="monetary" />
+					</tree>
+				</xpath>
+			</field>
+		</record>
     </data>
 </odoo>

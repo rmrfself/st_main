@@ -218,6 +218,7 @@ class Portal(http.Controller):
                 pol = POrderlineTpl.create({
                     'order_id': po.id,
                     'name': pLogoName,
+                    'logo_id': purchase_order_logo.id,
                     'product_id': logoProductTpl.id,
                     'product_qty': 1.0,
                     'price_unit': float(dTpl['price']),
