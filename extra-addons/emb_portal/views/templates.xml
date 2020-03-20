@@ -6,6 +6,11 @@
 				</div>
 			</xpath>
 		</template>
+		<template id="emb_assets_backend" name="emb portal assets" inherit_id="web.assets_backend">
+			<xpath expr="." position="inside">
+				<link rel="stylesheet" href="/emb_portal/static/src/css/web.backend.css"/>
+			</xpath>
+    	</template>
 		<template id="assets_frontend_emb_portal" inherit_id="web.assets_frontend" name="Emb Portal Frontend Assets">
 			<xpath expr="//link[last()]" position="after">
 				<link rel="stylesheet" type="text/css" href="/emb_portal/static/src/css/bootstrap-datepicker.min.css" />
