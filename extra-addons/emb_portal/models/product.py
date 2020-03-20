@@ -278,6 +278,23 @@ class SaleOrderLine(models.Model):
             logo = self.env['sale.order.logo'].browse(ol.product_id.logo_id.ids)
             ol.logo_name = logo.name         
 
+class PurchaseOrder(models.Model):
+    _inherit = "purchase.order"
+
+    stitch = fields.Char(string='Stitches', store=False, compute='_get_total_stitch')
+
+    @api.multi
+    def _get_total_stitch(self):
+        for ol in self:
+            ols = ol.order_line
+            print('===========99999999')
+            print(ols)
+            total_stitch = 0
+            for line in ols:
+                ol_stitch = int(line.p_stitch)
+                total_stitch = total_stitch + ol_stitch
+            ol.stitch = total_stitch    
+
 class PurchaseOrderLine(models.Model):
     _inherit = 'purchase.order.line'
 
@@ -285,11 +302,13 @@ class PurchaseOrderLine(models.Model):
 
     p_design_size = fields.Char(string='Size', store=True, related='logo_id.size')
 
-    p_specital_instr = fields.Char(string='Special Instruction', store=True, related='logo_id.instruction')
+    p_design_size_unit = fields.Char(string='Size Unit', store=True, related='logo_id.size_unit')
+
+    p_specital_instr = fields.Text(string='Special Instruction', store=True, related='logo_id.instruction')
 
     p_fabric = fields.Char(string='Fabric', store=True, related='logo_id.fabric')
 
-    p_stitch = fields.Char(string='Fabric', store=True, related='logo_id.stitiches')
+    p_stitch = fields.Char(string='Stitches', store=True, related='logo_id.stitiches')
 
     design_image = fields.Binary('Upload Dst', attachment=True)
 
@@ -303,10 +322,11 @@ class PurchaseOrderLogo(models.Model):
     name = fields.Char(string='Desgin Name', required=True)
     desc = fields.Char(string='Description')
     size = fields.Char(string='Size')
+    size_unit = fields.Char(string='Size Unit')
     stitiches = fields.Char(string='Stitches')
     price = fields.Char(string='Discount')
     surcharge = fields.Char(string='Surcharge')
-    instruction = fields.Char(string='Instruction')
+    instruction = fields.Text(string='Instruction')
     fabric = fields.Char(string='Fabirc')
 
     image_type = fields.Char(string='Type')

@@ -198,7 +198,8 @@ class Portal(http.Controller):
                 purchase_order_logo = request.env['purchase.order.logo'].create({
                     'name': dTpl['name'],
                     'desc': dTpl['desc'],
-                    'size': str(dTpl['width']) + 'x' + str(dTpl['height']),
+                    'size': str(dTpl['width']) + 'X' + str(dTpl['height']),
+                    'size_unit': dTpl['unit'],
                     'price': dTpl['price'],
                     'surcharge': dTpl['sc'],
                     'image_type': dTpl['type'],
