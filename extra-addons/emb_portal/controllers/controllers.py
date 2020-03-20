@@ -85,7 +85,7 @@ class Portal(http.Controller):
     def cart_list_data(self, **kw):
         SaleOrderTpl = request.env['sale.order.preview']
         orders = SaleOrderTpl.search(
-            [('status', '=', False), ('create_uid', '=', request.env.context.get('uid'))])
+            [('status', '=', True), ('create_uid', '=', request.env.context.get('uid'))])
         # refactor the design data template
         # response format [{'id': [{'image_face': 'top','image': ..., 'brand': 'nike','logos':[{'serice':'EMB'}]}]}]
         container = []
@@ -227,6 +227,8 @@ class Portal(http.Controller):
                     'product_uom': pUom.id,
                     'date_planned': datetime.today().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
                 })
+                # update cart status
+                dObj.write({'status': False})
         # Dorder end
         buyer = post['buyer']
         order_po = post['order_po']
@@ -236,6 +238,7 @@ class Portal(http.Controller):
         order_ra = post['order_ra']
         instruction = post['instruction']
         eOrderData = post['eorder']
+        didss = []
         # Create global variables for order object
         so = request.env['sale.order'].create({
             'buyer_name': buyer,
@@ -451,6 +454,8 @@ class Portal(http.Controller):
                 'price_unit': endPrice,
                 'surcharge': surcharge
             })
+        # Update status 
+        OrderPrvModel.search([('id','in',didss)]).write({'status': False})    
         return True
 
     # By zhang qinghua

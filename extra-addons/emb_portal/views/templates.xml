@@ -136,8 +136,7 @@
 								<h4 class="title">
 									Message
 								</h4>
-								<textarea id='instr' class="form-control" rows="8">
-								</textarea>
+								<textarea id='instr' class="form-control" rows="8"></textarea>
 							</div>
 							<h4 class="title">
 								Order Total

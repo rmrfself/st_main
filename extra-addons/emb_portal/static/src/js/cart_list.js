@@ -6,7 +6,7 @@ odoo.define('emb_portal.cart_list', function (require) {
     var core = require('web.core');
     var session = require('web.session');
 
-    function CarListTable() { }
+    function CarListTable() {}
 
     $.blockUI.defaults.overlayCSS = {
         opacity: 0.1,
@@ -25,6 +25,7 @@ odoo.define('emb_portal.cart_list', function (require) {
          */
         _loadCartData: function () {
             var self = this;
+            $("#instr").html('');
             $("#cart-list").block({
                 message: "<img src='/emb_portal/static/src/images/grid.svg' height='30' width='30' style='margin-right:10px' />loading..",
                 css: {
@@ -61,6 +62,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                         return false;
                     }
                     self._createListTable(returned_value);
+                    self._addActionLinks();
                 });
 
             /**
@@ -85,6 +87,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                     }
                     self._createDoListTable(returned_value);
                 });
+            self._bindInputEvents();
         },
 
         /**
@@ -167,9 +170,11 @@ odoo.define('emb_portal.cart_list', function (require) {
 
         },
         _collectDOrderData: function () {
-            var dids = $("input[name*='d_hid']").map(function () { return $(this).val(); }).get();
+            var dids = $("input[name*='d_hid']").map(function () {
+                return $(this).val();
+            }).get();
             var data = [];
-            for(var k in dids) {
+            for (var k in dids) {
                 var ele = {}
                 var v = dids[k];
                 ele['id'] = v;
@@ -315,7 +320,17 @@ odoo.define('emb_portal.cart_list', function (require) {
                 self._calTotalPrice($(this).attr('data-key'));
             });
             $('#btn-quot').click(function (e) {
+                console.log('button click');
                 $("#cart-list").block({
+                    message: "<img src='/emb_portal/static/src/images/grid.svg' height='30' width='30' style='margin-right:10px' />loading..",
+                    css: {
+                        border: "none",
+                        left: "90%",
+                        width: "96%",
+                        background: "transparent"
+                    }
+                });
+                $("#do-cart-list").block({
                     message: "<img src='/emb_portal/static/src/images/grid.svg' height='30' width='30' style='margin-right:10px' />loading..",
                     css: {
                         border: "none",
@@ -343,11 +358,18 @@ odoo.define('emb_portal.cart_list', function (require) {
                  * Collect E-Order data
                  */
                 postData['eorder'] = self._collectOrderData();
+                postData['dorder'] = self._collectDOrderData();
+                console.log(postData);
                 if (_.isEmpty(postData)) {
-                    console.log('empty cart data.');
+                    $.notify({
+                        icon: "glyphicon glyphicon-ok",
+                        title: "Item is added.",
+                        message: "Please choose one item!"
+                    }, {
+                        type: "warning"
+                    });
                     return false;
                 }
-                postData['dorder'] = self._collectDOrderData();
                 /**
                  * Collect D-Order data
                  */
@@ -361,13 +383,22 @@ odoo.define('emb_portal.cart_list', function (require) {
                         }
                     })
                     .done(function (data) {
-                        $.notify({
-                            icon: "glyphicon glyphicon-ok",
-                            title: "Item is added.",
-                            message: "Items are submitted successfully."
-                        }, {
-                            type: "success"
-                        });
+                        setTimeout(function () {
+                            $("#cart-list").unblock();
+                            $("#do-cart-list").unblock();
+                            $('#emptymsg').html('Empty').show();
+                            $('#do-emptymsg').html('Empty').show();
+                            $("#cart-list").html('');
+                            $("#do-cart-list").html('');
+                            $.notify({
+                                icon: "glyphicon glyphicon-ok",
+                                title: "Item is added.",
+                                message: "Items are submitted successfully."
+                            }, {
+                                type: "success"
+                            });
+                        }, 3000);
+
                     })
                     .fail(function () {
                         $.notify({
@@ -447,6 +478,9 @@ odoo.define('emb_portal.cart_list', function (require) {
          */
         _createListTable: function (list) {
             var parent = $('#cl');
+            if (_.isEmpty(list)) {
+                return false;
+            }
             for (var item in list) {
                 var dr = list[item];
                 var topRowTr = $('<tr>');
@@ -641,8 +675,6 @@ odoo.define('emb_portal.cart_list', function (require) {
                     this._calTotalPrice(key);
                 }
             }
-            this._bindInputEvents();
-            this._addActionLinks();
         },
         _addActionLinks: function () {
             var parent = $('#cations').addClass('cartactions');
@@ -713,11 +745,11 @@ odoo.define('emb_portal.cart_list', function (require) {
                     });
                     if (ids.length > 0) {
                         rpc.query({
-                            route: "/portal/cart/remove",
-                            params: {
-                                ids: ids
-                            }
-                        })
+                                route: "/portal/cart/remove",
+                                params: {
+                                    ids: ids
+                                }
+                            })
                             .then(function (returned_value) {
                                 $("input[name='select[]']").each(function () {
                                     if ($(this).prop('checked') == true) {
