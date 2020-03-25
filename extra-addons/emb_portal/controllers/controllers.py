@@ -264,6 +264,7 @@ class Portal(http.Controller):
         for item in eOrderData:
             did = item['id']
             orderPrv = OrderPrvModel.search([('id', '=', int(did))])
+            didss.append(int(did))
             tplData = json.loads(orderPrv.design_template)
             # Get preview design data
             designData = self._mergePriceData(tplData, item)
@@ -532,8 +533,6 @@ class Portal(http.Controller):
         #  contains bom of logos(prouduct)
         SaleOrderTpl = request.env['sale.order.preview']
         cartData = json.dumps(post)
-        print('---------post data(7777777)--------')
-        print(cartData)
         SaleOrderTpl.create({
             'design_template': cartData,
             'status': True
