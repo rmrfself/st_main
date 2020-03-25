@@ -531,8 +531,12 @@ class Portal(http.Controller):
         #  contains attribute of color
         #  contains bom of logos(prouduct)
         SaleOrderTpl = request.env['sale.order.preview']
+        cartData = json.dumps(post)
+        print('---------post data(7777777)--------')
+        print(cartData)
         SaleOrderTpl.create({
-            'design_template': json.dumps(post)
+            'design_template': cartData,
+            'status': True
         })
         return {'result': {'data': 'success'}}
 
