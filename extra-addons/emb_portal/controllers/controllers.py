@@ -55,6 +55,24 @@ class Portal(http.Controller):
         ret = result.unlink()
         return ret 
 
+    # This controller is for /portal/partner/list page to load the data asychronised
+    # By zhang qinghua
+    # created at 2018/11/11
+    @http.route('/portal/partner/list', type='http', auth="user", csrf=False, website=True)
+    def get_partner_list(self, **kw):
+        container = {}
+        keyw = kw['q']
+        container['results'] = []
+        if keyw:
+            partners = request.env['res.partner'].search([('name','like','%' + keyw + '%')])
+        if len(partners) > 0:
+            p = []
+            for partner in partners:
+                p.append({'id': partner.id, 'text': partner.name})
+            container['results'] = p
+            return json.dumps(container)  
+        return json.dumps(container)  
+
     # This controller is for /port/cart/list page to load the data asychronised
     # By zhang qinghua
     # created at 2018/11/11
@@ -194,9 +212,12 @@ class Portal(http.Controller):
                 dTpl.update(ditem)
                 # Create product here
                 pLogoName = dTpl['name']
+                pLogoCustomerId = int(dTpl['customer'])
+                pLogoCustomer = request.env['res.partner'].browse(pLogoCustomerId)
                 pImage = dTpl['image'].split(',')[1]
                 purchase_order_logo = request.env['purchase.order.logo'].create({
                     'name': dTpl['name'],
+                    'customer': pLogoCustomer.name,
                     'desc': dTpl['desc'],
                     'size': str(dTpl['width']) + 'X' + str(dTpl['height']),
                     'size_unit': dTpl['unit'],

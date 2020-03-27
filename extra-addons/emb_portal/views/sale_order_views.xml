@@ -157,7 +157,8 @@
 						<field name="state" invisible="1" />
 						<field name="sequence" widget="handle" />
 						<field name="product_id" attrs="{'readonly': [('state', 'in', ('purchase', 'to approve','done', 'cancel'))]}" context="{'partner_id':parent.partner_id, 'quantity':product_qty,'uom':product_uom, 'company_id': parent.company_id}" force_save="1" />
-						<field name="name" invisible="1" />
+						<field name="name" />
+                        <field name="p_customer" />
                         <field name="p_design_size" />
                         <field name="p_design_size_unit" />
                         <field name="p_specital_instr" />

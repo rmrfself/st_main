@@ -287,8 +287,6 @@ class PurchaseOrder(models.Model):
     def _get_total_stitch(self):
         for ol in self:
             ols = ol.order_line
-            print('===========99999999')
-            print(ols)
             total_stitch = 0
             for line in ols:
                 ol_stitch = int(line.p_stitch)
@@ -301,6 +299,8 @@ class PurchaseOrderLine(models.Model):
     logo_id = fields.Many2one('purchase.order.logo', string='Order Design', required=True)
 
     p_design_size = fields.Char(string='Size', store=True, related='logo_id.size')
+
+    p_customer = fields.Char(string='Customer', store=True, related='logo_id.customer')
 
     p_design_size_unit = fields.Char(string='Size Unit', store=True, related='logo_id.size_unit')
 
@@ -320,6 +320,7 @@ class PurchaseOrderLogo(models.Model):
     _order = 'id' 
     
     name = fields.Char(string='Desgin Name', required=True)
+    customer = fields.Char(string='Customer', required=False)
     desc = fields.Char(string='Description')
     size = fields.Char(string='Size')
     size_unit = fields.Char(string='Size Unit')

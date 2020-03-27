@@ -587,6 +587,14 @@
 															</label>
 														</div>
 													</div>
+													<div class="form-group row" id='logo-customer-a'>
+														<label class="col-sm-3" for="exampleInputName2">
+															Customer
+														</label>
+														<div class="col-sm-9">
+															<input type="text" class="form-control protip" id="logo-customer" placeholder="Input customer here" data-pt-title="Input customer name!" />
+														</div>
+													</div>
 													<div class="form-group row" id='logo-image-b'>
 														<label class="col-sm-3" for="exampleInputName2">
 															Type
