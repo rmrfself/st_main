@@ -85,9 +85,12 @@ class Portal(http.Controller):
         for data in orders:
             topLevel = {}
             dataTpl = json.loads(data.design_template)
+            print(dataTpl['customer'])
+            cid = dataTpl['customer']
             topLevel['id'] = data.id
-            resPartner = request.env['res.partner'].browse(int(dataTpl['customer']))
-            topLevel['customer'] = resPartner.name
+            if cid:
+                resPartner = request.env['res.partner'].browse(int(cid))
+                topLevel['customer'] = resPartner.name
             topLevel['name'] = dataTpl['name']
             topLevel['desc'] = dataTpl['desc']
             topLevel['ltype'] = dataTpl['type']
