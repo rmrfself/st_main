@@ -121,6 +121,8 @@ odoo.define('emb_portal.cart_list', function (require) {
                 /**
                  * Name field
                  */
+                var cnmf = $('<td>').html(data['customer']);
+                row.append(cnmf);
                 var nmf = $('<td>').html(data['name']);
                 row.append(nmf);
                 var imgtf = $('<td>').html(data['ltype']);

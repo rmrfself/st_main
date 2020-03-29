@@ -121,6 +121,7 @@
 									<table class="table table-stripped" id="dl">
 										<tr>
 											<th>Image</th>
+											<th>Customer</th>
 											<th>Name</th>
 											<th>Image Type</th>
 											<th>Width</th>
