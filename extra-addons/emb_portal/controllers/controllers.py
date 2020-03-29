@@ -86,6 +86,8 @@ class Portal(http.Controller):
             topLevel = {}
             dataTpl = json.loads(data.design_template)
             topLevel['id'] = data.id
+            resPartner = request.env['res.partner'].browse(int(dataTpl['customer']))
+            topLevel['customer'] = resPartner.name
             topLevel['name'] = dataTpl['name']
             topLevel['desc'] = dataTpl['desc']
             topLevel['ltype'] = dataTpl['type']
@@ -679,6 +681,7 @@ class Portal(http.Controller):
     @http.route('/portal/logo/save', auth='user', methods=['POST'], type='json', website=True)
     def save_logo(self, *args, **post):
         rcd = {}
+        rcd['customer'] = post['customer']
         rcd['name'] = post['name']
         rcd['uid'] = post['name']
         rcd['content_type'] = post['type']

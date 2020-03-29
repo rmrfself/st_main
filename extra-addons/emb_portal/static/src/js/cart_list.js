@@ -152,6 +152,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                         console.log('You didn\'t choose anything');
                     },
                     onConfirm: function (value) {
+                        console.log("did in dorder list when remove:" + did);
                         var args = [did];
                         rpc.query({
                             model: "sale.dorder.preview",
