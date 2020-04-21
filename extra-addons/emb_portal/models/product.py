@@ -31,6 +31,8 @@ class LogoTemplate(models.Model):
 
     # name
     name = fields.Char('Name', required=True)
+    # custom
+    partner_id = fields.Many2one('res.partner', string='Partner')
     # image type
     content_type = fields.Char('Content Type', required=True)
     # logo description

@@ -225,6 +225,23 @@
 										</div>
 										<div role="tabpanel" class="tab-pane" id="logo-box">
 											<div class="content">
+												<div class="form-group row" id='logo-customer-search'>
+													<label class="col-sm-2">
+														Customer
+													</label>
+													<div class="col-sm-3">
+														<input type="text" class="form-control protip" id="search-customer" placeholder="Select customer" data-pt-title="Input customer name!" />
+													</div>
+													<label class="col-sm-1">
+														Logo
+													</label>
+													<div class="col-sm-3">
+														<input type="text" class="form-control protip" id="search-logo-name" data-pt-title="Input logo name!" />
+													</div>
+													<button type="button" id="btn-search-c" class="btn btn-primary" data-toggle="modal" aria-pressed="false" autocomplete="off">
+														Search
+													</button>
+												</div>
 												<div class="logo-assets clearfix" id='lc'></div>
 											</div>
 											<div class="bottom-actions">

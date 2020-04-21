@@ -684,7 +684,7 @@ class Portal(http.Controller):
     @http.route('/portal/logo/save', auth='user', methods=['POST'], type='json', website=True)
     def save_logo(self, *args, **post):
         rcd = {}
-        rcd['customer'] = post['customer']
+        rcd['partner_id'] = int(post['customer'])
         rcd['name'] = post['name']
         rcd['uid'] = post['name']
         rcd['content_type'] = post['type']

@@ -2727,13 +2727,71 @@ odoo.define("emb_portal.garment_upload", function (require) {
             this._loadLogoData();
         },
         _initComponents: function () {
+            var self = this;
+            /**
+             * Bind customer input event change.
+             */
+            $('#search-customer').select2({
+                allowClear: true,
+                placeholder: "Input a customer",
+                minimumInputLength: 1,
+                ajax: {
+                    url: "/portal/partner/list",
+                    dataType: 'json',
+                    type: 'GET',
+                    quietMillis: 250,
+                    data: function (term, page) { // page is the one-based page number tracked by Select2
+                        return {
+                            q: term, //search term
+                            page: page // page number
+                        };
+                    },
+                    results: function (data, page) {
+                        console.log(data);
+                        return data;
+                    },
+                    formatResult: function (data, term) {
+                        return data;
+                    },
+                    formatSelection: function (data) {
+                        return data;
+                    },
+                    dropdownCssClass: "bigdrop",
+                    escapeMarkup: function (m) {
+                        return m;
+                    }
+                }
+            }).trigger('change');
+
+            $('#btn-search-c').click(function (e) {
+                var ln = $('#search-logo-name').val().trim();
+                var ct = $('#search-customer').val();
+                var params = [];
+                if (ln != null && ln.length > 0) {
+                    params.push(["name", "=", ln]);
+                }
+                if (ct != null && parseInt(ct) > 0) {
+                    params.push(["partner_id", "=", parseInt(ct)]);
+                }
+                var args = [
+                    params,
+                    ["id", "name", "content_type", "image", "width", "height", "stitch"]
+                ];
+                rpc.query({
+                    model: "product.logo",
+                    method: "search_read",
+                    args: args
+                }).then(function (returned_value) {
+                    self._appendLogoImages(returned_value);
+                });
+            });
+
             $('#logo-image-type').select2({
                 width: "100%"
             }).trigger("change");
             /**
              * Bind events
              */
-            var self = this;
             $('#logo-submit-btn').click(function (e) {
                 if (self._doValidateLogoData() == false) {
                     return false;
