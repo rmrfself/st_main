@@ -335,3 +335,16 @@ class PurchaseOrderLogo(models.Model):
     image_type = fields.Char(string='Type')
 
     image = fields.Binary('Image', attachment=True)    
+
+class MrpWorkorder(models.Model):
+    _inherit = 'mrp.workorder'
+
+    logo_file = fields.Char(string='Fabric', store=False, compute='_get_logo_file')
+
+    @api.multi
+    def _get_logo_file(self):
+        for ol in self:
+            production = ol.product_id
+            product_id = production.product_id
+            if product_id and product_id.logo_id:
+                self.logo_file = product_id.logo_id
