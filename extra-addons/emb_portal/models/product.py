@@ -339,12 +339,13 @@ class PurchaseOrderLogo(models.Model):
 class MrpWorkorder(models.Model):
     _inherit = 'mrp.workorder'
 
-    logo_file = fields.Char(string='Fabric', store=False, compute='_get_logo_file')
+    logo_file = fields.Binary(string='File Download', readonly=True, store=False, compute='_get_logo_file')
 
     @api.multi
     def _get_logo_file(self):
-        for ol in self:
-            production = ol.product_id
-            product_id = production.product_id
-            if product_id and product_id.logo_id:
-                self.logo_file = product_id.logo_id
+        for record in self:
+            product = record.product_id
+            if product:
+                record.logo_file = product.logo_id.image
+            else:
+                record.logo_file = ""    
