@@ -396,6 +396,7 @@ class Portal(http.Controller):
             sale_order_logo = request.env['sale.order.logo'].create({
                 'name': request.env['ir.sequence'].next_by_code('sale.order.logo'),
                 'image': pngImage,
+                'raw_image': logoImage,
                 'surchage': surcharge,
                 'surcharge_description': logoItem['surchargeDescription'],
                 'price': price,

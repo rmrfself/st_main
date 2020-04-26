@@ -89,8 +89,6 @@ class MrpBomLine(models.Model):
             gid = pid.garment_id.garment_id
             if gid.design_template:
                 gdata = json.loads(gid.design_template)
-                print('99999999')
-                print(gdata)
                 cid = self.env['product.category'].browse(int(gdata['category_id']))
                 ol.garment_type = cid.name
 
@@ -234,6 +232,8 @@ class SaleOrderLogo(models.Model):
 
     image = fields.Binary('Image', attachment=True)
 
+    raw_image = fields.Binary('Raw Image', attachment=True, required=False)
+
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
@@ -346,6 +346,6 @@ class MrpWorkorder(models.Model):
         for record in self:
             product = record.product_id
             if product:
-                record.logo_file = product.logo_id.image
+                record.logo_file = product.logo_id.raw_image
             else:
                 record.logo_file = ""
