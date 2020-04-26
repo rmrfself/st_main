@@ -348,4 +348,4 @@ class MrpWorkorder(models.Model):
             if product:
                 record.logo_file = product.logo_id.image
             else:
-                record.logo_file = ""    
+                record.logo_file = ""
