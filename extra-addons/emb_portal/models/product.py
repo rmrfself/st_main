@@ -341,6 +341,8 @@ class MrpWorkorder(models.Model):
 
     logo_file = fields.Binary(string='File Download', readonly=True, store=False, compute='_get_logo_file')
 
+    logo_file_name = fields.Char("Download Design", default="Download Design")
+
     @api.multi
     def _get_logo_file(self):
         for record in self:
