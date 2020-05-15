@@ -2906,6 +2906,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                         var postUrl = '/portal/file/preview';
                         postData['type'] = ft;
                         postData['data'] = imageData;
+                        $('#logo-rawdata').val(imageData);
                         ajax.jsonRpc(postUrl, "call", postData)
                             .always(function () {
                                 $("#logo-preview-box").unblock();
@@ -3049,7 +3050,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var name = $('#logo-name').val();
             var desc = $('#logo-desc').val();
             var type = $('#logo-image-type').val();
-            var imageRaw = $('#logo-file-input').val();
+            var imageRaw = $('#logo-rawdata').val();
             var svgImage = $('#logo-preview-box').html();
             var width = parseFloat($('#logo-width').val());
             var height = parseFloat($('#logo-height').val());

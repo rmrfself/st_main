@@ -98,7 +98,7 @@ class Product(models.Model):
     # top bottom left right front back
     design_image_ids = fields.Many2many('product.logo.image', string='Images', required=False)
 
-    product_type = fields.Char(string='Product Type', store=False, related='logo_id.service')
+    product_type = fields.Char(string='Product Type', store=False, related='product_tmpl_id.categ_id.name')
     
     garment_id = fields.Many2one('sale.order.garment', string='Garment Reference', required=False, ondelete='cascade')
 
@@ -233,6 +233,8 @@ class SaleOrderLogo(models.Model):
     image = fields.Binary('Image', attachment=True)
 
     raw_image = fields.Binary('Raw Image', attachment=True, required=False)
+    raw_image_type = fields.Char(string='Image Type')
+
 
 class SaleOrder(models.Model):
     _inherit = "sale.order"
@@ -260,7 +262,7 @@ class SaleOrderLine(models.Model):
     @api.multi
     def _get_logo_stitch(self):
         for ol in self:
-            logo = self.env['sale.order.logo'].browse(ol.product_id.logo_id.ids)
+            logo = self.env['sale.order.logo'].browse(ol.product_id.logo_id.id)
             ol.logo_stitch = logo.stitch
 
     @api.multi
@@ -271,8 +273,8 @@ class SaleOrderLine(models.Model):
     @api.multi
     def _get_logo_service(self):
         for ol in self:
-            logo = self.env['sale.order.logo'].browse(ol.product_id.logo_id.ids)
-            ol.logo_service = logo.service               
+            logo = self.env['sale.order.logo'].browse(ol.product_id.logo_id.id)
+            ol.logo_service = logo.service         
 
     @api.multi
     def _get_product_name(self):
@@ -341,7 +343,7 @@ class MrpWorkorder(models.Model):
 
     logo_file = fields.Binary(string='File Download', readonly=True, store=False, compute='_get_logo_file')
 
-    logo_file_name = fields.Char("Download Design", default="Download Design")
+    logo_file_name = fields.Char("Download Design", compute='_get_logo_file_name')
 
     @api.multi
     def _get_logo_file(self):
@@ -351,3 +353,11 @@ class MrpWorkorder(models.Model):
                 record.logo_file = product.logo_id.raw_image
             else:
                 record.logo_file = ""
+
+    def _get_logo_file_name(self):
+        for record in self:
+            product = record.product_id
+            if product:
+                image_type = product.logo_id.raw_image_type
+                if image_type:
+                    record. logo_file_name = "design." + image_type       

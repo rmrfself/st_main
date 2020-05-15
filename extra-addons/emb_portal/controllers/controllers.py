@@ -20,6 +20,8 @@ import hashlib
 import re
 from cairosvg import svg2png
 
+import random
+
 from datetime import datetime
 from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
 
@@ -368,8 +370,8 @@ class Portal(http.Controller):
                     insideGarmentList.append(sharedGarmentObject)
 
         # Step 3 Merge garment and logo and create product and its bills of materials
-        for dictKey,logoItem in logoDict.items():
-            rawId = logoItem['rawId']
+        for dictKey,logoItemNew in logoDict.items():
+            rawId = logoItemNew['rawId']
             rawLogo = request.env['product.logo'].search([('id','=',int(rawId))])
             logoName = rawLogo.name
             # Image handle start here
@@ -385,11 +387,10 @@ class Portal(http.Controller):
             # Image handle end here
             pngImage = base64.b64encode(d)
             # basic infor parts
-            productType = 'Logo'
             # Prepare the price surcharge and discount of each logo
-            price = round(float(logoItem['price']),2)
-            discount = round(float(logoItem['discount']),2)
-            surcharge = round(float(logoItem['surcharge']),2)
+            price = round(float(logoItemNew['price']),2)
+            discount = round(float(logoItemNew['discount']),2)
+            surcharge = round(float(logoItemNew['surcharge']),2)
             endPrice = price * (1 - discount/100) + surcharge
             # Handle color strings
             # 
@@ -397,13 +398,14 @@ class Portal(http.Controller):
                 'name': request.env['ir.sequence'].next_by_code('sale.order.logo'),
                 'image': pngImage,
                 'raw_image': rawLogo.raw_data,
-                'surchage': surcharge,
-                'surcharge_description': logoItem['surchargeDescription'],
+                'raw_image_type': rawLogo.content_type,
+                'surcharge': surcharge,
+                'surcharge_description': logoItemNew['surchargeDescription'],
                 'price': price,
-                'service': logoItem['service'],
+                'service': 'Embroidery',
                 'discount': discount,
                 'stitch': rawLogo['stitch'],
-                'line_data': json.dumps(logoItem['colors'])
+                'line_data': json.dumps(logoItemNew['colors'])
             })
             LogoProductTemplate = request.env['product.product']
             # It is a big bug here: start
@@ -425,11 +427,15 @@ class Portal(http.Controller):
                 'logo_id': sale_order_logo.id
             })
             # Create new bom object for each new product
+            company_id = request.env.user.partner_id.company_id.id
+            routeIds = request.env['mrp.routing'].search([('company_id','=',company_id),("active","=",True)])
+            routeId = random.choice(routeIds.ids)
             logoProductBom = request.env['mrp.bom'].create({
                 'product_id': logoProductTpl.id,
                 'product_tmpl_id': logoProductTpl.product_tmpl_id.id,
                 'product_qty': 0,
-                'type': 'normal'
+                'type': 'normal',
+                'routing_id': routeId
             })
             # Garment list
             garmentList = garmentListDict[dictKey]
@@ -694,6 +700,10 @@ class Portal(http.Controller):
         rcd['height'] = int(post['height'])
         rcd['stitch'] = int(post['stitch'])
         rcd['image'] = post['svgImage']
+        imageRaw = post['imageRaw']
+        if imageRaw:
+            coreData = imageRaw.split(",")[1]
+            rcd['raw_data'] = coreData
         # set stitch information
         # set uid information for dst file
         # parse the width and height data
