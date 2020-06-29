@@ -87,7 +87,6 @@ odoo.define('emb_portal.cart_list', function (require) {
                     }
                     self._createDoListTable(returned_value);
                 });
-            self._bindInputEvents();
         },
 
         /**
@@ -320,7 +319,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                     });
                     return false;
                 }
-                self._calTotalPrice($(this).attr('data-key'));
+                self._calTotalPrice($(this).attr('data-id'));
             });
             $('#btn-quot').click(function (e) {
                 console.log('button click');
@@ -678,6 +677,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                     this._calTotalPrice(key);
                 }
             }
+            this._bindInputEvents();
         },
         _addActionLinks: function () {
             var parent = $('#cations').addClass('cartactions');
