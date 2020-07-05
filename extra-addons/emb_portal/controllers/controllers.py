@@ -610,7 +610,9 @@ class Portal(http.Controller):
             new_dst_file = dst_filename + '.dst'
             # Read dst file information
             dstWidth = 0
+            dstWidthMinus = 0
             dstHeight = 0
+            dstHeightMinus = 0
             stitch = 0
             uid = ''
             with open(new_dst_file,'rb') as search:
@@ -623,12 +625,18 @@ class Portal(http.Controller):
                 sRaw = sl.decode('utf-8').split('\r')
                 for line in sRaw:
                     wt = re.findall("\+X:\s+([0-9]+)", line)
+                    wtMinus = re.findall("\-X:\s+([0-9]+)", line)
                     ht = re.findall("\+Y:\s+([0-9]+)", line)
+                    htMinus = re.findall("\-Y:\s+([0-9]+)", line)
                     st = re.findall("ST:\s+([0-9]+)", line)
                     if wt:
-                        dstWidth = wt[0]
+                        dstWidth = int(wt[0])
+                    if len(wtMinus) > 0:
+                        dstWidthMinus = int(wtMinus[0])
+                    if len(htMinus) > 0:
+                        dstHeightMinus = int(htMinus[0])    
                     if ht:
-                        dstHeight = ht[0]    
+                        dstHeight = int(ht[0])
                     if st:
                         stitch = st[0]
             # Create website used image
@@ -647,7 +655,7 @@ class Portal(http.Controller):
             except IOError:
                 return { "error": 'true' }   
             svg_image = svg_content
-            return {'image': svg_image,'width': dstWidth, 'height': dstHeight,'stitch': stitch, 'uid': uid}
+            return {'image': svg_image,'width': (dstWidth + dstWidthMinus), 'height': (dstHeight + dstHeightMinus),'stitch': stitch, 'uid': uid}
         if fileType == 'ai':
             # Create dst file image
             ai_file, ai_filename = tempfile.mkstemp()
