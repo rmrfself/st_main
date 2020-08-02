@@ -323,12 +323,14 @@ class Portal(http.Controller):
             # Data format is
             # {"category_id": 1, "name": "Nike", "brand": "Nike", "sizes": ["15", "16", "17"], "description": "asdf", "style": "ssss", "size_tpl": "EU_SIZE", "colors": ["#000000", "#444444", "#ffebcd"], "default_color": "#000000"}
             gDesignData = json.loads(garment.design_template)
-
+            garment_cat = request.env['product.category'].search([('id','=',int(gDesignData['category_id']))])
             # Create garment basic info
             sale_order_garment_info = request.env['sale.order.garment.info'].create({
                 'order_id': order_id,
                 'garment_id': garment.id,
                 'name': request.env['ir.sequence'].with_context(force_company=request.env.user.company_id.id).next_by_code('sale.order.garment'),
+                'description': gDesignData['description'],
+                'garment_type': garment_cat.name,
                 'style': gDesignData['style'],
                 'color': designData['color'],
                 'brand': gDesignData['brand'],
@@ -352,6 +354,7 @@ class Portal(http.Controller):
                 sharedGarmentObject['image_id'] = sideFace['image_id']
                 sharedGarmentObject['qty'] = tmpQuantity
                 sharedGarmentObject['qty_data'] = designData['qty']
+                sharedGarmentObject['product_type'] = sale_order_garment_info.garment_type
                 sharedGarmentObject['image'] = faceImg
                 designLogoData = sideFace['logos']
                 # 包含的情况
@@ -397,12 +400,15 @@ class Portal(http.Controller):
             sale_order_logo = request.env['sale.order.logo'].create({
                 'name': request.env['ir.sequence'].next_by_code('sale.order.logo'),
                 'image': pngImage,
+                'raw_id': rawLogo.id,
+                'raw_name': rawLogo.name,
+                'raw_desc': rawLogo.description,
                 'raw_image': rawLogo.raw_data,
                 'raw_image_type': rawLogo.content_type,
                 'surcharge': surcharge,
                 'surcharge_description': logoItemNew['surchargeDescription'],
                 'price': price,
-                'service': 'Embroidery',
+                'service': logoItemNew['service'],
                 'discount': discount,
                 'stitch': rawLogo['stitch'],
                 'line_data': json.dumps(logoItemNew['colors'])
@@ -420,7 +426,7 @@ class Portal(http.Controller):
             logoProductTpl = LogoProductTemplate.create({
                 'name': logoName,
                 'default_code': sale_order_logo.name,
-                'product_type': 'Logo',
+                'product_type': rawLogo.content_type,
                 'image': pngImage,
                 'price': endPrice,
                 'route_ids': [(6, 0, [route_manufacture, route_mto])],
@@ -457,7 +463,8 @@ class Portal(http.Controller):
                     'image_id': gItem['image_id'],
                     'line_info': gItem['line_info'],
                     'location': gItem['location'],
-                    'quantity': gItem['qty']
+                    'quantity': gItem['qty'],
+                    'garment_type': gItem['product_type']
                 })
                 gmtProductTpl = GmtProductTemplate.create({
                     'name': gItem['name'],
@@ -465,7 +472,7 @@ class Portal(http.Controller):
                     'garment_id': sale_order_garment.id,
                     'image': gItem['image'],
                     'default_code': sale_order_garment.name,
-                    'product_type': 'Garment',
+                    'product_type': sale_order_garment.garment_type
                 })
                 bom_line_item = request.env['mrp.bom.line'].create({
                     'bom_id': logoProductBom.id,

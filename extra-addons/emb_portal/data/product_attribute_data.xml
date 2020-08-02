@@ -5,10 +5,13 @@
             <field name="name">SIZE_GROUP</field>
         </record>
         <record id="product_attribute_1" model="product.attribute">
-            <field name="name">US_SIZE</field>
+            <field name="name">US Size</field>
         </record>
         <record id="product_attribute_2" model="product.attribute">
-            <field name="name">EU_SIZE</field>
+            <field name="name">EU Size</field>
+        </record>
+        <record id="product_attribute_4" model="product.attribute">
+            <field name="name">Child</field>
         </record>
         <record id="product_attribute_3" model="product.attribute">
             <field name="name">GM_COLOR</field>

@@ -10,6 +10,7 @@
             <field name="arch" type="xml">
                 <field name="type" position="after">
                     <field name="product_type"/>
+                    <field name="design_service"/>
                     <field name="design_name"/>
                     <field name="stitch_count"/>
                     <field name="line_data"/>
@@ -85,15 +86,20 @@
                     <field name="service_type" string="Type" />
                     <field name="logo_stitch" string="Ks" />
                 </xpath>
+                <xpath expr="//field[@name='order_line']/tree/field[@name='name']" position="replace">
+                    <field name="logo_desc" string="Description" />
+                </xpath>
                 <xpath expr="/form/sheet/notebook/page[2]" position="before">
                     <page string="Garment Information">
                         <field name="order_garment" mode="tree">
                             <tree string="Garments" editable="bottom">
                                 <field name="sequence" widget="handle"/>
-                                <field name="name" string="Product#"/>
+                                <field name="name" string="Garment Name"/>
+                                <field name="garment_type" string="Type"/>
                                 <field name="style" string="Style"/>
                                 <field name="color" string="Color"/>
                                 <field name="brand" string="Brand"/>
+                                <field name="description" string="Description"/>
                                 <field name="qty_formatted" string="Qty"/>
                                 <field name="qty" string="Total Qty"/>
                             </tree>

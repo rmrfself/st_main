@@ -98,7 +98,7 @@ class Product(models.Model):
     # top bottom left right front back
     design_image_ids = fields.Many2many('product.logo.image', string='Images', required=False)
 
-    product_type = fields.Char(string='Product Type', store=False, related='product_tmpl_id.categ_id.name')
+    product_type = fields.Char(string='Product Type')
     
     garment_id = fields.Many2one('sale.order.garment', string='Garment Reference', required=False, ondelete='cascade')
 
@@ -106,9 +106,11 @@ class Product(models.Model):
 
     p_logo_id = fields.Many2one('purchase.order.logo', string='Purchase Logo Reference', required=False, ondelete='cascade')
 
-    design_name = fields.Char(string='Design Name', store=False, related='logo_id.name')
+    design_name = fields.Char(string='Design Name', store=False, related='logo_id.raw_name')
 
     p_design_name = fields.Char(string='Design Name', store=False, related='p_logo_id.name')
+
+    design_service = fields.Char(string='Service', store=False, related='logo_id.service')
 
     stitch_count = fields.Integer(string='Stitches', store=False, related='logo_id.stitch')
 
@@ -177,7 +179,9 @@ class SaleOrderGarmentInfo(models.Model):
 
     order_id = fields.Many2one('sale.order', string='Order Reference', required=True, ondelete='cascade', index=True, copy=False)
     garment_id = fields.Many2one('product.garment', string='Garment Reference', required=True)
-    name = fields.Char(string='Description', required=True)
+    name = fields.Char(string='Name', required=True)
+    description = fields.Char(string='Description', required=True)
+    garment_type = fields.Char(string='Type', required=True)
     style = fields.Char(string='Style')
     brand = fields.Char(string='Brand')
     color = fields.Char(string='Color')
@@ -232,6 +236,9 @@ class SaleOrderLogo(models.Model):
 
     image = fields.Binary('Image', attachment=True)
 
+    raw_id = fields.Integer(string='Logo Id')
+    raw_name = fields.Char(string='Logo Name',default='')
+    raw_desc = fields.Char(string='Logo Description',default='')
     raw_image = fields.Binary('Raw Image', attachment=True, required=False)
     raw_image_type = fields.Char(string='Image Type')
 
@@ -254,7 +261,8 @@ class SaleOrderLine(models.Model):
     
     surcharge = fields.Float(string='Surcharge', default=0)
 
-    logo_name = fields.Char(string='Design Name', store=False, compute='_get_product_name')
+    logo_name = fields.Char(string='Design Name', store=False, compute='_get_logo_name')
+    logo_desc = fields.Char(string='Description', store=False, compute='_get_logo_desc')
     logo_service = fields.Char(string='Service', store=False, compute='_get_logo_service')
     service_type = fields.Char(string='Type', store=False, compute='_get_service_type')
     logo_stitch = fields.Integer(string='Ks', store=False, compute='_get_logo_stitch')
@@ -277,10 +285,18 @@ class SaleOrderLine(models.Model):
             ol.logo_service = logo.service         
 
     @api.multi
-    def _get_product_name(self):
+    def _get_logo_name(self):
         for ol in self:
-            logo = self.env['sale.order.logo'].browse(ol.product_id.logo_id.ids)
-            ol.logo_name = logo.name         
+            logo = self.env['sale.order.logo'].browse(ol.product_id.logo_id.id)
+            if logo.raw_name:
+                ol.logo_name = logo.raw_name 
+
+    @api.multi
+    def _get_logo_desc(self):
+        for ol in self:
+            logo = self.env['sale.order.logo'].browse(ol.product_id.logo_id.id)
+            if logo.raw_desc:
+                ol.logo_desc = logo.raw_desc      
 
 class PurchaseOrder(models.Model):
     _inherit = "purchase.order"
