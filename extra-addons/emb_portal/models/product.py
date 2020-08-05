@@ -178,7 +178,7 @@ class SaleOrderGarmentInfo(models.Model):
     sequence = fields.Integer(string='Sequence', help="Gives the sequence order when displaying a list of analytic distribution")
 
     order_id = fields.Many2one('sale.order', string='Order Reference', required=True, ondelete='cascade', index=True, copy=False)
-    garment_id = fields.Many2one('product.garment', string='Garment Reference', required=True)
+    garment_id = fields.Many2one('product.garment', string='Garment Reference', required=True, ondelete='cascade')
     name = fields.Char(string='Name', required=True)
     description = fields.Char(string='Description', required=True)
     garment_type = fields.Char(string='Type', required=True)
