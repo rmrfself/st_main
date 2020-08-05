@@ -207,7 +207,7 @@ class SaleOrderGarment(models.Model):
     _order = 'id' 
 
     sale_order_id = fields.Many2one('sale.order', string='Order Reference', required=True)
-    garment_id = fields.Many2one('product.garment', string='Garment Reference', required=True)
+    garment_id = fields.Many2one('product.garment', string='Garment Reference', required=True, ondelete='cascade')
     product_type = fields.Char(string='Type')
     name = fields.Char(string='Description', required=True)
     style = fields.Char(string='Style')
