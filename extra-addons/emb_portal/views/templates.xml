@@ -644,6 +644,9 @@
 														<div class="col-sm-9">
 															<input type="text" class="form-control protip" id="logo-name" placeholder="Input a name here" data-pt-title="Input your logo name!" />
 															<input id="logo-stitch" name="logo-stitch" value="0" type="hidden" />
+															<input id="logo-co" name="logo-co" value="0" type="hidden" />
+															<input id="logo-minusx" name="logo-minusx" value="0" type="hidden" />
+															<input id="logo-minusy" name="logo-minusy" value="0" type="hidden" />
 														</div>
 													</div>
 													<div class="form-group row">

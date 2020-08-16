@@ -39,8 +39,11 @@ class LogoTemplate(models.Model):
     description = fields.Char('Description', required=True)
     # logo width 
     width = fields.Integer(required=True, default=0)
+    minusx = fields.Integer(required=True, default=0)
     # logo height
     height = fields.Integer(required=True, default=0)
+    minusy = fields.Integer(required=True, default=0)
+    co = fields.Integer(required=True, default=0)
     # raw image
     raw_data = fields.Binary('Raw Data', attachment=True)
     # raw image

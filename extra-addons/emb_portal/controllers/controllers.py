@@ -20,6 +20,8 @@ import hashlib
 import re
 from cairosvg import svg2png
 
+import pyembroidery
+
 import random
 
 from datetime import datetime
@@ -621,6 +623,7 @@ class Portal(http.Controller):
             dstHeight = 0
             dstHeightMinus = 0
             stitch = 0
+            colorchange = 0
             uid = ''
             with open(new_dst_file,'rb') as search:
                 search.seek(0, 0)  # Go to beginning of the file
@@ -636,23 +639,27 @@ class Portal(http.Controller):
                     ht = re.findall("\+Y:\s+([0-9]+)", line)
                     htMinus = re.findall("\-Y:\s+([0-9]+)", line)
                     st = re.findall("ST:\s+([0-9]+)", line)
+                    co = re.findall("CO:\s+([0-9]+)", line)
                     if wt:
                         dstWidth = int(wt[0])
                     if len(wtMinus) > 0:
-                        dstWidthMinus = int(wtMinus[0])
+                        dstWidthMinus = 0 - int(wtMinus[0])
                     if len(htMinus) > 0:
-                        dstHeightMinus = int(htMinus[0])    
+                        dstHeightMinus = 0 - int(htMinus[0])    
                     if ht:
                         dstHeight = int(ht[0])
                     if st:
                         stitch = st[0]
+                    if co:
+                        colorchange = co[0]  
             # Create website used image
             svg_dir = tempfile.mkdtemp()
             svg_filename = hashlib.md5(fileData.encode()).hexdigest()
             svg_file = svg_dir + '/' + svg_filename + '.svg'
             # Image converter call
             try:
-                call(["libembroidery-convert", new_dst_file, svg_file])
+                pattern = pyembroidery.read_dst(new_dst_file)
+                pyembroidery.write(pattern,svg_file)
             except subprocess.CalledProcessError:
                 return { "error": 'true' }
             except OSError:
@@ -662,7 +669,7 @@ class Portal(http.Controller):
             except IOError:
                 return { "error": 'true' }   
             svg_image = svg_content
-            return {'image': svg_image,'width': (dstWidth + dstWidthMinus), 'height': (dstHeight + dstHeightMinus),'stitch': stitch, 'uid': uid}
+            return {'image': svg_image,'co': colorchange, 'minusx':dstWidthMinus, 'minusy':dstHeightMinus, 'width': (dstWidth - dstWidthMinus), 'height': (dstHeight - dstHeightMinus),'stitch': stitch, 'uid': uid}
         if fileType == 'ai':
             # Create dst file image
             ai_file, ai_filename = tempfile.mkstemp()
@@ -714,6 +721,9 @@ class Portal(http.Controller):
         rcd['width'] = int(post['width'])
         rcd['height'] = int(post['height'])
         rcd['stitch'] = int(post['stitch'])
+        rcd['co'] = int(post['co'])
+        rcd['minusx'] = int(post['minusx'])
+        rcd['minusy'] = int(post['minusy'])
         rcd['image'] = post['svgImage']
         imageRaw = post['imageRaw']
         if imageRaw:

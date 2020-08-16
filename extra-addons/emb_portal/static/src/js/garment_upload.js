@@ -408,7 +408,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
                         item.id = "logo-" + targetId + "-" + index;
                         item.class = "logo-stroke-path";
                         item.svgUid = index;
-                        item.stroke = "#000000";
                         item.dataType = targetType;
                     });
                 }
@@ -675,16 +674,24 @@ odoo.define("emb_portal.garment_upload", function (require) {
             container.attr("on-edit", "true");
             container.html("");
             var self = this;
+            var layerBlock = [];
             objects.map(function (item, index) {
+                var strokeData = item.stroke;
+                if (layerBlock.indexOf(strokeData) == -1 ) {
+                    layerBlock.push(strokeData);
+                }
+            });
+            layerBlock.forEach(function (item, index) {
                 var subItem = $("<div>").addClass("line-color-input");
                 var stepSpan = $("<span>").html("Step" + (index + 1));
                 var colorInput = $("<input>")
                     .attr("name", "line_color[]")
                     .attr("item-id", id)
                     .attr("line-seq", index);
+                colorInput.attr("data-stroke", item);
                 colorInput.attr("item-type", type);
                 colorInput.attr("type", "text");
-                colorInput.val(item.strokeData || item.fillData);
+                colorInput.val(item.stroke || item.fillData);
                 colorInput.addClass("form-control");
                 colorInput.blur(function (event) {
                     self._onLineColorInput($(this));
@@ -713,9 +720,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
             } else {
                 var id = input.attr("item-id");
                 input.attr('style', 'background:#FFFFFF');
-                var seq = parseInt(input.attr("line-seq"));
+                var stroke = parseInt(input.attr("data-stroke"));
                 var type = input.attr("item-type");
-                this._renderCurrentLine(id, seq, type, inputStr);
+                this._renderCurrentLine(id, stroke, type, inputStr);
                 // Save line colors into canvas
 
             }
@@ -723,7 +730,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
         /**
          * 9.2 After input line colors, rerender the canvas logos.
          */
-        _renderCurrentLine: function (id, seq, type, color) {
+        _renderCurrentLine: function (id, stroke, type, color) {
             var self = this;
             color = color.toUpperCase();
             var colorHex = this.dd[color] || [255, 255, 255];
@@ -746,7 +753,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var Gmtid = localStorage.getItem("background-image-id");
             var logoId = currentLogo.resourceId;
             objects.map(function (item) {
-                if (item.id == itemId) {
+                if (item.stoke == stroke) {
                     if (type == FILE_TYPE_DST) {
                         item.set("stroke", colorData);
                         item.set("strokeData", color);
@@ -2937,6 +2944,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
                                 if (ft == 'dst') {
                                     $('#logo-name').val(data['uid']);
                                     $('#logo-stitch').val(data['stitch']);
+                                    $('#logo-co').val(data['co']);
+                                    $('#logo-minusx').val(data['minusx']);
+                                    $('#logo-minusy').val(data['minusy']);
                                     $("#logo-preview-box").removeClass('ai-preview-box');
                                     $("#logo-preview-box").addClass('dst-preview-box');
                                 } else {
@@ -3055,6 +3065,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var width = parseFloat($('#logo-width').val());
             var height = parseFloat($('#logo-height').val());
             var stitch = $('#logo-stitch').val() || 0;
+            var co = $('#logo-co').val() || 0;
+            var mx = $('#logo-minusx').val() || 0;
+            var my = $('#logo-minusy').val() || 0;
             var unit = $("input[name='size-unit']:checked").val();
 
             /**
@@ -3133,7 +3146,10 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 width: width,
                 height: height,
                 unit: unit,
-                stitch: stitch
+                stitch: stitch,
+                co: co,
+                minusx: mx,
+                minusy: my
             };
             var postUrl = '/portal/logo/save';
             ajax.jsonRpc(postUrl, "call", postData)
@@ -3185,7 +3201,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 [
                     ["create_uid", "=", odoo.session_info.user_id]
                 ],
-                ["id", "name", "content_type", "image", "width", "height", "stitch"]
+                ["id", "name", "content_type", "image", "width", "height", "stitch","co","minusx","minusy"]
             ];
             rpc.query({
                 model: "product.logo",
@@ -3205,7 +3221,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 var image = atob(tmp['image']);
                 var width = parseInt(tmp['width']);
                 var originWidth = parseInt(tmp['width']);
+                var mx = parseInt(tmp['minusx']);
                 var originHeight = parseInt(tmp['height']);
+                var my = parseInt(tmp['minusy']);
                 //var width = 382;
                 var height = parseInt(tmp['height']);
                 var name = tmp['name'];
@@ -3243,7 +3261,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     jImage.attr('height', height + 'px');
                     jImage.removeAttr('viewBox');
                     jImage.each(function () {
-                        $(this)[0].setAttribute('viewBox', (-width / 2) + ' ' + (-height / 2) + ' ' + width + ' ' + height)
+                        $(this)[0].setAttribute('viewBox', mx + ' ' + my + ' ' + originWidth + ' ' + originHeight)
                     });
                 }
 
