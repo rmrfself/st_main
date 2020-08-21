@@ -674,14 +674,38 @@ odoo.define("emb_portal.garment_upload", function (require) {
             container.attr("on-edit", "true");
             container.html("");
             var self = this;
-            var layerBlock = [];
+            var layerContainer = [];
+            var newLayerContainer = [];
             objects.map(function (item, index) {
                 var strokeData = item.stroke;
-                if (layerBlock.indexOf(strokeData) == -1 ) {
-                    layerBlock.push(strokeData);
+                var mappedStrokeData = item.strokeData;
+                if (mappedStrokeData != null) {
+                    strokeData = strokeData + '|' + mappedStrokeData;
+                }
+                if(layerContainer.length > 0) {
+                    var blockIndex = layerContainer.length - 1;
+                    var headBlock = layerContainer[blockIndex];
+                    if (headBlock.indexOf(strokeData) == -1) {
+                        var currentLayerBlock = [];
+                        currentLayerBlock.push(strokeData);
+                        layerContainer.push(currentLayerBlock);
+                        item.strokeIndex = blockIndex + 1;
+                    } else {
+                        headBlock.push(strokeData);
+                        item.strokeIndex = blockIndex;
+                    }
+                } else {
+                    var newBlock = [];
+                    newBlock.push(strokeData);
+                    layerContainer.push(newBlock);
+                    item.strokeIndex = 0;
                 }
             });
-            layerBlock.forEach(function (item, index) {
+            layerContainer.forEach(function(item,index){
+                var headItem = item[0];
+                newLayerContainer.push(headItem);
+            })
+            newLayerContainer.forEach(function (item, index) {
                 var subItem = $("<div>").addClass("line-color-input");
                 var stepSpan = $("<span>").html("Step" + (index + 1));
                 var colorInput = $("<input>")
@@ -691,7 +715,12 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 colorInput.attr("data-stroke", item);
                 colorInput.attr("item-type", type);
                 colorInput.attr("type", "text");
-                colorInput.val(item.stroke || item.fillData);
+                if(item.indexOf('|') > -1) {
+                    var spd = item.split('|');
+                    colorInput.val(spd[1]);
+                } else {
+                    colorInput.val('');
+                }
                 colorInput.addClass("form-control");
                 colorInput.blur(function (event) {
                     self._onLineColorInput($(this));
@@ -722,7 +751,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 input.attr('style', 'background:#FFFFFF');
                 var stroke = parseInt(input.attr("data-stroke"));
                 var type = input.attr("item-type");
-                this._renderCurrentLine(id, stroke, type, inputStr);
+                var seq = input.attr("line-seq");
+                this._renderCurrentLine(id, stroke, type, inputStr, seq);
                 // Save line colors into canvas
 
             }
@@ -730,7 +760,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
         /**
          * 9.2 After input line colors, rerender the canvas logos.
          */
-        _renderCurrentLine: function (id, stroke, type, color) {
+        _renderCurrentLine: function (id, stroke, type, color, seq) {
             var self = this;
             color = color.toUpperCase();
             var colorHex = this.dd[color] || [255, 255, 255];
@@ -753,7 +783,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var Gmtid = localStorage.getItem("background-image-id");
             var logoId = currentLogo.resourceId;
             objects.map(function (item) {
-                if (item.stoke == stroke) {
+                if (item.strokeIndex == seq) {
                     if (type == FILE_TYPE_DST) {
                         item.set("stroke", colorData);
                         item.set("strokeData", color);
