@@ -387,7 +387,9 @@ class Portal(http.Controller):
             c = c.replace('<!--?xml version="1.0"?-->','')
             c = c.replace('<!-- Embroidermodder 2 SVG Embroidery File -->','')
             c = c.replace('<!-- Embroidermodder 2 SVG Embroidery File -->','')
-            c = c.replace('<svg', '<svg viewBox="-30 -30 50 50"')
+            # print('99999')
+            # print(c)
+            # c = c.replace('<svg', '<svg viewBox="-30 -30 50 50"')
             d = svg2png(bytestring=c, parent_width=110, parent_height=60)
             # Image handle end here
             pngImage = base64.b64encode(d)
@@ -466,7 +468,7 @@ class Portal(http.Controller):
                     'line_info': gItem['line_info'],
                     'location': gItem['location'],
                     'quantity': gItem['qty'],
-                    'garment_type': gItem['product_type']
+                    'product_type': gItem['product_type']
                 })
                 gmtProductTpl = GmtProductTemplate.create({
                     'name': gItem['name'],
@@ -474,7 +476,7 @@ class Portal(http.Controller):
                     'garment_id': sale_order_garment.id,
                     'image': gItem['image'],
                     'default_code': sale_order_garment.name,
-                    'product_type': sale_order_garment.garment_type
+                    'product_type': sale_order_garment.product_type
                 })
                 bom_line_item = request.env['mrp.bom.line'].create({
                     'bom_id': logoProductBom.id,
