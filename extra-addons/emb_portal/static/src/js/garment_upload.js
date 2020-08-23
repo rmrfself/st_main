@@ -420,7 +420,12 @@ odoo.define("emb_portal.garment_upload", function (require) {
                         item.dataType = targetType;
                     });
                 }
-                var obj = fabric.util.groupSVGElements(objects, options);
+                var obj = null;
+                if(objects.length == 1) {
+                    obj = new fabric.Group(objects, options);
+                } else {
+                    obj = fabric.util.groupSVGElements(objects, options);
+                }
                 //obj.lockScalingX = true;
                 //obj.lockScalingY = true;
                 obj.inner_paths = [];
@@ -704,7 +709,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             layerContainer.forEach(function(item,index){
                 var headItem = item[0];
                 newLayerContainer.push(headItem);
-            })
+            });
             newLayerContainer.forEach(function (item, index) {
                 var subItem = $("<div>").addClass("line-color-input");
                 var stepSpan = $("<span>").html("Step" + (index + 1));
