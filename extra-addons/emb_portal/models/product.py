@@ -52,6 +52,8 @@ class LogoTemplate(models.Model):
     uid = fields.Char('UID', required=True)
     # Stitch count
     stitch = fields.Integer(required=True, default=0)
+    # Is show
+    is_show = fields.Boolean(default=True)
 
 class MrpBomLine(models.Model):
     _inherit = 'mrp.bom.line'

@@ -683,15 +683,13 @@ class Portal(http.Controller):
             aiWidth = 0
             aiHeight = 0
             with open(new_ai_file,'rb') as search:
-                search.seek(190, 0)
-                bRaw = search.read(70)
-                boundBox = bRaw.decode('utf-8')
-                if boundBox:
-                    bd = re.findall("%%BoundingBox: ([0-9\s]+)", boundBox)
+                for line in search.readlines():
+                    bd = re.findall("MediaBox[[](.*)[]]", str(line))
                     if bd:
                         bdd = bd[0].rstrip().split(' ')
                         aiWidth = bdd[-2]
                         aiHeight = bdd[-1]
+                        break
             # create svg file image
             svg_dir = tempfile.mkdtemp()
             svg_filename = hashlib.md5(fileData.encode()).hexdigest()

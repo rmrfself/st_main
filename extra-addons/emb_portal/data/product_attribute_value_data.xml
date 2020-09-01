@@ -2,7 +2,7 @@
 <odoo>
     <data>
         <record id="product_attribute_value_0" model="product.attribute.value">
-            <field name="name">EU Size|US Size|Child</field>
+            <field name="name">EU Size|US Size|Child|Other</field>
             <field name="attribute_id" ref="product_attribute_0" />
         </record>
         <record id="product_attribute_value_1" model="product.attribute.value">
@@ -50,6 +50,11 @@
             <field name="sequence">8</field>
             <field name="attribute_id" ref="product_attribute_1" />
         </record>
+        <record id="product_attribute_value_9_1" model="product.attribute.value">
+            <field name="name">Other</field>
+            <field name="sequence">9</field>
+            <field name="attribute_id" ref="product_attribute_1" />
+        </record>
         <record id="product_attribute_value_10" model="product.attribute.value">
             <field name="name">32</field>
             <field name="sequence">0</field>
@@ -93,6 +98,11 @@
         <record id="product_attribute_value_18" model="product.attribute.value">
             <field name="name">48</field>
             <field name="sequence">8</field>
+            <field name="attribute_id" ref="product_attribute_2" />
+        </record>
+        <record id="product_attribute_value_18_1" model="product.attribute.value">
+            <field name="name">Other</field>
+            <field name="sequence">9</field>
             <field name="attribute_id" ref="product_attribute_2" />
         </record>
         <record id="product_attribute_value_19" model="product.attribute.value">
@@ -159,6 +169,16 @@
             <field name="name">15 - 16 Y</field>
             <field name="sequence">10</field>
             <field name="attribute_id" ref="product_attribute_4" />
+        </record>
+        <record id="product_attribute_value_32" model="product.attribute.value">
+            <field name="name">Other</field>
+            <field name="sequence">11</field>
+            <field name="attribute_id" ref="product_attribute_4" />
+        </record>
+        <record id="product_attribute_value_33" model="product.attribute.value">
+            <field name="name">Other</field>
+            <field name="sequence">0</field>
+            <field name="attribute_id" ref="product_attribute_5" />
         </record>
     </data>
 </odoo>

@@ -13,6 +13,9 @@
         <record id="product_attribute_4" model="product.attribute">
             <field name="name">Child</field>
         </record>
+        <record id="product_attribute_5" model="product.attribute">
+            <field name="name">Other</field>
+        </record>
         <record id="product_attribute_3" model="product.attribute">
             <field name="name">GM_COLOR</field>
         </record>

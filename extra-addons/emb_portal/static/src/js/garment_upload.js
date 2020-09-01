@@ -3234,7 +3234,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var self = this;
             var args = [
                 [
-                    ["create_uid", "=", odoo.session_info.user_id]
+                    ["create_uid", "=", odoo.session_info.user_id],
+                    ["is_show", "=", true]
                 ],
                 ["id", "name", "content_type", "image", "width", "height", "stitch","co","minusx","minusy"]
             ];
@@ -3252,6 +3253,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
             for (var k in list) {
                 var tmp = list[k];
                 var id = tmp['id'];
+                console.log('============================');
+                console.log(id);
                 var type = tmp['content_type'];
                 var image = atob(tmp['image']);
                 var width = parseInt(tmp['width']);
@@ -3330,16 +3333,19 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     linfoHolder.append(s5);
                 }
 
-                var s6 = $('<a class="lr">').html('remove');
+                var s6 = $('<a class="lr">').html('remove').attr('data-id',id);
 
                 s6.click(function (e) {
-                    var args = [id];
+                    var that = this;
+                    var nid = $(this).attr('data-id');
+                    var args = [nid, {is_show: false}];
                     rpc.query({
                         model: "product.logo",
-                        method: "unlink",
+                        method: "write",
                         args: args
                     }).then(function (returned_value) {
-                        linkCon.hide();
+                        console.log(that);
+                        $(that).parent().hide();
                     });
                 });
                 linkCon.append(s6);
