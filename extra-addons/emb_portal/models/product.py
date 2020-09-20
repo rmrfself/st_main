@@ -161,6 +161,9 @@ class GarmentTemplate(models.Model):
 
     design_template = fields.Char('Design Template')
 
+    # Is show
+    is_show = fields.Boolean(default=True)
+
 class CartConfirm(models.Model):
     _name = "sale.order.preview"
 

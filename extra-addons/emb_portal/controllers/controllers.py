@@ -169,14 +169,9 @@ class Portal(http.Controller):
     @http.route('/portal/remove_garment', type='json', auth="user", csrf=False, website=True)
     def get_remove_garment(self, **kw):
         id = kw.get('id')
-        result = request.env['product.garment'].search([('id', '=', int(id))])
-        img_ids = result.image_ids.ids
-        images = request.env['product.garment.image'].search(
-            [('id', 'in', img_ids)])
-        unlink_result = result.unlink()
-        if unlink_result:
-            images.unlink()
-        return unlink_result
+        record = request.env['product.garment'].search([('id', '=', int(id))])
+        result = record.write({'is_show': False})
+        return result
 
     # This controller is used for get size attrs
     # By zhang qinghua
@@ -520,9 +515,8 @@ class Portal(http.Controller):
         sizes = post['sizes']
         description = post['desc']
         images = post['images']
-        colors = post['colors']
+        color = post['color']
         size_tpl = post['size_tpl']
-        default_color = post['default_color']
         # transform images by postion
         filtered_images = []
         # if editable mode trigger
@@ -546,8 +540,7 @@ class Portal(http.Controller):
         rcd['description'] = description
         rcd['style'] = style
         rcd['size_tpl'] = size_tpl
-        rcd['colors'] = colors
-        rcd['default_color'] = default_color
+        rcd['color'] = color
         saved_data = json.dumps(rcd)
         # Create product garment
         try:
@@ -609,6 +602,7 @@ class Portal(http.Controller):
 
     # By zhang qinghua
     # created at 2019/04/11
+    
     @http.route('/portal/file/preview', auth='user', methods=['POST'], type='json', website=True)
     def binary_file_preview(self, *args, **post):
         fileType = post['type']
@@ -696,7 +690,7 @@ class Portal(http.Controller):
             svg_file = svg_dir + '/' + svg_filename + '.svg'
             # image converter call
             try:
-                call(["pdftocairo", new_ai_file, "-svg", svg_file])
+                call(["inkscape","-o",svg_file, new_ai_file])
             except subprocess.CalledProcessError:
                 return { "error": 'true' }
             except OSError:

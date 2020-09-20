@@ -270,61 +270,13 @@ odoo.define("emb_portal.garment_upload", function (require) {
             localStorage.setItem("background-image-id", image.parent().attr('id'));
             localStorage.setItem("background-mode", 'image');
             localStorage.setItem("background-face", image.attr('data-name'));
-            var backgroundColor = localStorage.getItem("background-color");
-            if (backgroundColor != null) {
-                var toolItem = {
-                    type: "color",
-                    payload: backgroundColor
-                };
-                this._addToolBoxItem(toolItem);
-            }
             // Save the background data
             var imgId = image.parent().attr('id');
             this._saveGmtDataToCanvas(imgId, 'image', imgId);
         },
+
         /**
-         * 7. Change background color of canvas by click color blocks;
-         */
-        _changeBackgroundColor: function (color) {
-            this._setLogoEditable(true);
-            this.background.backgroundImage = 0;
-            this.background.backgroundColor = color;
-            this.background.renderAll();
-            var toolItem = {
-                type: "color",
-                payload: color
-            };
-            this._addToolBoxItem(toolItem);
-            localStorage.setItem("background-color", color);
-            localStorage.setItem("background-mode", 'color');
-            var backgroundImageId = localStorage.getItem("background-image-id");
-            if (backgroundImageId != null) {
-                toolItem = {
-                    type: "image",
-                    payload: backgroundImageId
-                };
-                this._addToolBoxItem(toolItem);
-            }
-            // save it into custom data
-            this._saveGmtDataToCanvas(backgroundImageId, 'color', color);
-        },
-        /**
-         * 7.0.1 Change background color of canvas by click color blocks;
-         */
-        _changeBackgroundColorOnly: function (color) {
-            var backgroundImageId = localStorage.getItem("background-image-id");
-            if (backgroundImageId != null) {
-                var toolItem = {
-                    type: "image",
-                    payload: backgroundImageId
-                };
-                this._addToolBoxItem(toolItem);
-            }
-            // save it into custom data
-            this._saveGmtDataToCanvas(backgroundImageId, 'color', color);
-        },
-        /**
-         * 7.1 After clicking colors block, add a new block into canvas.
+         * 7 After clicking colors block, add a new block into canvas.
          */
         _addToolBoxItem: function (item) {
             var self = this;
@@ -332,17 +284,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 return false;
             }
             var toolsInfo = $("#tools-info");
-            if (item.type == "color") {
-                toolsInfo.find(".color-bar").remove();
-                var colorBlock = $("<div>")
-                    .css("background", item.payload);
-                colorBlock.addClass("color-bar");
-                colorBlock.click(function (event) {
-                    $(this).addClass('current');
-                    self._changeBackgroundColor(item.payload);
-                });
-                toolsInfo.append(colorBlock);
-            }
             if (item.type == "image") {
                 var backgroundImageId = item.payload;
                 var backgroundImage = $('#' + backgroundImageId);
@@ -370,7 +311,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
          * 7.3 Drag the logo into canvas handler.
          */
         _onLogoDragged: function (event) {
-            console.log('saf');
             var dataId = $(event.target).attr("data-id");
             var dataType = $(event.target).attr("data-type");
             localStorage.setItem("drag-data-id", dataId);
@@ -401,7 +341,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var targetData = dragTarget.html();
             var paths = fabric.loadSVGFromString(targetData, function (
                 objects,
-                options
+                options,
+                svgElements
             ) {
                 if (targetType == FILE_TYPE_DST) {
                     objects.map(function (item, index) {
@@ -413,11 +354,13 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 }
                 if (targetType == FILE_TYPE_AI) {
                     objects.map(function (item, index) {
-                        item.id = "logo-" + targetId + "-" + index;
+                        //item.id = "logo-" + targetId + "-" + index;
                         item.class = "logo-stroke-path";
                         item.svgUid = index;
-                        item.fill = "#000000";
                         item.dataType = targetType;
+                        item.orginPath = svgElements[index];
+                        item.parentIds = self._getAiParentPaths(item.orginPath);
+                        item.topParentId = item.parentIds[item.parentIds.length - 4].id;
                     });
                 }
                 var obj = null;
@@ -425,7 +368,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     obj = new fabric.Group(objects, options);
                 } else {
                     obj = fabric.util.groupSVGElements(objects, options);
-                }
+                } 
                 //obj.lockScalingX = true;
                 //obj.lockScalingY = true;
                 obj.inner_paths = [];
@@ -462,6 +405,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 // Set up init functions
                 self._showLogoInfo(targetId, targetType, obj);
                 self._showLineColorsEx(targetId, targetType, obj._objects);
+               
                 obj.on("selected", function (event) {
                     var act = self.background.getActiveObject();
                     self._showLogoInfo(targetId, targetType, act);
@@ -490,6 +434,21 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 $("#tools-box").slideDown();
             }
             $('#submit-edit-ok').removeAttr('disabled');
+        },
+        /**
+         * 7.5.1 Get the ai parent paths
+         */
+        _getAiParentPaths(path) {
+            var parentList = [];
+            if(path == null || typeof(path) == 'undefined') {
+                return false;
+            }
+            while(path.parentElement != null) {
+                var ele = path.parentElement;
+                parentList.push(ele);
+                path = path.parentElement;
+            }
+            return parentList;
         },
         /**
          * 7.6 set up logo surcharges and services
@@ -679,33 +638,85 @@ odoo.define("emb_portal.garment_upload", function (require) {
             container.attr("on-edit", "true");
             container.html("");
             var self = this;
-            var layerContainer = [];
-            var newLayerContainer = [];
-            objects.map(function (item, index) {
-                var strokeData = item.stroke;
-                var mappedStrokeData = item.strokeData;
-                if (mappedStrokeData != null) {
-                    strokeData = strokeData + '|' + mappedStrokeData;
-                }
-                if(layerContainer.length > 0) {
-                    var blockIndex = layerContainer.length - 1;
-                    var headBlock = layerContainer[blockIndex];
-                    if (headBlock.indexOf(strokeData) == -1) {
-                        var currentLayerBlock = [];
-                        currentLayerBlock.push(strokeData);
-                        layerContainer.push(currentLayerBlock);
-                        item.strokeIndex = blockIndex + 1;
-                    } else {
-                        headBlock.push(strokeData);
-                        item.strokeIndex = blockIndex;
+
+            var aiParentGroup = [];
+            if (type == FILE_TYPE_AI) {
+                var aiEleObj = {};
+                objects.map(function (item, index) {
+                    var topParentId = item.topParentId;
+                    if(item.fillData != null) {
+                        topParentId = topParentId + '|' + item.fillData;
                     }
-                } else {
-                    var newBlock = [];
-                    newBlock.push(strokeData);
-                    layerContainer.push(newBlock);
-                    item.strokeIndex = 0;
-                }
-            });
+
+                    if(!(topParentId in aiEleObj)) {
+                        aiEleObj[topParentId] = [];
+                    }
+
+                    aiEleObj[topParentId].push(item);
+                });
+
+                aiParentGroup = Object.keys(aiEleObj);
+
+                aiParentGroup.forEach(function (item, index) {
+                    var subItem = $("<div>").addClass("line-color-input");
+                    var stepSpan = $("<span>").html("Step" + (index + 1));
+                    var itemData = [];
+                    if(item.indexOf('|') > -1) {
+                        itemData = item.split('|');
+                    }
+                    var colorInput = $("<input>")
+                        .attr("name", "line_color[]")
+                        .attr("line-seq", index);
+
+                    if(itemData.length > 0) {
+                        colorInput.attr("item-id", itemData[0]);
+                        colorInput.val(itemData[1]);
+                    } else {
+                        colorInput.attr("item-id", item);
+                        colorInput.val('');
+                    }
+
+                    colorInput.attr("item-type", type);
+                    colorInput.attr("type", "text");
+                   
+                    colorInput.addClass("form-control");
+                    colorInput.blur(function (event) {
+                        self._onLineColorInput($(this));
+                    });
+                    subItem.append(stepSpan).append(colorInput);
+                    container.append(subItem);
+                });
+                return false;
+            }
+            if (type == FILE_TYPE_DST) {
+                var layerContainer = [];
+                var newLayerContainer = [];
+                objects.map(function (item, index) {
+                    var strokeData = item.stroke;
+                    var mappedStrokeData = item.strokeData;
+                    if (mappedStrokeData != null) {
+                        strokeData = strokeData + '|' + mappedStrokeData;
+                    }
+                    if(layerContainer.length > 0) {
+                        var blockIndex = layerContainer.length - 1;
+                        var headBlock = layerContainer[blockIndex];
+                        if (headBlock.indexOf(strokeData) == -1) {
+                            var currentLayerBlock = [];
+                            currentLayerBlock.push(strokeData);
+                            layerContainer.push(currentLayerBlock);
+                            item.strokeIndex = blockIndex + 1;
+                        } else {
+                            headBlock.push(strokeData);
+                            item.strokeIndex = blockIndex;
+                        }
+                    } else {
+                        var newBlock = [];
+                        newBlock.push(strokeData);
+                        layerContainer.push(newBlock);
+                        item.strokeIndex = 0;
+                    }
+                });
+            }
             layerContainer.forEach(function(item,index){
                 var headItem = item[0];
                 newLayerContainer.push(headItem);
@@ -752,20 +763,17 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 });
                 input.val("");
             } else {
-                var id = input.attr("item-id");
+                var itemId = input.attr("item-id");
                 input.attr('style', 'background:#FFFFFF');
-                var stroke = parseInt(input.attr("data-stroke"));
                 var type = input.attr("item-type");
                 var seq = input.attr("line-seq");
-                this._renderCurrentLine(id, stroke, type, inputStr, seq);
-                // Save line colors into canvas
-
+                this._renderCurrentLine(itemId, type, inputStr, seq);
             }
         },
         /**
          * 9.2 After input line colors, rerender the canvas logos.
          */
-        _renderCurrentLine: function (id, stroke, type, color, seq) {
+        _renderCurrentLine: function (id, type, color, seq) {
             var self = this;
             color = color.toUpperCase();
             var colorHex = this.dd[color] || [255, 255, 255];
@@ -787,21 +795,28 @@ odoo.define("emb_portal.garment_upload", function (require) {
             // Save data into canvas
             var Gmtid = localStorage.getItem("background-image-id");
             var logoId = currentLogo.resourceId;
-            objects.map(function (item) {
-                if (item.strokeIndex == seq) {
-                    if (type == FILE_TYPE_DST) {
+            if (type == FILE_TYPE_DST) {
+                objects.map(function (item) {
+                    if (item.strokeIndex == seq) {
                         item.set("stroke", colorData);
                         item.set("strokeData", color);
+                        item.set("dirty", true);
+                        self._saveLogoColorDataToCanvas(Gmtid, logoId, seq, color);
                     }
-                    if (type == FILE_TYPE_AI) {
+                    return item;
+                });
+            }
+            if (type == FILE_TYPE_AI) {
+                objects.map(function (item) {
+                    if (item.topParentId == id) {
                         item.set("fill", colorData);
                         item.set("fillData", color);
+                        item.set("dirty", true);
+                        self._saveLogoColorDataToCanvas(Gmtid, logoId, seq, color);
                     }
-                    item.set("dirty", true);
-                    self._saveLogoColorDataToCanvas(Gmtid, logoId, seq, color);
-                }
-                return item;
-            });
+                    return item;
+                });        
+            }
             this.background.renderAll();
         },
         /**
@@ -1531,7 +1546,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
         loadGarmentList: function () {
             var self = this;
             var args = [
-                [],
+                [['is_show','=',true]],
                 ["id", "design_template", "image_ids"]
             ];
             self._blockingUi();
@@ -1727,7 +1742,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
 
             holder.find(".remove").confirmation({
                 onCancel: function () {
-                    console.log('You didn\'t choose anything');
+                    return false;
                 },
                 onConfirm: function (value) {
                     var self = this;
@@ -1878,7 +1893,11 @@ odoo.define("emb_portal.garment_upload", function (require) {
             if (storedIndex == null || storedIndex == undefined) {
                 localStorage.setItem("background-image-index", storedIndex);
             } else {
-                var objects = self.composer.background.getObjects();
+                var backgrd = self.composer.background;
+                var objects = [];
+                if(backgrd != null) {
+                    objects = backgrd.getObjects();
+                }
                 if (storedIndex != selectedIndex && objects.length > 0) {
                     $.notify({
                         icon: "glyphicon glyphicon-remove",
@@ -1919,49 +1938,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var defaultColor = gmtDetailInfo.default_color;
 
             // display colors
-            var colors = gmtDetailInfo.colors;
+            var color = gmtDetailInfo.color;
             var colors_con = $("#gmt-info-colors");
-            colors_con.html("");
-            colors.forEach(function (item) {
-                var colorBlock = $("<span>")
-                    .css("width", "40px")
-                    .css("height", "40px")
-                    .css("background", item);
-                colorBlock.css("display", "inline-block").css("margin", "0 6px");
-
-                if (item == defaultColor) {
-                    colorBlock.addClass("color-border-gray");
-                    localStorage.setItem('background-color', item);
-                    if (self.composer == undefined) {
-                        self.composer = self.graphComposer();
-                    }
-                    self.composer._changeBackgroundColorOnly(item);
-                }
-                colorBlock.click(function (event) {
-                    /**
-                     * Check current design data before changing color
-                     */
-                    var pptable = $('#pptable');
-                    if (pptable.length > 0) {
-                        if (pptable.find('tr').length > 1) {
-                            $.notify({
-                                icon: "glyphicon glyphicon-remove",
-                                title: "Operation error",
-                                message: "Please remove all your design items first."
-                            }, {
-                                type: "danger"
-                            });
-                            return false;
-                        }
-                    }
-                    var blocks = $("#gmt-info-colors").find("span");
-                    blocks.removeClass("color-border-gray").removeAttr("data-select");
-                    $(this).attr("data-select", item);
-                    $(this).addClass("color-border-gray");
-                    self.composer._changeBackgroundColor(item);
-                });
-                colors_con.append(colorBlock);
-            });
+            colors_con.html(color);
             // set size
             $("#gmt-info-size-type")
                 .find("span")
@@ -2088,7 +2067,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
         init: function () {
             this._getCategoryList();
             this._getBrandList();
-            this._bindColorPickerEvent();
             this._getSizeAttrs();
             this._bindImageUploadEvents();
             this._bindSubmitEvents();
@@ -2108,10 +2086,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
             // If input is invalid, then show failed message.
             if (self._doValidation()) {
                 return false;
-                // $.notify({
-                //     title: "Failed:",
-                //     message: "This plugin has been provided to you by Robert McIntosh aka mouse0270"
-                // });
             }
             self._blockingUi();
             // get images data
@@ -2136,16 +2110,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 this._imgUploadFailed();
                 return false;
             }
-            // get colors
-            var colors = $("input[name='colors[]']")
-                .map(function () {
-                    return $(this).val();
-                })
-                .get();
-            var default_color = $(".defaultck").val();
-            if (default_color == undefined || default_color == null) {
-                return false;
-            }
             // get size attributes
             var size_tpl = $("#gmt-size-tpl").val();
             var sizeAttrs = [];
@@ -2166,6 +2130,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var post_brand = $("#gmt-brand")
                 .val()
                 .trim();
+            var post_color = $("#gmt-color")
+                .val()
+                .trim();    
             var post_images = imageMap;
             var post_sizes = sizeAttrs;
             var post_desc = $("#gmt-desc")
@@ -2178,8 +2145,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             cachedPostData.category_id = post_categ;
             cachedPostData.brand = post_brand;
             cachedPostData.images = post_images;
-            cachedPostData.colors = colors;
-            cachedPostData.default_color = default_color;
+            cachedPostData.color = post_color;
             cachedPostData.size_tpl = size_tpl;
             cachedPostData.sizes = post_sizes;
             cachedPostData.desc = post_desc;
@@ -2228,6 +2194,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             $("#gmt-style").val("");
             $("#gmt-name").val("");
             $("#gmt-brand").val("");
+            $("#gmt-color").val("");
             $(".upload-link").each(function (item) {
                 $(this)
                     .addClass("glyphicon glyphicon-open")
@@ -2237,8 +2204,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 $("#gmt-img-" + tag).val("");
                 $("#gmt-r-" + tag).removeClass("glyphicon glyphicon-trash");
             });
-
-            $("#gmt-colors").html("");
             $("#size-attrs")
                 .find("input")
                 .each(function (item) {
@@ -2276,19 +2241,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 invalidInput = true;
             }
             // validate garment color
-            var gmtColors = $("#gmt-colors");
-            if (gmtColors.children().length == 0) {
-                this._colorsSetFailed();
-                invalidInput = true;
-            }
-            // validate default garment colors
-            var findDefault = false;
-            $('.defaultck').each(function () {
-                if ($(this).is(':checked')) {
-                    findDefault = true;
-                }
-            });
-            if (findDefault == false) {
+            var gmtColor = $("#gmt-color").val().trim();
+            if (gmtColor == '') {
                 this._colorsSetFailed();
                 invalidInput = true;
             }
@@ -2341,83 +2295,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             eleCategory.trigger("change");
         },
         // 02. Bind color events
-        _bindColorPickerEvent: function () {
-            var container = this._getGmtColorsEle();
-            // init container
-            container.children().each(function (item) {
-                $(this).on("click", function () {
-                    $(this).remove();
-                });
-            });
-            var self = this;
-            rpc
-                .query({
-                    route: "/portal/color_list",
-                    params: []
-                })
-                .then(function (returned_value) {
-                    if (_.isEmpty(returned_value)) {
-                        return false;
-                    }
-                    self._setupSpectrum(returned_value, container);
-                });
-        },
-        _setupSpectrum: function (_data, container) {
-            var picker = this._getColorPickerEle();
-            /**
-             * Initized picker events
-             */
-            var colors = _data.map(function (item) {
-                return item.name;
-            });
-            picker.spectrum({
-                showPaletteOnly: true,
-                togglePaletteOnly: true,
-                togglePaletteMoreText: "more",
-                togglePaletteLessText: "less",
-                hideAfterPaletteSelect: true,
-                preferredFormat: "hex",
-                color: "blanchedalmond",
-                showInput: true,
-                showAlpha: true,
-                palette: colors,
-                change: function (color) {
-                    var subcb = $('<div>').addClass("subc-block");
-                    var colorBlock = $("<span>")
-                        .css("width", "40px")
-                        .css("height", "40px")
-                        .css("background", color.toHexString());
-                    colorBlock.css("display", "block");
-                    var inputNode = $("<input>")
-                        .attr("name", "colors[]")
-                        .attr("type", "hidden")
-                        .val(color.toHexString());
-                    var dckh = $("<input type='checkbox' class='defaultck' value=" + color.toHexString() + ">");
-                    dckh.click(function () {
-                        var that = $(this);
-                        $(".defaultck").each(function () {
-                            if ($(this).is(':checked')) {
-                                if ($(this).val() != color.toHexString()) {
-                                    $(this).prop("checked", false);
-                                }
-                            }
-                        });
-                    });
-                    dckh.val(color.toHexString());
-                    subcb.append(colorBlock);
-                    subcb.append(inputNode);
-                    subcb.append(dckh);
-                    container.show().append(subcb);
-                    colorBlock.click(function () {
-                        $(this).parent().remove();
-                    });
-                    $('.colorhint').show();
-                    if (container.children().length == 1) {
-                        $(".defaultck").prop("checked", true);
-                    }
-                }
-            });
-        },
+        // Removed alread
         // 03. Get brand list
         _getBrandList: function () {
             $(".typeahead").typeahead({
@@ -2556,6 +2434,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             $("#gmt-style").val(gmt_info.style);
             $("#gmt-name").val(gmt_info.name);
             $("#gmt-brand").val(gmt_info.brand);
+            $("#gmt-color").val(gmt_info.color);
             // images
             var poss = {};
             _images.each(function (i) {
@@ -2576,45 +2455,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                         .addClass("glyphicon glyphicon-trash")
                         .show();
                 }
-            });
-            var colors = gmt_info.colors;
-            var default_color = gmt_info.default_color;
-            var colors_con = $("#gmt-colors");
-            colors_con.html("");
-            colors.forEach(function (item) {
-                var subcb = $('<div>').addClass("subc-block");
-                var colorBlock = $("<span>")
-                    .css("width", "40px")
-                    .css("height", "40px")
-                    .css("background", item);
-                colorBlock.css("display", "block");
-                var inputNode = $("<input>")
-                    .attr("name", "colors[]")
-                    .attr("type", "hidden")
-                    .val(item);
-                var dckh = $("<input type='checkbox' class='defaultck' value=" + item + ">");
-                if (item == default_color) {
-                    dckh.prop("checked", true);
-                }
-                dckh.click(function () {
-                    var that = $(this);
-                    $(".defaultck").each(function () {
-                        if ($(this).is(':checked')) {
-                            if ($(this).val() != item) {
-                                $(this).prop("checked", false);
-                            }
-                        }
-                    });
-                });
-                dckh.val(item);
-                subcb.append(colorBlock);
-                subcb.append(inputNode);
-                subcb.append(dckh);
-                colors_con.show().append(subcb);
-                colorBlock.on("click", function () {
-                    $(this).parent().remove();
-                });
-            });
+            });                
             // set size tpl
             var sizes = gmt_info.sizes;
             var size_tpl = gmt_info.size_tpl;
@@ -2695,9 +2536,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 .qtip("show");
         },
         _colorsSetFailed: function () {
-            $("#gmt-color-picker")
-                .first()
-                .qtip({
+            $("#gmt-color").qtip({
                     content: {
                         text: "please choose your color."
                     },
@@ -2749,11 +2588,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
         _getBrandEle: function () {
             return $("#gmt-brand");
         },
-        _getColorPickerEle: function () {
-            return $("#gmt-color-picker");
-        },
         _getGmtColorsEle: function () {
-            return $("#gmt-colors");
+            return $("#gmt-color");
         },
         _getSizeTplEle: function () {
             return $("#gmt-size-tpl");
@@ -3253,8 +3089,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
             for (var k in list) {
                 var tmp = list[k];
                 var id = tmp['id'];
-                console.log('============================');
-                console.log(id);
                 var type = tmp['content_type'];
                 var image = atob(tmp['image']);
                 var width = parseInt(tmp['width']);
@@ -3295,8 +3129,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     if (height > 100) {
                         height = 100;
                     }
-                    jImage.attr('width', width + 'px');
-                    jImage.attr('height', height + 'px');
                     jImage.removeAttr('viewBox');
                     jImage.each(function () {
                         $(this)[0].setAttribute('viewBox', mx + ' ' + my + ' ' + originWidth + ' ' + originHeight)

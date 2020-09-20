@@ -287,11 +287,8 @@
 										Garment Color
 									</h5>
 									<div id="gmt-info-colors">
-										-
+										No Color Data Found.
 									</div>
-									<span class="hint">
-										* Click these color blocks to change the background color.
-									</span>
 									<h5>
 										Quantity
 									</h5>
@@ -429,16 +426,12 @@
 															<input type="text" class="form-control protip" id="gmt-name" placeholder="set a name here" data-pt-title="Input your garment name!" />
 														</div>
 													</div>
-													<div class="form-group row color-edit">
-														<a href="#" id="gmt-color-picker" class="glyphicon glyphicon-plus">
-															<span>
-																add
-															</span>
-														</a>
-														<label class="col-sm-3" for="gmt-brand">
+													<div class="form-group row">
+														<label class="col-sm-3" for="gmt-name">
 															Color
 														</label>
-														<div class="col-sm-12 color-blocks" id="gmt-colors">
+														<div class="col-sm-9">
+															<input type="text" class="form-control protip" id="gmt-color" placeholder="set a color here" data-pt-title="Input your garment color!" />
 														</div>
 													</div>
 													<div class="colorhint">
@@ -543,8 +536,7 @@
 															Description
 														</label>
 														<div class="col-sm-12">
-															<textarea id="gmt-desc" class="form-control" rows="7" placeholder="Input more information here.">
-															</textarea>
+															<textarea id="gmt-desc" class="form-control" rows="7"></textarea>
 														</div>
 													</div>
 													<div class="form-group row submits">
