@@ -690,7 +690,7 @@ class Portal(http.Controller):
             svg_file = svg_dir + '/' + svg_filename + '.svg'
             # image converter call
             try:
-                call(["inkscape","-o",svg_file, new_ai_file])
+                call(["inkscape","-l", svg_file,"-f", new_ai_file])
             except subprocess.CalledProcessError:
                 return { "error": 'true' }
             except OSError:
