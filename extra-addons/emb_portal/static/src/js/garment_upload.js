@@ -2808,7 +2808,11 @@ odoo.define("emb_portal.garment_upload", function (require) {
                                     }).qtip("show");
                                     return false;
                                 }
+                                $('#logo-width').attr('data-inch', data['width']);
+                                $('#logo-width').attr('data-mm', (parseFloat(data['width'])/0.03937008).toFixed(2));
                                 $('#logo-width').val(data['width']);
+                                $('#logo-height').attr('data-mm', (parseFloat(data['height'])/0.03937008).toFixed(2));
+                                $('#logo-height').attr('data-inch', data['height']);
                                 $('#logo-height').val(data['height']);
                                 $("#logo-preview-box").html(data['image']);
                                 $("#logo-preview-box").find('svg').attr('width', '270px').attr('height', '202px').attr('viewBox', '0 0 270 202');
@@ -2907,6 +2911,18 @@ odoo.define("emb_portal.garment_upload", function (require) {
                         }
                     }
                     designReader.readAsDataURL(input.files[0]);
+                }
+            });
+            // Transform file size from inch into mm or reversed.
+            $('input[name="size-unit"]').on('click change', function(e) {
+                var val = this.value;
+                console.log(this.value);
+                if(val == 'inch') {
+                    $('#logo-width').val($('#logo-width').attr('data-inch'));
+                    $('#logo-height').val($('#logo-height').attr('data-inch'));
+                } else {
+                    $('#logo-width').val($('#logo-width').attr('data-mm'));
+                    $('#logo-height').val($('#logo-height').attr('data-mm'));
                 }
             });
         },

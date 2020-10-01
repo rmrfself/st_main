@@ -669,12 +669,12 @@
 													</div>
 													<div class="form-group" style="margin-left: 0px;">
 														<label class="radio-inline">
-															<input name="size-unit" value="mm" type="radio" checked="checked" />
-															Mm
+															<input name="size-unit" value="inch" type="radio" checked="checked"/>
+															Inch
 														</label>
 														<label class="radio-inline">
-															<input name="size-unit" value="inch" type="radio" />
-															Inch
+															<input name="size-unit" value="mm" type="radio" />
+															Mm
 														</label>
 													</div>
 												</div>

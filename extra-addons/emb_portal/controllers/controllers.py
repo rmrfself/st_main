@@ -11,6 +11,8 @@ import base64
 import tempfile
 import hashlib
 
+import platform
+
 import os
 from subprocess import call
 import shutil
@@ -665,7 +667,10 @@ class Portal(http.Controller):
             except IOError:
                 return { "error": 'true' }   
             svg_image = svg_content
-            return {'image': svg_image,'co': colorchange, 'minusx':dstWidthMinus, 'minusy':dstHeightMinus, 'width': (dstWidth - dstWidthMinus), 'height': (dstHeight - dstHeightMinus),'stitch': stitch, 'uid': uid}
+            # Convert size unit from mm into inch
+            inchWidth = float("{:.2f}".format((dstWidth - dstWidthMinus) * 0.03937008))
+            inchHeight = float("{:.2f}".format((dstHeight - dstHeightMinus) * 0.03937008))
+            return {'image': svg_image,'co': colorchange, 'minusx':dstWidthMinus, 'minusy':dstHeightMinus, 'width': inchWidth, 'height': inchHeight,'stitch': stitch, 'uid': uid}
         if fileType == 'ai':
             # Create dst file image
             ai_file, ai_filename = tempfile.mkstemp()
@@ -690,7 +695,10 @@ class Portal(http.Controller):
             svg_file = svg_dir + '/' + svg_filename + '.svg'
             # image converter call
             try:
-                call(["inkscape","-l", svg_file,"-f", new_ai_file])
+                if platform.system() == 'Darwin':
+                    call(["inkscape","-o",svg_file, new_ai_file])
+                else:    
+                    call(["inkscape","-l", svg_file,"-f", new_ai_file])
             except subprocess.CalledProcessError:
                 return { "error": 'true' }
             except OSError:
@@ -700,7 +708,10 @@ class Portal(http.Controller):
             except IOError:
                 return { "error": 'true' }    
             svg_image = svg_content
-            return {'image': svg_image,'width': aiWidth, 'height': aiHeight}
+            # Convert file size unit from mm into inch
+            inchWidth = float("{:.2f}".format(aiWidth * 0.03937008))
+            inchHeight = float("{:.2f}".format(aiHeight * 0.03937008))
+            return {'image': svg_image,'width': inchWidth, 'height': inchHeight}
         return {}
     # By zhang qinghua
     # created at 2019/04/18
