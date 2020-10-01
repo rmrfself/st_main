@@ -709,8 +709,8 @@ class Portal(http.Controller):
                 return { "error": 'true' }    
             svg_image = svg_content
             # Convert file size unit from mm into inch
-            inchWidth = float("{:.2f}".format(aiWidth * 0.03937008))
-            inchHeight = float("{:.2f}".format(aiHeight * 0.03937008))
+            inchWidth = "{:.2f}".format(float(aiWidth) * 0.03937008)
+            inchHeight = "{:.2f}".format(float(aiHeight) * 0.03937008)
             return {'image': svg_image,'width': inchWidth, 'height': inchHeight}
         return {}
     # By zhang qinghua
