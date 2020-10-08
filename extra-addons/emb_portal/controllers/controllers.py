@@ -723,8 +723,11 @@ class Portal(http.Controller):
         rcd['uid'] = post['name']
         rcd['content_type'] = post['type']
         rcd['description'] = post['desc']
-        rcd['width'] = int(post['width'])
-        rcd['height'] = int(post['height'])
+        rcd['inch_width'] = post['inch_width']
+        rcd['inch_height'] = post['inch_height']
+        rcd['mm_width'] = post['mm_width']
+        rcd['mm_height'] = post['mm_height']
+        rcd['size_unit'] = post['unit']
         rcd['stitch'] = int(post['stitch'])
         rcd['co'] = int(post['co'])
         rcd['minusx'] = int(post['minusx'])

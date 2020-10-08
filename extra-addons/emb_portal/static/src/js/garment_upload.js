@@ -577,7 +577,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     delete act.surcharge;
                     return false;
                 }
-                act.surcharge = parseInt(val);
+                act.surcharge = parseFloat(val);
             });
             /**
              * Set logo serivice
@@ -966,6 +966,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     self.background.renderAll();
                     break;
                 }
+                console.log(';;;;;;;');
+                console.log(item);
                 /**
                  * 01. Check location field
                  */
@@ -980,22 +982,12 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     self._saveLogoAttrToCanvas(Gmtid, item.resourceId, 'location', item.location);
                 }
                 if (item.surcharge == undefined) {
-                    $('#ex-logo-sc').attr('style', 'background:#F1B4BB');
-                    item.set("dirty", true);
-                    self.background.setActiveObject(item);
-                    self.background.renderAll();
-                    unCompleted = true;
-                    break;
+                    item.surcharge = 0.0;
                 } else {
                     self._saveLogoAttrToCanvas(Gmtid, item.resourceId, 'surcharge', item.surcharge);
                 }
                 if (item.surchargeDescription == undefined) {
-                    $('#ex-logo-scdesc').attr('style', 'background:#F1B4BB');
-                    item.set("dirty", true);
-                    self.background.setActiveObject(item);
-                    self.background.renderAll();
-                    unCompleted = true;
-                    break;
+                    item.surchargeDescription = 'No Data';
                 } else {
                     self._saveLogoAttrToCanvas(Gmtid, item.resourceId, 'surchargeDescription', item.surchargeDescription);
                 }
@@ -1941,6 +1933,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var color = gmtDetailInfo.color;
             var colors_con = $("#gmt-info-colors");
             colors_con.html(color);
+            localStorage.setItem("background-color", color);
             // set size
             $("#gmt-info-size-type")
                 .find("span")
@@ -2949,13 +2942,38 @@ odoo.define("emb_portal.garment_upload", function (require) {
             var type = $('#logo-image-type').val();
             var imageRaw = $('#logo-rawdata').val();
             var svgImage = $('#logo-preview-box').html();
+            var inch_width = parseFloat($('#logo-width').attr('data-inch'));
+            var mm_width = parseFloat($('#logo-width').attr('data-mm'));
             var width = parseFloat($('#logo-width').val());
+            var inch_height = parseFloat($('#logo-height').attr('data-inch'));
+            var mm_height = parseFloat($('#logo-height').attr('data-mm'));
             var height = parseFloat($('#logo-height').val());
             var stitch = $('#logo-stitch').val() || 0;
             var co = $('#logo-co').val() || 0;
             var mx = $('#logo-minusx').val() || 0;
             var my = $('#logo-minusy').val() || 0;
             var unit = $("input[name='size-unit']:checked").val();
+
+            /**
+             * Judge the width and height with its unit
+             */
+            if (unit == 'mm') {
+                if (width != mm_width && parseInt(width) > 0) {
+                    mm_width == width;
+                }
+                if (height != mm_height && parseInt(height) > 0) {
+                    mm_height == height;
+                }
+            }
+
+            if (unit == 'inch') {
+                if (width != inch_width && parseInt(width) > 0) {
+                    inch_width == width;
+                }
+                if (height != inch_height && parseInt(height) > 0) {
+                    inch_height == height;
+                }
+            }
 
             /**
              * Check order type
@@ -3030,8 +3048,10 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 type: type,
                 imageRaw: imageRaw,
                 svgImage: btoa(svgImage),
-                width: width,
-                height: height,
+                inch_width: inch_width,
+                inch_height: inch_height,
+                mm_height: mm_height,
+                mm_width: mm_width,
                 unit: unit,
                 stitch: stitch,
                 co: co,
@@ -3089,7 +3109,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     ["create_uid", "=", odoo.session_info.user_id],
                     ["is_show", "=", true]
                 ],
-                ["id", "name", "content_type", "image", "width", "height", "stitch","co","minusx","minusy"]
+                ["id", "name", "content_type", "image", "inch_width", "inch_height","mm_width","mm_height","size_unit", "stitch","co","minusx","minusy"]
             ];
             rpc.query({
                 model: "product.logo",
@@ -3104,18 +3124,38 @@ odoo.define("emb_portal.garment_upload", function (require) {
             parent.html('');
             for (var k in list) {
                 var tmp = list[k];
+                console.log(tmp);
                 var id = tmp['id'];
                 var type = tmp['content_type'];
                 var image = atob(tmp['image']);
-                var width = parseInt(tmp['width']);
-                var originWidth = parseInt(tmp['width']);
+                var inch_width = parseFloat(tmp['inch_width']);
+                var mm_width = parseFloat(tmp['mm_width']);
+                var inch_height = parseFloat(tmp['inch_height']);
+                var mm_height = parseFloat(tmp['mm_height']);
+                var size_unit = tmp['size_unit'];
                 var mx = parseInt(tmp['minusx']);
-                var originHeight = parseInt(tmp['height']);
                 var my = parseInt(tmp['minusy']);
-                //var width = 382;
-                var height = parseInt(tmp['height']);
                 var name = tmp['name'];
                 var stitch = tmp['stitch'] || 0;
+
+                /**
+                 * Judge the width and height with its unit
+                 */
+                var width = mm_width;
+                var height = mm_height;
+                var originWidth = 0;
+                var originHeight = 0;
+
+                if (size_unit == 'inch') {
+                    originWidth = inch_width;
+                    originHeight = inch_height;
+                }
+
+                if (size_unit == 'mm') {
+                    originWidth = mm_width;
+                    originHeight = mm_height;
+                }
+
                 //var height = 110;
                 //<a href="#" class="logo-asset" id="logo-id-1" data-id="1">
                 var linkCon = $('<div class="logocon">');
@@ -3139,15 +3179,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     height = 100;
                 }
                 if (width > 0 && type == 'dst') {
-                    if (width > 240) {
-                        width = 240;
-                    }
-                    if (height > 100) {
-                        height = 100;
-                    }
                     jImage.removeAttr('viewBox');
                     jImage.each(function () {
-                        $(this)[0].setAttribute('viewBox', mx + ' ' + my + ' ' + originWidth + ' ' + originHeight)
+                        $(this)[0].setAttribute('viewBox', mx + ' ' + my + ' ' + width + ' ' + height)
                     });
                 }
 
@@ -3169,10 +3203,10 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 s2.append(type);
                 linfoHolder.append(s2);
                 var s3 = $('<span>').html('Width: ');
-                s3.append(originWidth);
+                s3.append(originWidth + ' ' + size_unit);
                 linfoHolder.append(s3);
                 var s4 = $('<span>').html('Height: ');
-                s4.append(originHeight);
+                s4.append(originHeight + ' ' + size_unit);
                 linfoHolder.append(s4);
 
                 if (type == 'dst') {

@@ -598,7 +598,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                             ltdi_2.append(logo_d);
                             logoTr.append(ltdi_2);
                             // append logo location
-                            var ltdi_3 = $('<td width="80">');
+                            var ltdi_3 = $('<td class="minw80" style="padding-left:5px;">');
                             var logo_l = $('<label>').html(logoObj.location);
                             ltdi_3.append(logo_l);
                             logoTr.append(ltdi_3);

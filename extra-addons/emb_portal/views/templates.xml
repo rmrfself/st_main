@@ -91,7 +91,7 @@
 										<input id='order_ship_date' class="form-control shipping-date" type="text" name="order-sd" />
 									</td>
 									<td>
-										Repare Date
+										Reqire Date
 									</td>
 									<td>
 										<input id='order_require_at' class="form-control shipping-date" type="text" name="order-ra" />

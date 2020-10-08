@@ -38,10 +38,12 @@ class LogoTemplate(models.Model):
     # logo description
     description = fields.Char('Description', required=True)
     # logo width 
-    width = fields.Integer(required=True, default=0)
+    inch_width = fields.Float(required=True, default=0)
+    mm_width = fields.Float(required=True, default=0)
     minusx = fields.Integer(required=True, default=0)
     # logo height
-    height = fields.Integer(required=True, default=0)
+    inch_height = fields.Float(required=True, default=0)
+    mm_height = fields.Float(required=True, default=0)
     minusy = fields.Integer(required=True, default=0)
     co = fields.Integer(required=True, default=0)
     # raw image
@@ -54,6 +56,8 @@ class LogoTemplate(models.Model):
     stitch = fields.Integer(required=True, default=0)
     # Is show
     is_show = fields.Boolean(default=True)
+    # size unit
+    size_unit = fields.Char('Unit', required=True)
 
 class MrpBomLine(models.Model):
     _inherit = 'mrp.bom.line'
