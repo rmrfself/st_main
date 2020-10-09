@@ -313,8 +313,10 @@ odoo.define("emb_portal.garment_upload", function (require) {
         _onLogoDragged: function (event) {
             var dataId = $(event.target).attr("data-id");
             var dataType = $(event.target).attr("data-type");
+            var dataName = $(event.target).attr("data-name");
             localStorage.setItem("drag-data-id", dataId);
             localStorage.setItem("drag-data-type", dataType);
+            localStorage.setItem("drag-data-name", dataName);
         },
         /**
          * 7.4 Active the canvas when dragging logo
@@ -337,6 +339,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             // mock data
             var targetId = localStorage.getItem("drag-data-id");
             var targetType = localStorage.getItem("drag-data-type");
+            var targetName = localStorage.getItem("drag-data-name");
             var dragTarget = $("#logo-id-" + targetId);
             var targetData = dragTarget.html();
             var paths = fabric.loadSVGFromString(targetData, function (
@@ -378,6 +381,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 obj.resourceId = 'U' + obj.resourceId.toUpperCase();
                 console.log(obj.resourceId);
                 obj.rawId = targetId;
+                obj.rawName = targetName;
+                console.log('999999');
+                console.log(obj.rawName);
                 obj.cid = 1;
                 //obj.subTargetCheck = true;
                 //obj.selectable = true;
@@ -966,8 +972,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     self.background.renderAll();
                     break;
                 }
-                console.log(';;;;;;;');
-                console.log(item);
+
                 /**
                  * 01. Check location field
                  */
@@ -991,6 +996,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 } else {
                     self._saveLogoAttrToCanvas(Gmtid, item.resourceId, 'surchargeDescription', item.surchargeDescription);
                 }
+                self._saveLogoAttrToCanvas(Gmtid, item.resourceId, 'name', item.rawName);
                 self._saveLogoAttrToCanvas(Gmtid, item.resourceId, 'service', item.service);
                 self._saveLogoAttrToCanvas(Gmtid, item.resourceId, 'rawId', item.rawId);
             }
@@ -1036,7 +1042,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 if (parseInt(val) > 0) {
                     qtyFieldsEmpty = true;
                 }
-                var xn = name.split('-')[1];
+                var xn = name.split('_')[1];
                 counts[xn] = val;
             });
             if (qtyFieldsEmpty == false) {
@@ -1985,7 +1991,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     .html(name);
                 var input = $("<input>").attr(
                     "name",
-                    "quantity-" + name + "-" + item.id
+                    "_" + name + "_" + item.id
                 );
                 input.val('0').attr('readonly', true);
                 input
@@ -2028,7 +2034,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             // Reset logo editor box
             this.composer._clearAllDesignData(id);
             // Clear all input quantity count values
-            $('input[name^="quantity-"]').each(function (item) {
+            $('input[name^="quantity_"]').each(function (item) {
                 $(this).val(0);
             });
             return false;
@@ -2922,8 +2928,10 @@ odoo.define("emb_portal.garment_upload", function (require) {
         _onLogoDragged: function (event) {
             var dataId = $(event.target).attr("data-id");
             var dataType = $(event.target).attr("data-type");
+            var dataName = $(event.target).attr("data-name");
             localStorage.setItem("drag-data-id", dataId);
             localStorage.setItem("drag-data-type", dataType);
+            localStorage.setItem("drag-data-name", dataName);
         },
         _doSubmitLogoData: function () {
             var self = this;
@@ -3160,6 +3168,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 //<a href="#" class="logo-asset" id="logo-id-1" data-id="1">
                 var linkCon = $('<div class="logocon">');
                 var link = $('<a>').addClass('logo-asset').attr('id', 'logo-id-' + id).attr('data-id', id);
+                link.attr('data-name', name);
                 link.attr('data-type', type).attr('data-id', id).attr('href', '#');
                 /**
                  * Fix image width and height and scale it to appriciated one.

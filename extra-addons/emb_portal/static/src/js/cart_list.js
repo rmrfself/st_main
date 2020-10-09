@@ -61,6 +61,8 @@ odoo.define('emb_portal.cart_list', function (require) {
                         $('#emptymsg').html('Empty').show();
                         return false;
                     }
+                    console.log('6666');
+                    console.log(returned_value);
                     self._createListTable(returned_value);
                     self._addActionLinks();
                 });
@@ -594,7 +596,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                             logoTr.append(ltdi_1);
                             // append logo design Num
                             var ltdi_2 = $('<td class="minw80">');
-                            var logo_d = $('<label>').html(logoObj.uid);
+                            var logo_d = $('<label>').html(logoObj.name);
                             ltdi_2.append(logo_d);
                             logoTr.append(ltdi_2);
                             // append logo location
@@ -638,7 +640,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                                 var cc = sizeObj[s];
                                 totalq = totalq + parseInt(cc);
                                 var ccd = $('<div>').addClass('ccd');
-                                var label = $('<label>').addClass('qq_label').html(s + ':');
+                                var label = $('<div>').addClass('qq_label').html(s + ':');
                                 var ip_size = $('<input type="text" name="qty[]" data-label="' + s + '" data-id="' + key + '" value="' + cc + '" class="form-control cart-qq">');
                                 ip_size.addClass('cart-qq-' + key);
                                 ccd.append(label);
