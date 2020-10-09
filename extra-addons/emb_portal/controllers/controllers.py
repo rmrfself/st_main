@@ -668,8 +668,8 @@ class Portal(http.Controller):
                 return { "error": 'true' }   
             svg_image = svg_content
             # Convert size unit from mm into inch
-            inchWidth = float("{:.2f}".format((dstWidth - dstWidthMinus) * 0.03937008))
-            inchHeight = float("{:.2f}".format((dstHeight - dstHeightMinus) * 0.03937008))
+            inchWidth = float("{:.2f}".format((dstWidth - dstWidthMinus) * 0.03937008/10))
+            inchHeight = float("{:.2f}".format((dstHeight - dstHeightMinus) * 0.03937008/10))
             return {'image': svg_image,'co': colorchange, 'minusx':dstWidthMinus, 'minusy':dstHeightMinus, 'width': inchWidth, 'height': inchHeight,'stitch': stitch, 'uid': uid}
         if fileType == 'ai':
             # Create dst file image
