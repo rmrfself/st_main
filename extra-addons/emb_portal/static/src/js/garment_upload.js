@@ -2808,9 +2808,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
                                     return false;
                                 }
                                 $('#logo-width').attr('data-inch', data['width']);
-                                $('#logo-width').attr('data-mm', (parseFloat(data['width'])/0.03937008).toFixed(2));
+                                
                                 $('#logo-width').val(data['width']);
-                                $('#logo-height').attr('data-mm', (parseFloat(data['height'])/0.03937008).toFixed(2));
+                                
                                 $('#logo-height').attr('data-inch', data['height']);
                                 $('#logo-height').val(data['height']);
                                 $("#logo-preview-box").html(data['image']);
@@ -2823,7 +2823,11 @@ odoo.define("emb_portal.garment_upload", function (require) {
                                     $('#logo-minusy').val(data['minusy']);
                                     $("#logo-preview-box").removeClass('ai-preview-box');
                                     $("#logo-preview-box").addClass('dst-preview-box');
+                                    $('#logo-height').attr('data-mm', (parseFloat(data['height'])/0.03937008).toFixed(2) * 10);
+                                    $('#logo-width').attr('data-mm', (parseFloat(data['width'])/0.03937008).toFixed(2) * 10);
                                 } else {
+                                    $('#logo-height').attr('data-mm', (parseFloat(data['height'])/0.03937008).toFixed(2));
+                                    $('#logo-width').attr('data-mm', (parseFloat(data['width'])/0.03937008).toFixed(2));
                                     $("#logo-preview-box").removeClass('dst-preview-box');
                                     $("#logo-preview-box").addClass('ai-preview-box');
                                 }
