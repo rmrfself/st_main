@@ -123,7 +123,13 @@ class Product(models.Model):
 
     stitch_count = fields.Integer(string='Stitches', store=False, related='logo_id.stitch')
 
+    logo_description = fields.Char(string='Logo Description', store=False, related='logo_id.raw_desc')
+
+    logo_sc_description = fields.Char(string='Surcharge Description', store=False, related='logo_id.surcharge_description')
+
     line_data = fields.Char(string='Colors', store=False, compute='_get_line_data')
+
+    logo_size = fields.Char(string='Logo Size', store=False, compute='_get_logo_size')
 
     @api.multi
     def _get_line_data(self):
@@ -139,6 +145,18 @@ class Product(models.Model):
                 ol.line_data = ",  ".join(rawlineval)
             else:
                 ol.line_data = '-'
+
+    @api.multi
+    def _get_logo_size(self):
+        for ol in self:
+            rawId = ol.logo_id.raw_id
+            if rawId:
+                rawLogo = self.env['product.logo'].browse(rawId)
+                sizeUnit = rawLogo.size_unit
+                if sizeUnit == 'mm':
+                    ol.logo_size = str(rawLogo.mm_width) + ' X ' + str(rawLogo.mm_height) + ' ' + sizeUnit
+                if sizeUnit == 'inch':
+                    ol.logo_size = str(rawLogo.inch_width) + ' X ' + str(rawLogo.inch_height) + ' ' + sizeUnit
 
 class GarmentInfo(models.Model):
     _name = "product.garment.info"
@@ -197,9 +215,19 @@ class SaleOrderGarmentInfo(models.Model):
     style = fields.Char(string='Style')
     brand = fields.Char(string='Brand')
     color = fields.Char(string='Color')
+    location = fields.Char(string='Location')
     qty = fields.Integer(string='Quantity')
     qty_data = fields.Char(string='Quantity Detail')
     qty_formatted = fields.Char(string='Quantity', store=False, compute='_get_quantity')
+    garment_name = fields.Char(string='Name', store=False, compute='_get_garment_name')
+
+
+    @api.multi
+    def _get_garment_name(self):
+        for ol in self:
+            gmt_tpl = json.loads(ol.garment_id.design_template)
+            if gmt_tpl:
+                ol.garment_name = gmt_tpl['name']
 
     @api.multi
     def _get_quantity(self):
@@ -276,19 +304,28 @@ class SaleOrderLine(models.Model):
     logo_name = fields.Char(string='Design Name', store=False, compute='_get_logo_name')
     logo_desc = fields.Char(string='Description', store=False, compute='_get_logo_desc')
     logo_service = fields.Char(string='Service', store=False, compute='_get_logo_service')
-    service_type = fields.Char(string='Type', store=False, compute='_get_service_type')
-    logo_stitch = fields.Integer(string='Ks', store=False, compute='_get_logo_stitch')
+    logo_stitch = fields.Char(string='Ks', store=False, compute='_get_logo_stitch')
+    logo_colors_count = fields.Char(string='Colors', store=False, compute='_get_colors_count')
+    surcharge_desc = fields.Integer(string='Surcharge Description', store=False, compute='_get_surcharge_desc')
+
 
     @api.multi
     def _get_logo_stitch(self):
         for ol in self:
             logo = self.env['sale.order.logo'].browse(ol.product_id.logo_id.id)
-            ol.logo_stitch = logo.stitch
+            ol.logo_stitch = "{:.3f}".format(int(logo.stitch)/1000)
 
     @api.multi
-    def _get_service_type(self):
+    def _get_surcharge_desc(self):
         for ol in self:
-            ol.service_type = ol.product_id.product_type
+            logo = self.env['sale.order.logo'].browse(ol.product_id.logo_id.id)
+            ol.surcharge_desc = logo.surcharge_description
+
+    @api.multi
+    def _get_colors_count(self):
+        for ol in self:
+            logo = self.env['sale.order.logo'].browse(ol.product_id.logo_id.id)
+            ol.logo_colors_count = len(json.loads(logo.line_data))
 
     @api.multi
     def _get_logo_service(self):

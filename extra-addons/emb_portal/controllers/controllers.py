@@ -338,6 +338,7 @@ class Portal(http.Controller):
             })
             # Initialize garment data
             #下面的循环已经考虑过多个面了: 第一个循环就是每个面
+            locationData = []
             garmentDict = []
             for item, sideFace in designDataHolder.items():
                 sharedGarmentObject = {}
@@ -370,7 +371,10 @@ class Portal(http.Controller):
                     sharedGarmentObject['location'] = logoItem['location']
                     sharedGarmentObject['line_info'] = logoItem['colors']
                     insideGarmentList.append(sharedGarmentObject)
-
+                    locationData.append(logoItem['location'])
+                    
+        if len(locationData) > 0:  
+            sale_order_garment_info.write({'location': ','.join(locationData)})
         # Step 3 Merge garment and logo and create product and its bills of materials
         for dictKey,logoItemNew in logoDict.items():
             rawId = logoItemNew['rawId']
