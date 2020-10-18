@@ -14,6 +14,9 @@
                     <field name="design_name"/>
                     <field name="stitch_count"/>
                     <field name="line_data"/>
+                    <field name="logo_description" string="Logo Description" />
+                    <field name="logo_sc_description" string="Surcharge Description" />
+                    <field name="logo_size" string="Logo Size" />
                 </field>
                 <xpath expr="//page[@name='notes']/group[@name='description_internal']" position="replace">
                     <div class="banners">
@@ -73,6 +76,7 @@
                 <xpath expr="//field[@name='partner_shipping_id']" position="after">
                     <field string="Shipping Date" name="ship_date" />
                     <field string="Require Date" name="require_date" />
+                    <field string="Buyer" name="buyer_name" />
                 </xpath>
                 <xpath expr="//field[@name='payment_term_id']" position="after">
                     <field string="P.O.#" name="po_number" />
@@ -83,7 +87,7 @@
                 <xpath expr="//field[@name='order_line']/tree/field[@name='product_id']" position="replace">
                     <field name="logo_name" string="Design Name" />
                     <field name="logo_service" string="Service" />
-                    <field name="service_type" string="Type" />
+                    <field name="logo_colors_count" string="Colors" />
                     <field name="logo_stitch" string="Ks" />
                 </xpath>
                 <xpath expr="//field[@name='order_line']/tree/field[@name='name']" position="replace">
@@ -94,11 +98,12 @@
                         <field name="order_garment" mode="tree">
                             <tree string="Garments" editable="bottom">
                                 <field name="sequence" widget="handle"/>
-                                <field name="name" string="Garment Name"/>
+                                <field name="garment_name" string="Garment Name"/>
                                 <field name="garment_type" string="Type"/>
                                 <field name="style" string="Style"/>
                                 <field name="color" string="Color"/>
                                 <field name="brand" string="Brand"/>
+                                <field name="location" string="Location"/>
                                 <field name="description" string="Description"/>
                                 <field name="qty_formatted" string="Qty"/>
                                 <field name="qty" string="Total Qty"/>
