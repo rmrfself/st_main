@@ -257,6 +257,10 @@ class Portal(http.Controller):
                 # update cart status
                 dObj.write({'status': False})
         # Dorder end
+        # Judge if eorder is empty
+        eOrderData = post['eorder']
+        if not eOrderData or len(eOrderData) == 0:
+            return True
         buyer = post['buyer']
         order_po = post['order_po']
         job_title = post['job_title']
@@ -264,7 +268,7 @@ class Portal(http.Controller):
         order_sd = post['order_sd']
         order_ra = post['order_ra']
         instruction = post['instruction']
-        eOrderData = post['eorder']
+        
         didss = []
         # Create global variables for order object
         so = request.env['sale.order'].create({
@@ -372,7 +376,7 @@ class Portal(http.Controller):
                     sharedGarmentObject['line_info'] = logoItem['colors']
                     insideGarmentList.append(sharedGarmentObject)
                     locationData.append(logoItem['location'])
-                    
+
         if len(locationData) > 0:  
             sale_order_garment_info.write({'location': ','.join(locationData)})
         # Step 3 Merge garment and logo and create product and its bills of materials

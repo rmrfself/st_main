@@ -168,7 +168,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                 row.append(af);
                 parent.append(row);
             }
-
+            this._bindInputEvents();
         },
         _onLogoPriceChange: function () {
 
@@ -401,6 +401,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                             }, {
                                 type: "success"
                             });
+                            location.reload();
                         }, 3000);
 
                     })
