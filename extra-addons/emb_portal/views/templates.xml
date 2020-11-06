@@ -593,7 +593,7 @@
 														<div class="col-sm-7">
 															<label class="radio-inline">
 																<input name="order-type" value="d" type="radio" />
-																Digizing Order
+																Digitizing Order
 															</label>
 														</div>
 													</div>

@@ -325,6 +325,43 @@ odoo.define('emb_portal.cart_list', function (require) {
             });
             $('#btn-quot').click(function (e) {
                 console.log('button click');
+                var postData = {};
+                var buyer = $('#order_buyer').val();
+                var order_po = $('#order_po').val();
+                var job_title = $('#order_jt').val();
+                var shipper = $('#order_shipper').val();
+                var order_sd = $('#order_ship_date').val();
+                var order_ra = $('#order_require_at').val();
+                var instruction = $('#instr').val();
+
+                /**
+                 * Must have fields checking
+                 */
+                if (shipper == null || shipper.trim() == '') {
+                    $.notify({
+                        icon: "glyphicon glyphicon-remove",
+                        title: "Error",
+                        message: "please fill in shipper."
+                    }, {
+                        type: "danger"
+                    });
+                    return false;
+                }
+
+                if (order_sd == null || order_sd.trim() == '') {
+                    $.notify({
+                        icon: "glyphicon glyphicon-remove",
+                        title: "Error",
+                        message: "please fill in shipper date."
+                    }, {
+                        type: "danger"
+                    });
+                    return false;
+                }
+                /**
+                 * Begin post data into server.
+                 */
+
                 $("#cart-list").block({
                     message: "<img src='/emb_portal/static/src/images/grid.svg' height='30' width='30' style='margin-right:10px' />loading..",
                     css: {
@@ -343,14 +380,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                         background: "transparent"
                     }
                 });
-                var postData = {};
-                var buyer = $('#order_buyer').val();
-                var order_po = $('#order_po').val();
-                var job_title = $('#order_jt').val();
-                var shipper = $('#order_shipper').val();
-                var order_sd = $('#order_ship_date').val();
-                var order_ra = $('#order_require_at').val();
-                var instruction = $('#instr').val();
+
                 postData['buyer'] = buyer;
                 postData['order_po'] = order_po;
                 postData['job_title'] = job_title;

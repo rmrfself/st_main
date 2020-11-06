@@ -2684,6 +2684,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
              */
             $('input:radio[name="order-type"]').change(function () {
                 self._clearUploadWindow();
+                $("#logo-customer").select2("data", "");
                 $('#logo-image-type').select2("destroy").empty().trigger('change');
                 if ($("input[name='order-type']:checked").val() == 'c') {
                     /**
@@ -2697,9 +2698,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     /**
                      * Aad pdf option or jpg 
                      */
-                    $('#logo-image-type').append(new Option('.png', 'png', true, true));
                     $('#logo-image-type').append(new Option('.jpg', 'jpg', true, true));
-                    $('#logo-image-type').append(new Option('.pdf', 'pdf', true, true));
+                    $('#logo-image-type').append(new Option('.png', 'png', false, false));
+                    $('#logo-image-type').append(new Option('.pdf', 'pdf', false, false));
                     $('#logo-image-type').select2().trigger('change');
                 }
 
