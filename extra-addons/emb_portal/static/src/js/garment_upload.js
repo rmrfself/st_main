@@ -2808,6 +2808,9 @@ odoo.define("emb_portal.garment_upload", function (require) {
                                     }).qtip("show");
                                     return false;
                                 }
+
+                                // set default logo size unit
+                                $("input[name='size-unit'][value='inch']").prop('checked', true).trigger('change');
                                 $('#logo-width').attr('data-inch', data['width']);
                                 
                                 $('#logo-width').val(data['width']);
@@ -2824,8 +2827,8 @@ odoo.define("emb_portal.garment_upload", function (require) {
                                     $('#logo-minusy').val(data['minusy']);
                                     $("#logo-preview-box").removeClass('ai-preview-box');
                                     $("#logo-preview-box").addClass('dst-preview-box');
-                                    $('#logo-height').attr('data-mm', (parseFloat(data['height'])/0.03937008).toFixed(2) * 10);
-                                    $('#logo-width').attr('data-mm', (parseFloat(data['width'])/0.03937008).toFixed(2) * 10);
+                                    $('#logo-height').attr('data-mm', (parseFloat(data['height'])/0.03937008).toFixed(2));
+                                    $('#logo-width').attr('data-mm', (parseFloat(data['width'])/0.03937008).toFixed(2));
                                 } else {
                                     $('#logo-height').attr('data-mm', (parseFloat(data['height'])/0.03937008).toFixed(2));
                                     $('#logo-width').attr('data-mm', (parseFloat(data['width'])/0.03937008).toFixed(2));
@@ -3107,7 +3110,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
             }
         },
         _clearUploadWindow: function () {
-            $('#logo-customer').val('');
+            $("#logo-customer").select2("data", "");
             $('#logo-name').val('');
             $('#logo-desc').val('');
             $('#logo-file-input').val('');
