@@ -382,8 +382,6 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 console.log(obj.resourceId);
                 obj.rawId = targetId;
                 obj.rawName = targetName;
-                console.log('999999');
-                console.log(obj.rawName);
                 obj.cid = 1;
                 //obj.subTargetCheck = true;
                 //obj.selectable = true;
@@ -399,6 +397,17 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     })
                     .center()
                     .setCoords();
+
+                /**
+                 * Set max width of svg obj
+                 * */    
+                if (obj.width > 300) {
+                    obj.scaleToWidth(300)
+                }
+
+                if (obj.height > 200) {
+                    obj.scaleToHeight(200)
+                }
                 self.background.setActiveObject(obj);
                 self.background.add(obj).renderAll();
 
@@ -1738,6 +1747,10 @@ odoo.define("emb_portal.garment_upload", function (require) {
             holder.find(".remove").unbind("click");
             holder.find(".select").unbind("click");
 
+            if (self.composer == undefined) {
+                self.composer = this.graphComposer();
+            }
+
             holder.find(".remove").confirmation({
                 onCancel: function () {
                     return false;
@@ -2612,6 +2625,39 @@ odoo.define("emb_portal.garment_upload", function (require) {
                 allowClear: true,
                 placeholder: "Input a customer",
                 minimumInputLength: 1,
+                tags: true,
+                matcher: function(params, data) {
+                    // If there are no search terms, return all of the data
+                    if ($.trim(params.term) === '') {
+                      return data;
+                    }
+            
+                    // `params.term` should be the term that is used for searching
+                    // `data.text` is the text that is displayed for the data object
+                    if (data.text.toLowerCase().indexOf(params.term.toLowerCase()) > -1) {
+                      return data;
+                    }
+            
+                    // Return `null` if the term should not be displayed
+                    return null;
+                  },
+                  createTag: function(params) {
+                    var term = $.trim(params.term);
+                    if(term === "") { return null; }
+            
+                    var optionsMatch = false;
+            
+                    this.$element.find("option").each(function() {
+                      if(this.value.toLowerCase().indexOf(term.toLowerCase()) > -1) {
+                        optionsMatch = true;
+                      }
+                    });
+            
+                    if(optionsMatch) {
+                      return null;
+                    }
+                    return {id: term, text: term};
+                  },
                 ajax: {
                     url: "/portal/partner/list",
                     dataType: 'json',

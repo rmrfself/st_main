@@ -70,7 +70,7 @@ class Portal(http.Controller):
         keyw = kw['q']
         container['results'] = []
         if keyw:
-            partners = request.env['res.partner'].search([('name','like','%' + keyw + '%')])
+            partners = request.env['res.partner'].search([('name','like','%' + keyw.lower() + '%')])
         if len(partners) > 0:
             p = []
             for partner in partners:
