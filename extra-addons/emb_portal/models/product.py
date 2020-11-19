@@ -306,7 +306,7 @@ class SaleOrderLine(models.Model):
     logo_service = fields.Char(string='Service', store=False, compute='_get_logo_service')
     logo_stitch = fields.Char(string='Ks', store=False, compute='_get_logo_stitch')
     logo_colors_count = fields.Char(string='Colors', store=False, compute='_get_colors_count')
-    surcharge_desc = fields.Integer(string='Surcharge Description', store=False, compute='_get_surcharge_desc')
+    surcharge_description = fields.Char(string='Surcharge Description', store=False, compute='_get_surcharge_desc')
 
 
     @api.multi
@@ -319,7 +319,7 @@ class SaleOrderLine(models.Model):
     def _get_surcharge_desc(self):
         for ol in self:
             logo = self.env['sale.order.logo'].browse(ol.product_id.logo_id.id)
-            ol.surcharge_desc = logo.surcharge_description
+            ol.surcharge_description = logo.surcharge_description
 
     @api.multi
     def _get_colors_count(self):

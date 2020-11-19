@@ -88,7 +88,8 @@
                     <field name="logo_name" string="Design Name" />
                     <field name="logo_service" string="Service" />
                     <field name="logo_colors_count" string="Colors" />
-                    <field name="logo_stitch" string="Ks" />
+                    <field name="logo_stitch" string="Stitches" />
+                    <field name="surcharge_description" string="Surcharge Description" />
                 </xpath>
                 <xpath expr="//field[@name='order_line']/tree/field[@name='name']" position="replace">
                     <field name="logo_desc" string="Description" />

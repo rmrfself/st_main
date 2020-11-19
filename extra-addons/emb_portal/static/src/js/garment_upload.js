@@ -405,11 +405,16 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     obj.scaleToWidth(300)
                 }
 
-                if (obj.height > 200) {
-                    obj.scaleToHeight(200)
-                }
                 self.background.setActiveObject(obj);
                 self.background.add(obj).renderAll();
+                /**
+                 * Set max width of svg obj
+                 * */    
+                if (obj.width > 300) {
+                    obj.scaleToWidth(300)
+                }
+
+                self.background.renderAll();
 
                 // Save logo data into canvas
                 var gmtId = localStorage.getItem("background-image-id");
