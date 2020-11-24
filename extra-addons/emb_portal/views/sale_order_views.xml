@@ -175,7 +175,8 @@
                         <field name="p_design_size_unit" />
                         <field name="p_specital_instr" />
                         <field name="p_fabric" />
-                        <field name="design_image"  widget="binary" />
+                        <field name="design_image"  widget="binary" filename="filename"/>
+                        <field name="filename" invisible="1"/>
                         <field name="p_stitch" />
 						<field name="move_dest_ids" invisible="1" />
 						<field name="company_id" groups="base.group_multi_company" options="{'no_create': True}" />

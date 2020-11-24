@@ -381,6 +381,8 @@ class PurchaseOrderLine(models.Model):
 
     design_image = fields.Binary('Upload Dst', attachment=True)
 
+    filename = fields.Char('File Name')
+
     p_design_image = fields.Binary(string='Origin Image', store=False, related='logo_id.image')
 
 class PurchaseOrderLogo(models.Model):

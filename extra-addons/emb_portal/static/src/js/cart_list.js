@@ -333,31 +333,7 @@ odoo.define('emb_portal.cart_list', function (require) {
                 var order_sd = $('#order_ship_date').val();
                 var order_ra = $('#order_require_at').val();
                 var instruction = $('#instr').val();
-
-                /**
-                 * Must have fields checking
-                 */
-                if (shipper == null || shipper.trim() == '') {
-                    $.notify({
-                        icon: "glyphicon glyphicon-remove",
-                        title: "Error",
-                        message: "please fill in shipper."
-                    }, {
-                        type: "danger"
-                    });
-                    return false;
-                }
-
-                if (order_sd == null || order_sd.trim() == '') {
-                    $.notify({
-                        icon: "glyphicon glyphicon-remove",
-                        title: "Error",
-                        message: "please fill in shipper date."
-                    }, {
-                        type: "danger"
-                    });
-                    return false;
-                }
+                
                 /**
                  * Begin post data into server.
                  */
