@@ -407,7 +407,7 @@ class Portal(http.Controller):
             # Handle color strings
             # 
             if not 'surchargeDescription' in logoItemNew:
-                logoItemNew['surchargeDescription'] = 'No Data';
+                logoItemNew['surchargeDescription'] = '';
 
             sale_order_logo = request.env['sale.order.logo'].create({
                 'name': request.env['ir.sequence'].next_by_code('sale.order.logo'),
