@@ -308,7 +308,6 @@ class SaleOrderLine(models.Model):
     logo_colors_count = fields.Char(string='Colors', store=False, compute='_get_colors_count')
     surcharge_description = fields.Char(string='Surcharge Description', store=False, compute='_get_surcharge_desc')
 
-
     @api.multi
     def _get_logo_stitch(self):
         for ol in self:
@@ -428,3 +427,47 @@ class MrpWorkorder(models.Model):
                 image_type = product.logo_id.raw_image_type
                 if image_type:
                     record. logo_file_name = "design." + image_type       
+
+class MrpWorkcenterProductivity(models.Model):
+    _inherit = "mrp.workcenter.productivity"
+
+    qty_production = fields.Float('Qty')                  
+
+class Employee(models.Model):
+
+    _inherit = "hr.employee"
+
+    breaks = fields.Char(string='Breaks')
+
+    hire_date = fields.Date('Hire Date', required=False)
+
+    salary = fields.Selection([
+        ('hourly', 'Hourly'),
+        ('monthly', 'Monthly'),
+        ('all', 'All')
+        ], 'Salary', default='hourly', required=True)
+
+    shift = fields.Selection([
+        ('day', 'Day'),
+        ('noon', 'Noon'),
+        ('night', 'Night')
+        ], 'Shift', default='day', required=True)
+
+class EmbResPartnerNew(models.Model):
+    
+    _inherit = 'res.partner'
+
+    f_tax_gst = fields.Char(string='GST #', required=False)
+    f_tax_pst = fields.Char(string='PST #', required=False)
+
+    f_tax_code = fields.Selection([
+        ('0.0', 'No Tax'),
+        ('0.0', ' E-GST Exempt'),
+        ('5.00', 'G-GST'),
+        ('7.00', 'I-GST'),
+        ('7.00', 'P-PST'),
+        ('7.00', 'B-PST'),
+        ('12.00', 'GST 5.00%'),
+        ('12.00', 'H-HST'),
+        ('13.00', 'H-HST'),
+        ], 'Tax Code', default='hourly', required=False)
