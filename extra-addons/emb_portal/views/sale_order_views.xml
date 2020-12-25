@@ -10,32 +10,50 @@
             <field name="arch" type="xml">
                 <field name="type" position="after">
                     <field name="product_type"/>
-                    <field name="design_service"/>
-                    <field name="design_name"/>
-                    <field name="stitch_count"/>
-                    <field name="line_data"/>
-                    <field name="logo_description" string="Logo Description" />
-                    <field name="logo_sc_description" string="Surcharge Description" />
-                    <field name="logo_size" string="Logo Size" />
+                    <field name="design_service" attrs="{'invisible': [('product_type', '=', 'Garment')]}"/>
+                    <field name="design_name" attrs="{'invisible': [('product_type', '=', 'Garment')]}"/>
+                    <field name="stitch_count" attrs="{'invisible': [('product_type', '=', 'Garment')]}"/>
+                    <field name="line_data" attrs="{'invisible': [('product_type', '=', 'Garment')]}"/>
+                    <field name="logo_description" string="Logo Description" attrs="{'invisible': [('product_type', '=', 'Garment')]}"/>
+                    <field name="logo_sc_description" string="Surcharge Description" attrs="{'invisible': [('product_type', '=', 'Garment')]}"/>
+                    <field name="logo_size" string="Logo Size" attrs="{'invisible': [('product_type', '=', 'Garment')]}"/>
+                    <field name="garment_color" string="Color" attrs="{'invisible': [('product_type', '=', 'dst')]}"/>
+                    <field name="garment_qty" string="Qty" attrs="{'invisible': [('product_type', '=', 'dst')]}"/>
                 </field>
                 <xpath expr="//page[@name='notes']/group[@name='description_internal']" position="replace">
                     <div class="banners">
-                        <field name="design_image_ids" mode="kanban">
-                     <kanban>
-                         <field name="image"/>
-                         <templates>
-                           <t t-name="kanban-box">
-                               <div style="position: relative;width:100%;">
-                              <div class="oe_module_vignette">
-                                  <a type="open">
-                                      <img t-att-src="'data:image/png;base64, ' + record.image.raw_value" class="oe_avatar oe_kanban_avatar_smallbox"/>
-                                  </a>
-                              </div>
-                               </div>
-                           </t>
-                         </templates>
-                     </kanban>
-                   </field>
+                        <field name="garment_images" mode="kanban" attrs="{'invisible': [('product_type', '=', 'dst')]}">
+                            <kanban>
+                                <field name="image"/>
+                                <templates>
+                                    <t t-name="kanban-box">
+                                        <div style="position: relative;width:100%;">
+                                            <div class="oe_module_vignette">
+                                                <a type="open">
+                                                    <img t-att-src="'data:image/png;base64, ' + record.image.raw_value" class="oe_avatar oe_kanban_avatar_smallbox"/>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </templates>
+                            </kanban>
+                        </field>
+                        <field name="design_image_ids" mode="kanban" attrs="{'invisible': [('product_type', '=', 'Garment')]}">
+                            <kanban>
+                                <field name="image"/>
+                                <templates>
+                                <t t-name="kanban-box">
+                                    <div style="position: relative;width:100%;">
+                                    <div class="oe_module_vignette">
+                                        <a type="open">
+                                            <img t-att-src="'data:image/png;base64, ' + record.image.raw_value" class="oe_avatar oe_kanban_avatar_smallbox"/>
+                                        </a>
+                                    </div>
+                                    </div>
+                                </t>
+                                </templates>
+                            </kanban>
+                        </field>
                     </div>
                 </xpath>
             </field>
@@ -111,6 +129,7 @@
                                 <field name="location" string="Location"/>
                                 <field name="description" string="Description"/>
                                 <field name="qty_formatted" string="Qty"/>
+                                <field name="gmt_product_id" string="DEmo"/>
                                 <field name="qty" string="Total Qty"/>
                             </tree>
                         </field>

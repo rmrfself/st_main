@@ -131,6 +131,22 @@ class Product(models.Model):
 
     logo_size = fields.Char(string='Logo Size', store=False, compute='_get_logo_size')
 
+    # Below its garment's data
+    garment_color = fields.Char(string='Garment Color', store=False, related='garment_id.color')
+    garment_qty = fields.Char(string='Qty', store=False, related='garment_id.quantity')
+
+    garment_images = fields.Many2many('product.garment.image', string='Images', store=False, compute='_get_garment_images')
+
+
+    @api.multi
+    def _get_garment_images(self):
+        for ol in self:
+            product_garment = ol.garment_id.garment_id
+            if product_garment:
+                images = product_garment.image_ids
+                ol.garment_images = images
+
+
     @api.multi
     def _get_line_data(self):
         for ol in self:
@@ -209,6 +225,9 @@ class SaleOrderGarmentInfo(models.Model):
 
     order_id = fields.Many2one('sale.order', string='Order Reference', required=True, ondelete='cascade', index=True, copy=False)
     garment_id = fields.Many2one('product.garment', string='Garment Reference', required=True, ondelete='cascade')
+
+    gmt_product_id = fields.Many2one('product.product', string='Product', store=False, compute='_get_gmt_product')
+
     name = fields.Char(string='Name', required=True)
     description = fields.Char(string='Description', required=True)
     garment_type = fields.Char(string='Type', required=True)
@@ -221,6 +240,17 @@ class SaleOrderGarmentInfo(models.Model):
     qty_formatted = fields.Char(string='Quantity', store=False, compute='_get_quantity')
     garment_name = fields.Char(string='Name', store=False, compute='_get_garment_name')
 
+
+    @api.multi
+    def _get_gmt_product(self):
+        for ol in self:
+            order_id = ol.order_id.id
+            garment_id = ol.garment_id.id
+            sog = self.env['sale.order.garment'].search([('sale_order_id', '=', order_id),('garment_id', '=', garment_id)])
+            print(sog)
+            if sog:
+                product = self.env['product.product'].search([('garment_id', '=', sog.id)])
+                ol.gmt_product_id = product
 
     @api.multi
     def _get_garment_name(self):

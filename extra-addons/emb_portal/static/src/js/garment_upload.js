@@ -3222,6 +3222,12 @@ odoo.define("emb_portal.garment_upload", function (require) {
                     originWidth = mm_width;
                     originHeight = mm_height;
                 }
+                
+                /**
+                 * Fix bug of inch transformation
+                 */
+                width = (inch_width/0.003937008).toFixed(2);
+                height = (inch_height/0.003937008).toFixed(2);
 
                 //var height = 110;
                 //<a href="#" class="logo-asset" id="logo-id-1" data-id="1">
