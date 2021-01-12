@@ -135,6 +135,8 @@ class Product(models.Model):
     garment_color = fields.Char(string='Garment Color', store=False, related='garment_id.color')
     garment_qty = fields.Char(string='Qty', store=False, related='garment_id.quantity')
 
+    stock_location = fields.Char(string='Stock Location')
+
     garment_images = fields.Many2many('product.garment.image', string='Images', store=False, compute='_get_garment_images')
 
 
@@ -354,7 +356,10 @@ class SaleOrderLine(models.Model):
     def _get_colors_count(self):
         for ol in self:
             logo = self.env['sale.order.logo'].browse(ol.product_id.logo_id.id)
-            ol.logo_colors_count = len(json.loads(logo.line_data))
+            if logo.line_data:
+                ol.logo_colors_count = len(json.loads(logo.line_data))
+            else:
+                ol.logo_colors_count = 0
 
     @api.multi
     def _get_logo_service(self):
@@ -491,13 +496,12 @@ class EmbResPartnerNew(models.Model):
     f_tax_pst = fields.Char(string='PST #', required=False)
 
     f_tax_code = fields.Selection([
-        ('0.0', 'No Tax'),
-        ('0.0', ' E-GST Exempt'),
-        ('5.00', 'G-GST'),
-        ('7.00', 'I-GST'),
-        ('7.00', 'P-PST'),
-        ('7.00', 'B-PST'),
-        ('12.00', 'GST 5.00%'),
-        ('12.00', 'H-HST'),
-        ('13.00', 'H-HST'),
-        ], 'Tax Code', default='hourly', required=False)
+        ('0.0', 'No tax'),
+        ('0.0', ' E-GST exempt'),
+        ('5.00', 'G-GST 5.00%'),
+        ('7.00', 'I-GST 7.00%,included'),
+        ('7.00', 'P-PST 7.00%'),
+        ('12.00', 'B-PST 7.00%, gst 5.00%'),
+        ('12.00', 'H-HST 12.0%'),
+        ('13.00', 'H-HST 13%'),
+        ], 'Tax Code', default='0.0', required=False)

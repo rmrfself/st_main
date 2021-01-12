@@ -19,6 +19,7 @@
                     <field name="logo_size" string="Logo Size" attrs="{'invisible': [('product_type', '=', 'Garment')]}"/>
                     <field name="garment_color" string="Color" attrs="{'invisible': [('product_type', '=', 'dst')]}"/>
                     <field name="garment_qty" string="Qty" attrs="{'invisible': [('product_type', '=', 'dst')]}"/>
+                    <field name="stock_location" string="Stock Location" attrs="{'invisible': [('product_type', '=', 'dst')]}"/>
                 </field>
                 <xpath expr="//page[@name='notes']/group[@name='description_internal']" position="replace">
                     <div class="banners">
