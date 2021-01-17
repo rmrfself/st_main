@@ -2137,7 +2137,7 @@ odoo.define("emb_portal.garment_upload", function (require) {
                         sizeAttrs.push($(this).val());
                     }
                 });
-            var post_name = $("#gmt-brand")
+            var post_name = $("#gmt-name")
                 .val()
                 .trim();
             var post_style = $("#gmt-style")
