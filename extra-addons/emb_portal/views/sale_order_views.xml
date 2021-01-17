@@ -130,7 +130,7 @@
                                 <field name="location" string="Location"/>
                                 <field name="description" string="Description"/>
                                 <field name="qty_formatted" string="Qty"/>
-                                <field name="gmt_product_id" string="DEmo"/>
+                                <field name="gmt_product_id" string="Product"/>
                                 <field name="qty" string="Total Qty"/>
                             </tree>
                         </field>
